@@ -498,6 +498,44 @@ body{
 }
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ---------- 인앱 브라우저 탈출 안내 화면 (인앱에서만 쓰인다) ---------- */
+.escview{
+  position:fixed;inset:0;z-index:300;
+  display:none;
+  background:var(--bg);
+  overflow:auto;
+  padding:24px 18px;
+}
+.escview.on{display:flex;align-items:center;justify-content:center}
+.escbox{
+  max-width:420px;width:100%;
+  text-align:center;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:28px 20px 22px;
+  box-shadow:var(--shadow);
+}
+.escicon{font-size:44px;line-height:1;margin-bottom:12px}
+.esctitle{
+  display:block;
+  font-size:clamp(16px,4.6vw,20px);font-weight:800;
+  color:var(--ink);letter-spacing:-.02em;
+}
+.escdesc{
+  margin:10px 0 20px;
+  font-size:clamp(12.5px,3.4vw,14px);line-height:1.65;
+  color:var(--muted);
+}
+.escdesc b{color:var(--ink)}
+.escbtn{
+  appearance:none;border:1.5px solid var(--line2);
+  background:var(--btn);color:var(--btn-ink);
+  border-radius:10px;padding:10px 16px;
+  font-family:inherit;font-size:clamp(11.5px,3vw,13px);font-weight:700;cursor:pointer;
+}
+.escbtn:active{transform:translateY(1px)}
+
 /* ---------- 만들어진 배치도 그림을 보여 주는 화면 ---------- */
 .imgview{
   position:fixed;inset:0;z-index:200;
@@ -837,6 +875,16 @@ body{
 
 <!-- 짧은 안내 쪽지 -->
 <div class="toast" id="toast"></div>
+
+<!-- 인앱 브라우저에서 크롬·사파리로 빠져나갔을 때 이 창에 남기는 안내 화면 -->
+<div class="escview" id="escView">
+  <div class="escbox">
+    <div class="escicon" id="escIcon">🌐</div>
+    <b class="esctitle" id="escTitle">여는 중입니다…</b>
+    <p class="escdesc" id="escDesc">잠시만 기다려 주세요</p>
+    <button class="escbtn" id="escStay">그래도 여기서 볼게요</button>
+  </div>
+</div>
 
 <!-- 만들어진 배치도 그림을 화면에 그대로 보여 주는 곳 -->
 <div class="imgview" id="imgView">
@@ -2107,42 +2155,39 @@ function openExternalBrowser(auto){
     return;
   }
 
-  var moved = false;
-  var mark = function(){ moved = true; };
-  window.addEventListener('pagehide', mark, {once:true});
-  window.addEventListener('blur', mark, {once:true});
-  document.addEventListener('visibilitychange', function(){ if(document.hidden) moved = true; }, {once:true});
-
   lastExternalTry = appName + ' 열기 시도 중…';
-  if(auto) noticeWarnBar(appName + '(으)로 여는 중입니다…');
 
-  setTimeout(function(){
-    if(moved){
-      lastExternalTry = '성공 (' + appName + '으로 넘어감)';
-      refreshDiag();
-      return;
-    }
-    /* 넘어가지 못했다 — 되는 척하지 않고 그대로 알린다 */
-    lastExternalTry = '실패 (' + appName + ' 열기 안 됨)' + (auto ? ' [자동 시도]' : '');
-    refreshDiag();
-    restoreWarnBar();
+  /* 자동 시도일 때는 성공·실패 판정을 아래 '탈출 안내 화면' 쪽에서 맡는다 */
+  if(!auto){
+    var moved = false;
+    var mark = function(){ moved = true; };
+    window.addEventListener('pagehide', mark, {once:true});
+    window.addEventListener('blur', mark, {once:true});
+    document.addEventListener('visibilitychange', function(){ if(document.hidden) moved = true; }, {once:true});
 
-    if(auto){
-      /* 자동 시도였다면 조용히 물러난다. 앱은 그대로 쓸 수 있고,
-         화면 위 안내 띠의 수동 버튼이 계속 보인다. */
-      return;
-    }
-    copyText(shareableUrl(), function(ok){
-      if(ok) lastExternalTry += ' → 주소는 복사해 둠';
+    setTimeout(function(){
+      if(moved){
+        lastExternalTry = '성공 (' + appName + '으로 넘어감)';
+        markEscaped();
+        refreshDiag();
+        return;
+      }
+      /* 넘어가지 못했다 — 되는 척하지 않고 그대로 알린다 */
+      lastExternalTry = '실패 (' + appName + ' 열기 안 됨)';
       refreshDiag();
-      if(diagBox) diagBox.open = true;
-      var msg = ok
-        ? ('주소를 복사했습니다.\n' + appName + ' 앱을 열어 주소창에 붙여넣어 주세요.')
-        : (appName + ' 앱을 열지 못했습니다.\n주소창의 주소를 직접 복사해 주세요.');
-      if(isIOS) msg += '\n또는 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요.';
-      toast(msg, 7000);
-    });
-  }, 2000);
+      restoreWarnBar();
+      copyText(shareableUrl(), function(ok){
+        if(ok) lastExternalTry += ' → 주소는 복사해 둠';
+        refreshDiag();
+        if(diagBox) diagBox.open = true;
+        var msg = ok
+          ? ('주소를 복사했습니다.\n' + appName + ' 앱을 열어 주소창에 붙여넣어 주세요.')
+          : (appName + ' 앱을 열지 못했습니다.\n주소창의 주소를 직접 복사해 주세요.');
+        if(isIOS) msg += '\n또는 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요.';
+        toast(msg, 7000);
+      });
+    }, 2000);
+  }
 
   try{
     location.href = isIOS ? safariSchemeUrl() : chromeIntentUrl();
@@ -2193,20 +2238,114 @@ function restoreWarnBar(){
   warnBar.classList.add('on');
 })();
 
-/* ---------- 인앱 브라우저로 들어왔으면 한 번만 자동으로 빠져나가 본다 ----------
-   ⚠️ sessionStorage 에 기록해 '딱 한 번만' 시도한다.
-      되돌아왔을 때 또 튕기면 사용자가 갇혀 버린다.
-   자동 이동이 막혀도 앱은 그대로 쓸 수 있고, 위 안내 띠의 버튼이 계속 보인다. */
-(function(){
-  if(!isInApp || !location.host) return;
-  var KEY = 'seatShuffle.escapeTried';
-  var tried = true;
-  try{ tried = (sessionStorage.getItem(KEY) === '1'); }
-  catch(e){ tried = true; }        /* 저장소를 못 쓰면 자동 시도를 하지 않는다 */
-  if(tried) return;
-  try{ sessionStorage.setItem(KEY, '1'); }catch(e){ return; }
+/* ==========================================================================
+   인앱 브라우저 탈출 · 그리고 남은 창 정리
+   ⚠️ 이 아래 전체는 '앱 안의 브라우저(카카오톡 등)'에서만 동작한다.
+      크롬·사파리·삼성인터넷·PC 에서는 단 한 줄도 실행되지 않는다.
+   ========================================================================== */
+var ESC_TRIED = 'seatShuffle.escapeTried';   /* 자동 시도를 했는가 (재시도 방지) */
+var ESC_OK    = 'seatShuffle.escapedOk';     /* 실제로 빠져나갔는가 (안내 화면 표시) */
 
-  setTimeout(function(){ openExternalBrowser(true); }, 350);
+var escView  = document.getElementById('escView');
+var escIcon  = document.getElementById('escIcon');
+var escTitle = document.getElementById('escTitle');
+var escDesc  = document.getElementById('escDesc');
+var escStay  = document.getElementById('escStay');
+
+function markEscaped(){ try{ sessionStorage.setItem(ESC_OK, '1'); }catch(e){} }
+function isEscaped(){ try{ return sessionStorage.getItem(ESC_OK) === '1'; }catch(e){ return false; } }
+
+/* 앱 화면을 덮고 '여는 중' 표시 */
+function showEscWaiting(){
+  if(!escView) return;
+  escIcon.textContent  = '🌐';
+  escTitle.textContent = externalName() + '(으)로 여는 중입니다…';
+  escDesc.textContent  = '잠시만 기다려 주세요';
+  escStay.textContent  = '그래도 여기서 볼게요';
+  escView.classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+/* 빠져나간 뒤 이 창에 남기는 안내 */
+function showEscDone(){
+  if(!escView) return;
+  escIcon.textContent  = '✅';
+  escTitle.textContent = externalName() + '에서 열었습니다';
+  escDesc.innerHTML    = '이 창은 닫으셔도 됩니다.<br>자리 뽑기는 <b>' +
+                         externalName() + ' 쪽 화면</b>에서 진행해 주세요.';
+  escStay.textContent  = '그래도 여기서 볼게요';
+  escView.classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function hideEsc(){
+  if(!escView) return;
+  escView.classList.remove('on');
+  document.body.style.overflow = '';
+}
+/* 창을 닫아 본다 (막히는 경우가 많지만 시도해서 손해는 없다) */
+function tryCloseWindow(){ try{ window.close(); }catch(e){} }
+
+if(escStay){
+  escStay.addEventListener('click', function(){
+    /* 안전망 : 감지가 틀렸더라도 사용자가 언제든 앱으로 돌아올 수 있다 */
+    try{ sessionStorage.removeItem(ESC_OK); }catch(e){}
+    hideEsc();
+    restoreWarnBar();
+  });
+}
+
+(function(){
+  if(!isInApp || !location.host || !escView) return;   /* 정상 브라우저는 여기서 끝 */
+
+  /* ⓐ 인앱 창으로 '돌아왔을 때' 는 언제나 안내 화면을 보여 준다.
+        (자동으로 나갔든, 버튼으로 나갔든 동일하게 처리) */
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible' && isEscaped()){
+      showEscDone();
+      tryCloseWindow();
+    }
+  });
+
+  /* ⓑ 이미 빠져나간 적이 있는 창이면, 처음부터 앱을 띄우지 않는다 */
+  if(isEscaped()){
+    showEscDone();
+    tryCloseWindow();
+    return;
+  }
+
+  /* ⓒ 자동 탈출은 딱 한 번만 (되돌아왔을 때 또 튕기면 갇힌다) */
+  var tried = true;
+  try{ tried = (sessionStorage.getItem(ESC_TRIED) === '1'); }
+  catch(e){ tried = true; }          /* 저장소를 못 쓰면 자동 시도를 하지 않는다 */
+  if(tried) return;
+  try{ sessionStorage.setItem(ESC_TRIED, '1'); }catch(e){ return; }
+
+  var settled = false;
+
+  /* 화면이 뒤로 넘어가면 = 다른 브라우저가 열린 것 */
+  function onHidden(){
+    if(settled) return;
+    if(document.visibilityState === 'hidden'){
+      settled = true;
+      markEscaped();
+      lastExternalTry = '성공 (' + externalName() + '으로 넘어감) [자동 시도]';
+      refreshDiag();
+    }
+  }
+  document.addEventListener('visibilitychange', onHidden);
+
+  showEscWaiting();
+  setTimeout(function(){ openExternalBrowser(true); }, 250);
+
+  /* ⓓ 3초 안에 넘어가지 못했으면 = 실패 → 앱을 원래대로 돌려 놓는다 */
+  setTimeout(function(){
+    if(settled) return;
+    settled = true;
+    document.removeEventListener('visibilitychange', onHidden);
+    hideEsc();
+    lastExternalTry = '실패 (' + externalName() + ' 열기 안 됨) [자동 시도]';
+    refreshDiag();
+    restoreWarnBar();
+  }, 3000);
 })();
 
 /* ---------- 🔗 공유용 주소 복사 (참석자들께 링크를 뿌릴 때) ---------- */
