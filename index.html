@@ -498,6 +498,50 @@ body{
 }
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ---------- 만들어진 배치도 그림을 보여 주는 화면 ---------- */
+.imgview{
+  position:fixed;inset:0;z-index:200;
+  display:none;
+  background:rgba(15,18,22,.88);
+  overflow:auto;
+  padding:14px 10px 20px;
+  -webkit-overflow-scrolling:touch;
+}
+.imgview.on{display:block}
+.imgbox{
+  max-width:760px;margin:0 auto;
+  display:flex;flex-direction:column;gap:10px;
+}
+/* ⚠️ 그림을 꾹 눌렀을 때 기기 메뉴('사진에 저장' 등)가 떠야 하므로
+   touch-callout 과 선택을 막지 않는다. */
+#imgOut{
+  display:block;width:100%;height:auto;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+  -webkit-touch-callout:default;
+  -webkit-user-select:auto;
+  user-select:auto;
+  pointer-events:auto;
+}
+.imgtip{
+  text-align:center;color:#eef2f7;line-height:1.55;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;padding:9px 11px;
+}
+.imgtip b{display:block;font-size:clamp(12.5px,3.4vw,14.5px);font-weight:800}
+.imgtip span{display:block;margin-top:3px;font-size:clamp(10.5px,2.8vw,12px);opacity:.75}
+.imgbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.imgbtn{
+  appearance:none;border:1.5px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.10);color:#fff;
+  border-radius:10px;padding:11px 20px;
+  font-family:inherit;font-size:clamp(12.5px,3.3vw,14px);font-weight:800;cursor:pointer;
+}
+.imgbtn.copy{background:rgba(47,138,85,.9);border-color:rgba(255,255,255,.25)}
+.imgbtn:active{transform:translateY(1px)}
+
 /* ---------- 명단 / 설정 ---------- */
 .roster{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 8px}
 @media (min-width:620px){ .roster{grid-template-columns:repeat(3,1fr)} }
@@ -668,7 +712,7 @@ body{
   <!-- 결과 공유 : 자리가 정해진 뒤에만 눌러진다 -->
   <div class="share-wrap">
     <button class="share" id="shareBtn" disabled>
-      <span class="ic">📷</span><span>결과 공유</span>
+      <span class="ic">📷</span><span>배치도 이미지</span>
     </button>
     <div class="share-hint" id="shareHint">자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다</div>
   </div>
@@ -696,6 +740,21 @@ body{
 
 <!-- 짧은 안내 쪽지 -->
 <div class="toast" id="toast"></div>
+
+<!-- 만들어진 배치도 그림을 화면에 그대로 보여 주는 곳 -->
+<div class="imgview" id="imgView">
+  <div class="imgbox">
+    <img id="imgOut" alt="회식 자리 배치도">
+    <div class="imgtip">
+      <b id="imgTipMain">그림을 꾹 눌러 &lsquo;이미지 공유&rsquo; 또는 &lsquo;사진에 저장&rsquo;을 선택하세요</b>
+      <span id="imgTipSub">PC에서는 그림에 오른쪽 클릭 → &lsquo;이미지 복사&rsquo;</span>
+    </div>
+    <div class="imgbtns">
+      <button class="imgbtn copy" id="imgCopy">이미지 복사</button>
+      <button class="imgbtn" id="imgClose">닫기</button>
+    </div>
+  </div>
+</div>
 
 
 <script>
@@ -726,6 +785,38 @@ var OTHER_SLOTS = [0,1,3,4,5,6,7,8,9];    /* 나머지 9석 */
 /* 확정 순서 : 바깥 자리부터, 총장 양옆(1번·3번 자리)이 마지막 */
 var STOP_ORDER = [0,4,5,9,6,8,7,1,3];
 var LAST_TWO   = [1,3];                   /* 총장 양옆 */
+
+/* ---------- 공석이 생기는 자리 (완전히 고정 · 무작위 아님) ----------
+   마주보는 짝(열) : 0↔5 · 1↔6 · 2↔7(총장열) · 3↔8 · 4↔9
+
+   공석 순서 :  5 → 0 → 9 → 4 → 6 → 1 → 8 → 3
+                └아래 왼끝┘ └아래 오른끝┘ └ 안쪽으로 ┘
+
+   두 명씩 빠질 때마다 마주보는 열이 통째로 사라지고,
+   왼쪽 끝 → 오른쪽 끝 → 안쪽 순으로 좁혀진다.
+   아래줄을 먼저 비우는 것은 총장님이 계신 윗줄을 최대한 온전히 두기 위함이다.
+   ⚠️ 총장석(2)과 그 정면(7)은 어떤 경우에도 공석이 되지 않는다.        */
+var VACANCY_ORDER = [5,0,9,4,6,1,8,3];
+
+/* n = 총장님을 뺀 참석 인원 수 → 비는 자리 목록 */
+function vacantSlots(n){
+  var k = Math.max(0, 9 - n);
+  return VACANCY_ORDER.slice(0, Math.min(k, VACANCY_ORDER.length));
+}
+
+/* n 명이 실제로 앉는 자리 목록 */
+function seatsForCount(n){
+  var v = vacantSlots(n);
+  var out = OTHER_SLOTS.filter(function(s){ return v.indexOf(s) < 0; });
+  return out.slice(0, n);          /* 총장님만 참석하는 경우까지 안전하게 */
+}
+
+/* 지금 명단 기준 참석 인원 (총장님 제외) */
+function presentCount(){
+  var n = 0;
+  for(var i=1;i<MEMBERS.length;i++){ if(present[MEMBERS[i].id]) n++; }
+  return n;
+}
 
 var EFFECTS = [
   {k:'A', t:'A. 로또볼', s:'추첨기에서 공이<br>튀어나옵니다 · 약 14초'},
@@ -829,10 +920,16 @@ MEMBERS.forEach(function(m){
   cb.addEventListener('change', function(){
     if(running){ cb.checked = present[m.id]; return; }
     present[m.id] = cb.checked;
-    var n = 0; for(var k in present){ if(present[k]) n++; }
-    setStatus('참석 '+n+'명 · 공석 '+(10-n)+'석');
-    /* 명단이 바뀌었으니 미리 만들어 둔 그림을 버리고 다시 만든다 */
-    invalidateSharePng();
+    var n = presentCount() + 1;                    /* 총장님 포함 */
+    setStatus('참석 '+n+'명 · 공석 '+(10-n)+'석 — 다시 뽑아 주세요');
+    /* 명단이 바뀌면 지난 결과는 무효 — 공석만 배치도에 미리 보여 준다 */
+    lastAssign = null;
+    prepareToken++; sharedBlob = null;
+    shareBtn.disabled = true;
+    shareHint.textContent = '자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다';
+    goBtn.textContent = '자리 뽑기';
+    document.getElementById('meta').innerHTML = '';
+    paintVacancies();
   });
   rosterBox.appendChild(lab);
 });
@@ -925,15 +1022,19 @@ function shuffle(a){
 
 function buildAssignment(){
   var others = MEMBERS.filter(function(m){ return m.id!==0 && present[m.id]; });
-  var vacancy = 9 - others.length;
   var asg = null, key = '', tries = 0;
 
   do{
+    /* ① 어느 자리가 비는지는 인원수로 정해진다 (총장님에서 먼 바깥부터 공석) */
+    var seats = seatsForCount(others.length);
+    /* ② 무작위는 '누가 어느 자리에 앉느냐'에만 적용한다 */
     var pool = others.slice();
-    for(var v=0; v<vacancy; v++) pool.push(null);   /* 공석도 섞어서 자리 배정 */
     shuffle(pool);
+
     asg = {};
-    for(var i=0;i<OTHER_SLOTS.length;i++) asg[OTHER_SLOTS[i]] = pool[i];
+    for(var i=0;i<OTHER_SLOTS.length;i++) asg[OTHER_SLOTS[i]] = null;   /* 기본은 공석 */
+    for(var j=0;j<seats.length;j++) asg[seats[j]] = pool[j];
+
     key = OTHER_SLOTS.map(function(s){ return asg[s] ? asg[s].id : 'x'; }).join('|');
     tries++;
   } while(key === lastKey && tries < 40 && others.length > 1);
@@ -944,11 +1045,15 @@ function buildAssignment(){
   return asg;
 }
 
-/* 릴에 흘려보낼 이름 후보 */
+/* 사람이 실제로 앉는 자리만, 확정 순서대로 (공석은 연출에서 제외한다) */
+function activeOrder(asg){
+  return STOP_ORDER.filter(function(s){ return !!asg[s]; });
+}
+
+/* 릴에 흘려보낼 이름 후보 — 실제 참석자만 (공석은 돌지 않는다) */
 function reelPool(){
   var p = MEMBERS.filter(function(m){ return m.id!==0 && present[m.id]; });
-  if(p.length < 9) p.push(null);      /* 공석이 있으면 릴에도 섞어 보여 준다 */
-  if(!p.length) p = [null];
+  if(!p.length) p = [MEMBERS[0]];
   return p;
 }
 
@@ -1009,6 +1114,23 @@ function resetSeats(){
   document.getElementById('meta').innerHTML = '';
 }
 
+/* 참석자 체크를 바꾸면, 뽑기 전이라도 어느 자리가 빌지 배치도에 미리 보여 준다 */
+function paintVacancies(){
+  if(running) return;
+  var v = vacantSlots(presentCount());
+  OTHER_SLOTS.forEach(function(s){
+    var seat = seatEl[s];
+    seat.classList.remove('live','spinning','pop','facedown',
+                          'tier-head','tier-sub','tier-chief','tier-vacant');
+    seat.querySelector('.card').style.transition = '';
+    seat.querySelector('.card').style.transform = '';
+    if(v.indexOf(s) >= 0){                 /* 비는 자리 → 미리 '공석'으로 */
+      setFace(s, null);
+      seat.classList.add('live');
+    }
+  });
+}
+
 /* ==========================================================================
    7. 애니메이션 공통 루프 (릴 회전 + 로또 공 물리)
    ========================================================================== */
@@ -1051,11 +1173,12 @@ var tub = document.getElementById('tub');
 var tubInner = document.getElementById('tubInner');
 var balls = [];
 
-function spawnBalls(){
+function spawnBalls(n){
   tubInner.innerHTML = '';
   balls = [];
+  if(!n && n !== 0) n = 9;
   var W = tubInner.clientWidth || 300, H = tubInner.clientHeight || 106;
-  for(var i=0;i<9;i++){
+  for(var i=0;i<n;i++){
     var el = document.createElement('div');
     el.className = 'lball';
     el.textContent = (i+1);
@@ -1207,19 +1330,31 @@ function later(ms, fn){
 }
 function setStatus(t){ document.getElementById('status').textContent = t; }
 
-/* --- A. 로또볼 추첨기 : 약 13.6초 --- */
+/* 연출에 쓸 자리 나누기 — 사람이 앉는 자리만, 총장 양옆은 맨 마지막 */
+function splitOrder(asg){
+  var order = activeOrder(asg);
+  var last  = order.filter(function(s){ return LAST_TWO.indexOf(s) >= 0; });
+  var outer = order.filter(function(s){ return LAST_TWO.indexOf(s) <  0; });
+  return { all: order, outer: outer, last: last };
+}
+
+/* --- A. 로또볼 추첨기 : 약 13.6초 (참석 9명 기준) --- */
 function runLotto(asg, done){
+  var o = splitOrder(asg);
+  if(!o.all.length){ later(400, done); return; }
+
   tub.classList.add('on');
-  spawnBalls();
+  spawnBalls(o.all.length);
   physicsOn = true; ensureLoop();
   setStatus('추첨기를 돌리는 중입니다…');
 
+  var lastFrom = o.outer.length;             /* 여기서부터 총장 양옆 */
   var t = 2500;
-  STOP_ORDER.forEach(function(slot, i){
-    if(i === 7){ t += 900; }               /* 총장 양옆 직전, 잠깐 뜸들이기 */
+  o.all.forEach(function(slot, i){
+    if(i === lastFrom && o.last.length){ t += 900; }   /* 총장 양옆 직전 뜸들이기 */
     (function(sl, idx){
       later(t, function(){
-        if(idx === 7) setStatus('이제 총장님 양옆 두 자리입니다');
+        if(idx === lastFrom && o.last.length) setStatus('이제 총장님 양옆입니다');
         releaseBall(sl, asg[sl]);
       });
     })(slot, i);
@@ -1234,16 +1369,20 @@ function runLotto(asg, done){
   });
 }
 
-/* --- B. 슬롯머신 : 약 9.0초 --- */
+/* --- B. 슬롯머신 : 약 9.0초 (참석 9명 기준) --- */
 function runSlot(asg, done){
-  STOP_ORDER.forEach(function(s){ startReel(s); });
-  setStatus('아홉 자리를 돌리는 중입니다…');
+  var o = splitOrder(asg);
+  if(!o.all.length){ later(400, done); return; }
 
+  o.all.forEach(function(s){ startReel(s); });
+  setStatus(o.all.length + '개 자리를 돌리는 중입니다…');
+
+  var lastFrom = o.outer.length;
   var t = 1600;
-  STOP_ORDER.forEach(function(slot, i){
+  o.all.forEach(function(slot, i){
     (function(sl, idx){
       later(t, function(){
-        if(idx === 7) setStatus('이제 총장님 양옆 두 자리입니다');
+        if(idx === lastFrom && o.last.length) setStatus('이제 총장님 양옆입니다');
         stopReel(sl, asg[sl]);
       });
     })(slot, i);
@@ -1252,54 +1391,66 @@ function runSlot(asg, done){
   later(t + 400, done);
 }
 
-/* --- C. 카드 딜링 : 약 6.6초 --- */
+/* --- C. 카드 딜링 : 약 6.6초 (참석 9명 기준) --- */
 function runDeal(asg, done){
+  var o = splitOrder(asg);
+  if(!o.all.length){ later(400, done); return; }
+
   deck.classList.add('on');
   setStatus('카드를 돌리고 있습니다…');
 
-  STOP_ORDER.forEach(function(slot, i){
+  o.all.forEach(function(slot, i){
     later(i*480, function(){ dealCard(slot); });
   });
 
-  var landed = 8*480 + 420;                       /* 마지막 카드가 놓이는 시각 */
+  var landed = (o.all.length-1)*480 + 420;          /* 마지막 카드가 놓이는 시각 */
   later(landed + 200, function(){ deck.classList.remove('on'); });
   later(landed + 1200, function(){
     setStatus('공개합니다');
-    /* 바깥 일곱 자리를 동시에 뒤집는다 */
-    STOP_ORDER.slice(0,7).forEach(function(s){ flipCard(s, asg[s]); });
+    /* 바깥 자리를 동시에 뒤집는다 */
+    o.outer.forEach(function(s){ flipCard(s, asg[s]); });
   });
   later(landed + 1700, function(){
+    if(!o.last.length) return;
     setStatus('총장님 양옆은…');
-    LAST_TWO.forEach(function(s){ flipCard(s, asg[s]); });   /* 총장 양옆이 마지막 */
+    o.last.forEach(function(s){ flipCard(s, asg[s]); });   /* 총장 양옆이 마지막 */
   });
   later(landed + 2400, done);
 }
 
-/* --- D. 하이브리드 (기본) : 약 6.5초 --- */
+/* --- D. 하이브리드 (기본) : 약 6.5초 (참석 9명 기준) --- */
 function runHybrid(asg, done){
-  STOP_ORDER.forEach(function(s){ startReel(s); });
-  setStatus('아홉 자리를 돌리는 중입니다…');
+  var o = splitOrder(asg);
+  if(!o.all.length){ later(400, done); return; }
 
-  var gaps = [420,380,340,300,260,220,0];   /* 뒤로 갈수록 빨라진다 */
+  o.all.forEach(function(s){ startReel(s); });
+  setStatus(o.all.length + '개 자리를 돌리는 중입니다…');
+
+  var gaps = [420,380,340,300,260,220];   /* 뒤로 갈수록 빨라진다 */
   var t = 3000;
-  STOP_ORDER.slice(0,7).forEach(function(slot, i){
+  o.outer.forEach(function(slot, i){
     (function(sl){ later(t, function(){ stopReel(sl, asg[sl]); }); })(slot);
-    /* 남은 칸은 조금씩 더 빠르게 돈다 */
+    /* 아직 남은 칸은 조금씩 더 빠르게 돈다 */
     (function(idx){
       later(t, function(){
-        STOP_ORDER.slice(idx+1).forEach(function(s2){
+        o.all.slice(idx+1).forEach(function(s2){
           if(reelOf[s2].on) reelOf[s2].period = Math.max(0.045, reelOf[s2].period*0.9);
         });
       });
     })(i);
-    t += gaps[i];
+    t += (i < gaps.length ? gaps[i] : 200);
   });
+  if(o.outer.length) t -= (o.outer.length-1 < gaps.length ? gaps[o.outer.length-1] : 200);
 
-  later(t + 120, function(){ setStatus('총장님 양옆 두 자리가 남았습니다'); });
-  later(t + 1000, function(){
-    LAST_TWO.forEach(function(s){ stopReel(s, asg[s]); });   /* 동시에 확정 */
-  });
-  later(t + 1600, done);
+  if(o.last.length){
+    later(t + 120, function(){ setStatus('총장님 양옆 두 자리가 남았습니다'); });
+    later(t + 1000, function(){
+      o.last.forEach(function(s){ stopReel(s, asg[s]); });   /* 동시에 확정 */
+    });
+    later(t + 1600, done);
+  }else{
+    later(t + 600, done);
+  }
 }
 
 /* ==========================================================================
@@ -1389,45 +1540,40 @@ function cvSeatCard(g, x, y, w, h, m, isChief){
   }
 }
 
-/* 지금 배치를 A4 가로 느낌의 그림 한 장으로 그린다 */
+/* 자리 배치도만 그린다 — 제목도 날짜도 없이 테이블과 좌석만, 여백은 최소로 */
 function drawSeatingCanvas(asg){
-  var S = 2.5;                       /* 2.5배로 그려서 폰에서도 또렷하게 */
-  var W = 600, H = 376;
+  var S = 2.5;                       /* 2.5배로 그려서 폰에서도 또렷하게 (가로 1500px) */
+  var W = 600;
+
+  var pad = 12, gap = 9;
+  var x0 = pad, innerW = W - pad*2;
+  var cw = (innerW - gap*4)/5, ch = 76;
+  var tagH = 15;                     /* 총장석 위 '상석' 꼬리표가 차지하는 높이 */
+  var yTop    = pad + tagH + 3;      /* 위쪽 5석 */
+  var yTable  = yTop + ch + 10;      /* 가로 테이블 */
+  var tableH  = 70;
+  var yBottom = yTable + tableH + 10;/* 아래쪽 5석 */
+  var H = yBottom + ch + pad;
+
   var cv = document.createElement('canvas');
   cv.width  = Math.round(W*S);
   cv.height = Math.round(H*S);
   var g = cv.getContext('2d');
   g.scale(S,S);
 
-  /* 바탕 */
+  /* 바탕은 화면 테마와 상관없이 언제나 흰색 */
   g.fillStyle = CV_COLOR.bg;
   g.fillRect(0,0,W,H);
 
-  /* 제목 */
-  g.fillStyle = CV_COLOR.ink;
-  g.textAlign='center'; g.textBaseline='alphabetic';
-  g.font = '800 24px '+CV_FONT;
-  g.fillText('동양미래대학교 처장단 회식 자리', W/2, 41);
-
-  /* 테이블이 놓인 판 */
-  cvRound(g,14,58,W-28,278,16);
-  g.fillStyle = CV_COLOR.panel; g.fill();
-  g.lineWidth=1.2; g.strokeStyle=CV_COLOR.panelLine; g.stroke();
-
-  var x0 = 27, innerW = W - 54, gap = 9;
-  var cw = (innerW - gap*4)/5, ch = 76;
-  var yTop = 84, yTable = 170, tableH = 70, yBottom = 250;
-
   /* 위쪽 가로줄 5석 (가운데가 총장) */
-  var i, m;
+  var i;
   for(i=0;i<5;i++){
-    m = asg[i];
-    cvSeatCard(g, x0 + i*(cw+gap), yTop, cw, ch, m, i===CHIEF_SLOT);
+    cvSeatCard(g, x0 + i*(cw+gap), yTop, cw, ch, asg[i], i===CHIEF_SLOT);
   }
 
   /* 총장석 위 '상석' 꼬리표 */
   var chiefCx = x0 + CHIEF_SLOT*(cw+gap) + cw/2;
-  cvRound(g, chiefCx-18, yTop-16, 36, 15, 7.5);
+  cvRound(g, chiefCx-18, yTop-16, 36, tagH, 7.5);
   g.fillStyle = CV_COLOR.gold; g.fill();
   g.fillStyle = '#241a00';
   g.font = '800 10px '+CV_FONT;
@@ -1449,12 +1595,6 @@ function drawSeatingCanvas(asg){
   for(i=0;i<5;i++){
     cvSeatCard(g, x0 + i*(cw+gap), yBottom, cw, ch, asg[i+5], false);
   }
-
-  /* 아래 설명 : 기록용 날짜만 */
-  g.textAlign='center'; g.textBaseline='alphabetic';
-  g.fillStyle = CV_COLOR.muted;
-  g.font = '600 13px '+CV_FONT;
-  g.fillText(dateKo(), W/2, 358);
 
   return cv;
 }
@@ -1478,27 +1618,11 @@ function toast(msg, ms){
   toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, ms || 3200);
 }
 
-/* 그림 파일을 내려받기 (공유창을 못 쓰는 환경의 대체 동작) */
-function downloadPng(blob, fname){
-  try{
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = fname;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function(){
-      if(a.parentNode) a.parentNode.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 1500);
-    toast('이미지를 저장했습니다\n' + fname + '\n(다운로드 폴더에서 카카오톡·메일로 보내세요)', 4600);
-    return true;
-  }catch(e){
-    toast('이미지를 저장하지 못했습니다. 화면을 사진 찍어 주세요.', 4200);
-    return false;
-  }
-}
+/* ⚠️ 파일 내려받기(<a download>)는 쓰지 않는다.
+   폰에서는 조용히 실패하면서 "저장했습니다"라는 거짓 안내만 남기 때문이다.
+   대신 그림을 화면에 그대로 띄워서, 꾹 눌러 보내시게 한다. */
 
-/* 이미지를 클립보드에 복사 (공유창은 있는데 파일은 못 보내는 경우) */
+/* 이미지를 클립보드에 복사 (PC에서 쓰는 부가 기능) */
 function copyPng(blob, done){
   try{
     if(!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem)){ done(false); return; }
@@ -1507,6 +1631,57 @@ function copyPng(blob, done){
                                      .catch(function(){ done(false); });
   }catch(e){ done(false); }
 }
+
+/* 손가락으로 만지는 기기인지 (안내 문구를 고르는 데만 쓴다) */
+var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+/* ---------- 그림을 화면에 띄우기 ---------- */
+var imgView  = document.getElementById('imgView');
+var imgOut   = document.getElementById('imgOut');
+var imgCopy  = document.getElementById('imgCopy');
+var imgClose = document.getElementById('imgClose');
+var shownUrl = null, shownBlob = null;
+
+var imgTipMain = document.getElementById('imgTipMain');
+var imgTipSub  = document.getElementById('imgTipSub');
+
+function showImage(blob){
+  if(!blob){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
+  if(shownUrl){ URL.revokeObjectURL(shownUrl); shownUrl = null; }
+  shownBlob = blob;
+  shownUrl = URL.createObjectURL(blob);
+  imgOut.src = shownUrl;
+
+  /* 쓰는 기기에 맞춰 안내 문구를 앞뒤로 바꾼다 (두 줄 다 보여 준다) */
+  if(isTouchDevice){
+    imgTipMain.textContent = '그림을 꾹 눌러 ‘이미지 공유’ 또는 ‘사진에 저장’을 선택하세요';
+    imgTipSub.textContent  = 'PC에서는 그림에 오른쪽 클릭 → ‘이미지 복사’';
+  }else{
+    imgTipMain.textContent = '그림에 오른쪽 클릭 → ‘이미지 복사’ 를 누르세요';
+    imgTipSub.textContent  = '폰에서는 그림을 꾹 눌러 ‘이미지 공유’ 또는 ‘사진에 저장’';
+  }
+
+  /* 클립보드 복사 단추는 PC에서만 (폰은 꾹 누르기가 더 편하다) */
+  imgCopy.style.display = (!isTouchDevice && navigator.clipboard && window.ClipboardItem) ? '' : 'none';
+  imgView.classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeImage(){
+  imgView.classList.remove('on');
+  document.body.style.overflow = '';
+}
+imgClose.addEventListener('click', closeImage);
+imgView.addEventListener('click', function(e){
+  if(e.target === imgView) closeImage();      /* 바깥을 누르면 닫힌다 */
+});
+imgCopy.addEventListener('click', function(){
+  if(!shownBlob) return;
+  copyPng(shownBlob, function(ok){
+    toast(ok ? '이미지를 복사했습니다. 붙여넣기 하세요.'
+             : '복사가 안 되는 브라우저입니다. 그림에 오른쪽 클릭 → 이미지 복사를 눌러 주세요.', 4200);
+  });
+});
 
 var lastAssign   = null;               /* 마지막으로 확정된 배치 */
 var sharedBlob   = null;               /* 미리 만들어 둔 그림 (공유를 즉시 띄우기 위함) */
@@ -1546,58 +1721,33 @@ function prepareSharePng(){
   });
 }
 
-/* 배치가 아직 그대로여도, 명단을 건드리면 그림을 다시 만들어 둔다 */
-function invalidateSharePng(){
-  prepareToken++;
-  sharedBlob = null;
-  if(lastAssign) prepareSharePng();
-}
-
 function shareFileName(){
   /* 파일명은 영문·숫자로 (한글 파일명은 기기에 따라 깨지는 경우가 있다) */
   return 'seating_' + dateSlug() + '.png';
 }
 
-/* 실제 공유 — ① 공유창 → ② 클립보드 복사 → ③ 내려받기 순으로 시도 */
+/* 실제 공유 — ① 공유창을 띄우고, 안 되면 ② 그림을 화면에 그대로 보여 준다.
+   파일 내려받기는 쓰지 않는다 (폰에서 조용히 실패하기 때문). */
 function doShare(blob, fname){
   if(!blob){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
 
   var file = null;
   try{ file = new File([blob], fname, {type:'image/png'}); }catch(e){ file = null; }
 
-  /* ① 폰의 기본 공유창 (카카오톡·메일·문자·저장 등) */
+  /* ① 폰의 기본 공유창 (카카오톡·메일·문자 등) */
   if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-    navigator.share({
-      files:[file],
-      title:'처장단 회식 자리',
-      text:'동양미래대학교 처장단 회식 자리 배치 ('+dateKo()+')'
-    }).then(function(){
-      toast('공유했습니다');
-    }).catch(function(err){
-      /* 사용자가 공유창을 닫은 것은 실패가 아니다 — 조용히 끝낸다 */
-      if(err && err.name === 'AbortError') return;
-      fallbackShare(blob, fname);
-    });
+    navigator.share({ files:[file], title:'처장단 회식 자리' })
+      .then(function(){ toast('공유했습니다'); })
+      .catch(function(err){
+        /* 사용자가 공유창을 닫은 것은 실패가 아니다 — 조용히 끝낸다 */
+        if(err && err.name === 'AbortError') return;
+        showImage(blob);            /* ② 공유가 막히면 그림을 눈앞에 띄운다 */
+      });
     return;
   }
 
-  fallbackShare(blob, fname);
-}
-
-function fallbackShare(blob, fname){
-  /* ② 공유창으로 파일을 못 보내면 클립보드에 이미지를 복사해 준다 */
-  if(navigator.share){
-    copyPng(blob, function(ok){
-      if(ok){
-        toast('이미지를 복사했습니다.\n카카오톡 대화창을 길게 눌러 붙여넣기 하세요.', 5200);
-      }else{
-        downloadPng(blob, fname);      /* ③ 그래도 안 되면 내려받기 */
-      }
-    });
-    return;
-  }
-  /* PC 브라우저처럼 공유창 자체가 없으면 바로 내려받기 */
-  downloadPng(blob, fname);
+  /* 공유창을 못 쓰는 환경 → 바로 그림을 보여 준다 */
+  showImage(blob);
 }
 
 function shareResult(){
@@ -1644,6 +1794,10 @@ function start(){
 
   var asg = buildAssignment();
   resetSeats();
+  /* 비는 자리는 처음부터 '공석'으로 놓아 둔다 (돌아가는 연출에 넣지 않는다) */
+  OTHER_SLOTS.forEach(function(s){
+    if(!asg[s]){ setFace(s, null); seatEl[s].classList.add('live'); }
+  });
   /* 릴 회전 속도 초기화 */
   for(var s=0;s<10;s++) reelOf[s].period = 0.085;
   /* 새로 뽑는 동안에는 공유 버튼을 잠근다 */
@@ -1676,8 +1830,9 @@ function start(){
 goBtn.addEventListener('click', start);
 againBtn.addEventListener('click', start);
 
-/* 첫 화면 : 총장석만 미리 놓아 둔다 */
+/* 첫 화면 : 총장석을 상석에 놓고, 명단대로 공석을 미리 표시한다 */
 resetSeats();
+paintVacancies();
 
 })();
 </script>
