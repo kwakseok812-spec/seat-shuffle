@@ -673,15 +673,6 @@ body{
 }
 .warnbtn:active{transform:translateY(1px)}
 
-/* ---------- 앱 주소 복사 ---------- */
-.linkbtn{
-  appearance:none;border:1.5px solid var(--line2);
-  background:var(--btn);color:var(--btn-ink);
-  border-radius:10px;padding:9px 14px;margin-top:7px;
-  font-family:inherit;font-size:clamp(11.5px,3vw,13px);font-weight:700;cursor:pointer;
-}
-.linkbtn:active{transform:translateY(1px)}
-
 /* ---------- 효과음 스위치 (화면 맨 위) ---------- */
 .sndrow{
   appearance:none;
@@ -846,10 +837,9 @@ body{
   <!-- 결과 공유 : 자리가 정해진 뒤에만 눌러진다 -->
   <div class="share-wrap">
     <button class="share" id="shareBtn" disabled>
-      <span class="ic">📷</span><span>배치도 이미지</span>
+      <span class="ic">📷</span><span>배치도 이미지 공유</span>
     </button>
     <div class="share-hint" id="shareHint">자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다</div>
-    <button class="linkbtn" id="copyLinkBtn">🔗 공유용 주소 복사 (카톡에서 바로 열림)</button>
   </div>
 
   <!-- 참석자 -->
@@ -1890,10 +1880,11 @@ function chromeIntentUrl(){
   return 'intent://' + appPlainUrl() + '#Intent;scheme=https;package=com.android.chrome;end';
 }
 
-/* ⚠️ 카카오톡으로 링크를 보낼 때 쓰는 주소.
+/* ⚠️ 인앱 브라우저 탈출이 모두 실패했을 때 '복사해 드리는' 주소.
    끝에 ?openExternalBrowser=1 을 붙이면 카카오톡이 자기 인앱 브라우저로 열지 않고
    기기의 기본 브라우저(안드로이드=크롬·삼성인터넷 / 아이폰=사파리)로 넘겨 준다.
-   이 앱은 이 값을 전혀 읽지 않으므로 동작에는 아무 영향이 없다. */
+   이 앱은 이 값을 전혀 읽지 않으므로 동작에는 아무 영향이 없다.
+   ⚠️ openExternalBrowser 안의 폴백에서 아직 쓰이므로 지우지 말 것. */
 function shareableUrl(){
   if(!location.host) return location.href;          /* 로컬 파일이면 그대로 */
   return location.origin + location.pathname + '?openExternalBrowser=1';
@@ -2405,14 +2396,6 @@ if(escStay){
     restoreWarnBar();
   }, 3900);
 })();
-
-/* ---------- 🔗 공유용 주소 복사 (참석자들께 링크를 뿌릴 때) ---------- */
-document.getElementById('copyLinkBtn').addEventListener('click', function(){
-  copyText(shareableUrl(), function(ok){
-    toast(ok ? '주소를 복사했습니다.\n카카오톡에 붙여넣어 보내세요.\n받는 분은 기본 브라우저로 바로 열립니다.'
-             : '주소를 복사하지 못했습니다.\n주소창에서 직접 복사해 주세요.', 6000);
-  });
-});
 
 var lastAssign   = null;               /* 마지막으로 확정된 배치 */
 var sharedBlob   = null;               /* 미리 만들어 둔 그림 (공유·새 창용) */
