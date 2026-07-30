@@ -811,7 +811,7 @@ body{
       <b id="warnTitle">⚠️ 지금 카카오톡 브라우저로 보고 계십니다</b>
       <span id="warnDesc">여기서는 이미지 공유가 제한됩니다</span>
     </div>
-    <button class="warnbtn" id="openChrome">크롬으로 열기</button>
+    <button class="warnbtn" id="openChrome">다른 브라우저로 열기</button>
   </div>
 
   <!-- 효과음 켜기/끄기 : 가장 위에 크게 -->
@@ -894,7 +894,7 @@ body{
     <button class="imgbtn big copy" id="imgCopy">📋 이미지 복사</button>
     <button class="imgbtn big share" id="imgShare">📤 공유하기</button>
     <button class="imgbtn big open" id="imgOpen">🔗 이미지 새 창으로 열기</button>
-    <button class="imgbtn big chrome" id="imgChrome">🌐 크롬으로 열기</button>
+    <button class="imgbtn big chrome" id="imgChrome">🌐 다른 브라우저로 열기</button>
 
     <div class="imgtip" id="imgTip"></div>
 
@@ -1872,8 +1872,20 @@ function canCopyImage(){
   return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem);
 }
 
-/* 이 앱 주소 (인앱 → 크롬으로 넘길 때 쓴다) */
+/* 이 앱 주소 (인앱 → 바깥 브라우저로 넘길 때 쓴다) */
 function appPlainUrl(){ return location.host + location.pathname + location.search; }
+
+/* 1단계 : package 를 지정하지 않는다.
+   ⚠️ 크롬을 콕 집어(package=com.android.chrome) 부르면 크롬이 없거나 꺼져 있는 기기
+      (삼성 인터넷만 쓰시는 분)에서는 그냥 실패한다. package 를 비워 두면 안드로이드가
+      '기기 기본 브라우저'로 넘겨 주므로 크롬이든 삼성 인터넷이든 다 열린다. */
+function defaultIntentUrl(){
+  return 'intent://' + appPlainUrl() + '#Intent;scheme=https;end';
+}
+/* 2단계 : 1단계가 안 먹은 기기에서만 크롬을 지정해 한 번 더 시도한다.
+   ⚠️ S.browser_fallback_url 은 쓰지 않는다 — 폴백 주소가 결국 이 앱 주소라
+      지금 보고 있는 인앱 브라우저로 되돌아올 뿐이고, 그러면 '넘어간 척' 이 되어
+      실패를 성공으로 잘못 판정하게 된다. */
 function chromeIntentUrl(){
   return 'intent://' + appPlainUrl() + '#Intent;scheme=https;package=com.android.chrome;end';
 }
@@ -2137,17 +2149,26 @@ imgCopy.addEventListener('click', function(){
 });
 
 /* ---------- 앱 안의 브라우저에서 진짜 브라우저로 넘어가기 ----------
-   안드로이드 → intent 주소로 크롬
-   아이폰    → x-safari-https:// 로 사파리
-   ⚠️ 두 방식 모두 기기·앱 버전에 따라 막힐 수 있으므로,
-      2초 안에 넘어가지 않으면 주소를 복사해 드리고 그 사실을 화면에 알린다. */
-function externalName(){ return isIOS ? '사파리' : '크롬'; }
-function externalLabel(){ return isIOS ? '🧭 사파리로 열기' : '🌐 크롬으로 열기'; }
+   안드로이드 → ① 기기 기본 브라우저 (package 지정 없는 intent)
+                 ② 그래도 안 열리면 크롬 지정 intent
+                 ③ 그래도 안 되면 안내 띠 + 주소 복사
+   아이폰    → x-safari-https:// 로 사파리 (사파리는 기기에 반드시 있으므로 한 단계)
+   ⚠️ 모든 방식이 기기·앱 버전에 따라 막힐 수 있으므로, 넘어가지 못하면
+      되는 척하지 않고 주소를 복사해 드리고 그 사실을 화면에 알린다.
+
+   ⚠️ 화면에 보이는 이름을 '크롬' 이라고 단정하지 않는다.
+      실제로 열리는 것은 그 기기의 기본 브라우저(삼성 인터넷일 수 있다)이므로,
+      "크롬" 이라고 써 두면 참석자가 "크롬이 안 뜨는데?" 하고 헤매신다.
+      아이폰은 사파리가 확실하므로 그대로 '사파리' 라고 쓴다. */
+function externalName(){ return isIOS ? '사파리' : '다른 브라우저'; }
+function externalTo(){ return externalName() + '로'; }   /* 두 이름 모두 모음으로 끝나 '로' */
+function externalLabel(){ return isIOS ? '🧭 사파리로 열기' : '🌐 다른 브라우저로 열기'; }
 function safariSchemeUrl(){ return 'x-safari-https://' + appPlainUrl(); }
 
-function openExternalBrowser(auto){
-  var appName = externalName();
+var ESC_STEP_WAIT = 1500;   /* 한 단계를 기다려 보는 시간 */
+var ESC_LAST_WAIT = 1800;   /* 마지막 단계는 조금 더 기다린다 */
 
+function openExternalBrowser(auto){
   if(!location.host){
     lastExternalTry = '실패 (인터넷 주소가 없는 파일이라 넘길 수 없음)';
     refreshDiag();
@@ -2155,46 +2176,80 @@ function openExternalBrowser(auto){
     return;
   }
 
-  lastExternalTry = appName + ' 열기 시도 중…';
+  var tag = auto ? ' [자동 시도]' : '';
 
-  /* 자동 시도일 때는 성공·실패 판정을 아래 '탈출 안내 화면' 쪽에서 맡는다 */
-  if(!auto){
-    var moved = false;
-    var mark = function(){ moved = true; };
-    window.addEventListener('pagehide', mark, {once:true});
-    window.addEventListener('blur', mark, {once:true});
-    document.addEventListener('visibilitychange', function(){ if(document.hidden) moved = true; }, {once:true});
+  /* 넘어갔는지 지켜본다.
+     ⚠️ 판정은 visibilitychange → hidden 으로만 한다. blur 는 키보드가 내려가는 등
+        엉뚱한 때에도 떠서, 실제로는 실패인데 성공으로 보고 2단계를 건너뛰게 만든다. */
+  var gone = false;
+  function onHide(){ if(document.visibilityState === 'hidden') gone = true; }
+  function onPageHide(){ gone = true; }
+  document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('pagehide', onPageHide, {once:true});
+  function stopWatch(){
+    document.removeEventListener('visibilitychange', onHide);
+    window.removeEventListener('pagehide', onPageHide);
+  }
+
+  var steps = isIOS
+    ? [{ name:'사파리',        url:safariSchemeUrl()  }]
+    : [{ name:'기본 브라우저', url:defaultIntentUrl() },
+       { name:'크롬 지정',     url:chromeIntentUrl()  }];
+
+  var failed = [];        /* 실패한 단계 이름 — 진단에 그대로 남긴다 */
+
+  function run(i){
+    if(gone)               return succeed(i - 1);
+    if(i >= steps.length)  return giveUp();
+
+    lastExternalTry = steps[i].name + ' 여는 중…' + tag;
+    refreshDiag();
+
+    try{
+      location.href = steps[i].url;
+    }catch(e){
+      failed.push(steps[i].name + '(' + e.name + ')');
+      run(i + 1);                       /* 주소 자체가 거부되면 곧바로 다음 단계 */
+      return;
+    }
 
     setTimeout(function(){
-      if(moved){
-        lastExternalTry = '성공 (' + appName + '으로 넘어감)';
-        markEscaped();
-        refreshDiag();
-        return;
-      }
-      /* 넘어가지 못했다 — 되는 척하지 않고 그대로 알린다 */
-      lastExternalTry = '실패 (' + appName + ' 열기 안 됨)';
-      refreshDiag();
-      restoreWarnBar();
-      copyText(shareableUrl(), function(ok){
-        if(ok) lastExternalTry += ' → 주소는 복사해 둠';
-        refreshDiag();
-        if(diagBox) diagBox.open = true;
-        var msg = ok
-          ? ('주소를 복사했습니다.\n' + appName + ' 앱을 열어 주소창에 붙여넣어 주세요.')
-          : (appName + ' 앱을 열지 못했습니다.\n주소창의 주소를 직접 복사해 주세요.');
-        if(isIOS) msg += '\n또는 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요.';
-        toast(msg, 7000);
-      });
-    }, 2000);
+      if(gone) return succeed(i);
+      failed.push(steps[i].name);
+      run(i + 1);
+    }, (i === steps.length - 1) ? ESC_LAST_WAIT : ESC_STEP_WAIT);
   }
 
-  try{
-    location.href = isIOS ? safariSchemeUrl() : chromeIntentUrl();
-  }catch(e){
-    lastExternalTry = '실패 (' + e.name + ': ' + e.message + ')';
+  function succeed(i){
+    stopWatch();
+    var how = steps[i] ? steps[i].name : '알 수 없음';
+    lastExternalTry = (failed.length ? '실패(' + failed.join(', ') + ') → ' : '') +
+                      '성공(' + how + ')' + tag;
+    markEscaped();
     refreshDiag();
   }
+
+  function giveUp(){
+    stopWatch();
+    lastExternalTry = '실패(' + failed.join(', ') + ')' + tag;
+    refreshDiag();
+    if(auto) return;        /* 자동 시도의 뒷정리는 아래 '탈출 안내 화면' 쪽에서 한다 */
+
+    restoreWarnBar();
+    copyText(shareableUrl(), function(ok){
+      if(ok) lastExternalTry += ' → 주소는 복사해 둠';
+      refreshDiag();
+      if(diagBox) diagBox.open = true;
+      var appName = externalName();
+      var msg = ok
+        ? ('주소를 복사했습니다.\n' + appName + '를 열어 주소창에 붙여넣어 주세요.')
+        : (appName + '를 열지 못했습니다.\n주소창의 주소를 직접 복사해 주세요.');
+      if(isIOS) msg += '\n또는 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요.';
+      toast(msg, 7000);
+    });
+  }
+
+  run(0);
 }
 imgChrome.addEventListener('click', function(){ openExternalBrowser(false); });
 
@@ -2230,7 +2285,7 @@ function restoreWarnBar(){
   warnDesc.textContent = warnDescText;
 
   if((isIOS || isAndroid) && location.host){
-    warnBtn.textContent = isIOS ? '사파리로 열기' : '크롬으로 열기';
+    warnBtn.textContent = isIOS ? '사파리로 열기' : '다른 브라우저로 열기';
     warnBtn.addEventListener('click', function(){ openExternalBrowser(false); });
   }else{
     warnBtn.style.display = 'none';
@@ -2259,7 +2314,7 @@ function isEscaped(){ try{ return sessionStorage.getItem(ESC_OK) === '1'; }catch
 function showEscWaiting(){
   if(!escView) return;
   escIcon.textContent  = '🌐';
-  escTitle.textContent = externalName() + '(으)로 여는 중입니다…';
+  escTitle.textContent = externalTo() + ' 여는 중입니다…';
   escDesc.textContent  = '잠시만 기다려 주세요';
   escStay.textContent  = '그래도 여기서 볼게요';
   escView.classList.add('on');
@@ -2321,13 +2376,14 @@ if(escStay){
 
   var settled = false;
 
-  /* 화면이 뒤로 넘어가면 = 다른 브라우저가 열린 것 */
+  /* 화면이 뒤로 넘어가면 = 다른 브라우저가 열린 것.
+     ⚠️ 어느 단계에서 열렸는지(기본 브라우저인지 크롬 지정인지)는
+        openExternalBrowser 가 lastExternalTry 에 적는다. 여기서 덮어쓰지 않는다. */
   function onHidden(){
     if(settled) return;
     if(document.visibilityState === 'hidden'){
       settled = true;
       markEscaped();
-      lastExternalTry = '성공 (' + externalName() + '으로 넘어감) [자동 시도]';
       refreshDiag();
     }
   }
@@ -2336,22 +2392,24 @@ if(escStay){
   showEscWaiting();
   setTimeout(function(){ openExternalBrowser(true); }, 250);
 
-  /* ⓓ 3초 안에 넘어가지 못했으면 = 실패 → 앱을 원래대로 돌려 놓는다 */
+  /* ⓓ 안 넘어갔으면 = 실패 → 앱을 원래대로 돌려 놓는다 (갇히면 안 된다).
+     2단계까지 판정할 시간을 준다 : 250ms + 1단계 1500ms + 2단계 1800ms = 3550ms.
+     그보다 조금 뒤인 3900ms 에 최종 안전망을 둔다.
+     (기다리는 동안에도 '그래도 여기서 볼게요' 버튼으로 언제든 빠져나올 수 있다) */
   setTimeout(function(){
     if(settled) return;
     settled = true;
     document.removeEventListener('visibilitychange', onHidden);
     hideEsc();
-    lastExternalTry = '실패 (' + externalName() + ' 열기 안 됨) [자동 시도]';
-    refreshDiag();
+    refreshDiag();          /* 실패 사유는 openExternalBrowser 가 이미 적어 두었다 */
     restoreWarnBar();
-  }, 3000);
+  }, 3900);
 })();
 
 /* ---------- 🔗 공유용 주소 복사 (참석자들께 링크를 뿌릴 때) ---------- */
 document.getElementById('copyLinkBtn').addEventListener('click', function(){
   copyText(shareableUrl(), function(ok){
-    toast(ok ? '주소를 복사했습니다.\n카카오톡에 붙여넣어 보내세요.\n받는 분은 크롬·사파리로 바로 열립니다.'
+    toast(ok ? '주소를 복사했습니다.\n카카오톡에 붙여넣어 보내세요.\n받는 분은 기본 브라우저로 바로 열립니다.'
              : '주소를 복사하지 못했습니다.\n주소창에서 직접 복사해 주세요.', 6000);
   });
 });
