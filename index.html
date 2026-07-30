@@ -1,0 +1,1533 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>처장단 회식 자리 뽑기</title>
+
+<!-- 홈 화면 추가(아이폰/안드로이드) 관련 메타 — 외부 파일 없이 전부 인라인 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="자리 뽑기">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1d4f79">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAFFElEQVR42u2dMXLbMBBFYQxLXyEu3TllmhwivkDqnCEuXLjQHVLnArpEGpd2l1Jn8AFSaCajESkKBBbALva9SaVQMgg9foDEUrz59O1nAFgi0gWAHIAcgByAHIAcgByAHIAcgByAHADIAcgByAHIAcgBqpjoghDC+/PH/MWHl1vkQIu1//KsyIQWKZv5VCRiRo3tkcOLGW794GwFkEMiALyFB8kByCF06LsKD5IDkAOQA5ADkAOQA5CjP+XrZ65W4EgOQA6JQ9/bwj3JAchRHAAO632cJsfWb9pnJZjfMsHj9311IY0a0oAiaIEcxANzDkAOQA5ADkAOQA5ADkAOQA6AUPcK6WG/m7949/ikbed/f/2Vstn3Pz98ynEj+xivRS30KJJog3JXmh17YnJc1aKjIiJOaLCk8bEnI8cmM5r5UcmJLpZ0OfYE5Mgwo7YfiVq8vt2nbPbl89++ivQ69kZbsl/XItGG9XddcuX4p8UVyTv2DvtduR9Tr9iQ2oEULfKcuPppi5ZUUoRiH+1aLH54VUX6HnuxV9OlPmHRjNe3++O/Bmqu/K1mM+LAFdKU3m/mxCVLBP3ofuxNIw0lvbQ4a8PZQGN3FhIJDP0RghxFZihs5wB+RMzAjxHkOOtZVUNJ+hBjyI9o1wxDWhv1o0iO8uubiZ9g2oxsP5p1r+HkGMAMo/kRO7qZ8V67ZuS1v3H3GksO61egTe+dgBx5hqa8a5gBpWRwqde9jZJja1PcmtHGD6lCCLG1lWODKhU5jmTGpSWYjt0b2lSfB6Hy6IFjI1yoKEtfmWtWfV5lVVa2oUOakREe7Wv3o/I5/KhmzPdO4ZkLt0OCHTn8xIb+8CA5wIgcY18PNdcDcZhlCD8LLsgByOF4Kqp/WkpyAHKAXTk8jylqRxaSA5ADkAOQA9zIwWxU55yU5ADkAOQA5ADkAOQA5ADkAOQA5ADkAEAOMCbH6Q3mefcWh+Huu9fwc9gkByAHIAcgB3iSgzmpttkoyQHIAdbl8DyyKBxTSA6wKYef8FC7p7rkGONBzsP0AMMK2JHD27RU51SU5ACDcvgJD82xESr9MP7788f8xYeX2+we9PDUhF7dG5o9UmOx3Xn7MPyt9xmxIdi9TZPjartPN9u6D+OFx9bYqNq9decciU3ftP3ZwTTS5GPrY3hqdG8jOfKa4taP2mYI+hG5Ysje1ZKjxNCM91oPj0pTjUrhEc0dXnb9yH7in8nkKHcz8RMG8CPDjGbda/7yuWk/zGWGvbWVuR/6FZk30tAUO1qf3mv2Y942WydfcYDTP51+WDfD6pL9oh96FFlsjMULNlMIhi8fnf0GtIYlmDG0CCKrsoUnS+VLRIu/Ed5FkcXoKjSjb/daTY7T3p/78f97amDJynBm/dq/QD1Htt2yxQcrjxmopEgbLTp2r/nkWJ+F1AiS9ZnvSCuFMpVgGXbXKGvb+rCSRFcSz4PqadGre8XKBDftQFUz2j/PpkFadOlevTWk+i1pP4I07l5hORqXR3expPuswmr1uS0SXXF7B69rOSBwOyQgByAHIAcgByAHIAcgByAH+GaiC0IIh/1u/uLd45PzbvF++XxRCxTxLsdVLVAkYkaN7ZHDixlu/eBsBZBDIgC8hQfJAcghdOi7Cg+SA5ADkAOQA5ADkAOQoz/l62euVuBIDkAOiUPf28I9yQHIURwADut9nCbH1m/aZyUYNaTUkCIH1efIAcw5ADkAOUAn/wAAGIiDpuf7agAAAABJRU5ErkJggg==">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAFFElEQVR42u2dMXLbMBBFYQxLXyEu3TllmhwivkDqnCEuXLjQHVLnArpEGpd2l1Jn8AFSaCajESkKBBbALva9SaVQMgg9foDEUrz59O1nAFgi0gWAHIAcgByAHIAcgByAHIAcgByAHADIAcgByAHIAcgBqpjoghDC+/PH/MWHl1vkQIu1//KsyIQWKZv5VCRiRo3tkcOLGW794GwFkEMiALyFB8kByCF06LsKD5IDkAOQA5ADkAOQA5CjP+XrZ65W4EgOQA6JQ9/bwj3JAchRHAAO632cJsfWb9pnJZjfMsHj9311IY0a0oAiaIEcxANzDkAOQA5ADkAOQA5ADkAOQA6AUPcK6WG/m7949/ikbed/f/2Vstn3Pz98ynEj+xivRS30KJJog3JXmh17YnJc1aKjIiJOaLCk8bEnI8cmM5r5UcmJLpZ0OfYE5Mgwo7YfiVq8vt2nbPbl89++ivQ69kZbsl/XItGG9XddcuX4p8UVyTv2DvtduR9Tr9iQ2oEULfKcuPppi5ZUUoRiH+1aLH54VUX6HnuxV9OlPmHRjNe3++O/Bmqu/K1mM+LAFdKU3m/mxCVLBP3ofuxNIw0lvbQ4a8PZQGN3FhIJDP0RghxFZihs5wB+RMzAjxHkOOtZVUNJ+hBjyI9o1wxDWhv1o0iO8uubiZ9g2oxsP5p1r+HkGMAMo/kRO7qZ8V67ZuS1v3H3GksO61egTe+dgBx5hqa8a5gBpWRwqde9jZJja1PcmtHGD6lCCLG1lWODKhU5jmTGpSWYjt0b2lSfB6Hy6IFjI1yoKEtfmWtWfV5lVVa2oUOakREe7Wv3o/I5/KhmzPdO4ZkLt0OCHTn8xIb+8CA5wIgcY18PNdcDcZhlCD8LLsgByOF4Kqp/WkpyAHKAXTk8jylqRxaSA5ADkAOQA9zIwWxU55yU5ADkAOQA5ADkAOQA5ADkAOQA5ADkAEAOMCbH6Q3mefcWh+Huu9fwc9gkByAHIAcgB3iSgzmpttkoyQHIAdbl8DyyKBxTSA6wKYef8FC7p7rkGONBzsP0AMMK2JHD27RU51SU5ACDcvgJD82xESr9MP7788f8xYeX2+we9PDUhF7dG5o9UmOx3Xn7MPyt9xmxIdi9TZPjartPN9u6D+OFx9bYqNq9decciU3ftP3ZwTTS5GPrY3hqdG8jOfKa4taP2mYI+hG5Ysje1ZKjxNCM91oPj0pTjUrhEc0dXnb9yH7in8nkKHcz8RMG8CPDjGbda/7yuWk/zGWGvbWVuR/6FZk30tAUO1qf3mv2Y942WydfcYDTP51+WDfD6pL9oh96FFlsjMULNlMIhi8fnf0GtIYlmDG0CCKrsoUnS+VLRIu/Ed5FkcXoKjSjb/daTY7T3p/78f97amDJynBm/dq/QD1Htt2yxQcrjxmopEgbLTp2r/nkWJ+F1AiS9ZnvSCuFMpVgGXbXKGvb+rCSRFcSz4PqadGre8XKBDftQFUz2j/PpkFadOlevTWk+i1pP4I07l5hORqXR3expPuswmr1uS0SXXF7B69rOSBwOyQgByAHIAcgByAHIAcgByAH+GaiC0IIh/1u/uLd45PzbvF++XxRCxTxLsdVLVAkYkaN7ZHDixlu/eBsBZBDIgC8hQfJAcghdOi7Cg+SA5ADkAOQA5ADkAOQoz/l62euVuBIDkAOiUPf28I9yQHIURwADut9nCbH1m/aZyUYNaTUkCIH1efIAcw5ADkAOUAn/wAAGIiDpuf7agAAAABJRU5ErkJggg==">
+</head>
+<body>
+
+<style>
+/* ==========================================================================
+   동양미래대학교 처장단 회식 자리 랜덤 배치
+   - 외부 파일(폰트/이미지/스크립트) 일절 사용하지 않는 단일 HTML
+   - 스타일과 스크립트는 모두 <body> 안에 둔다 (나중에 본문만 잘라 쓰기 위함)
+   ========================================================================== */
+
+/* ---------- 색상 팔레트 : 밝은 화면 ---------- */
+:root{
+  --bg:#f2efe8;
+  --panel:#fffdf7;
+  --panel2:#f7f3ea;
+  --ink:#241f18;
+  --muted:#6d6357;
+  --line:#dcd3c2;
+  --line2:#c8bda7;
+
+  --head-bg:#1d4f79;      /* 처장 : 진한 색 */
+  --head-ink:#ffffff;
+  --sub-bg:#dfeaf5;       /* 부처장·실장 : 연한 색 */
+  --sub-bg2:#c9dcee;
+  --sub-ink:#12395a;
+
+  --gold:#c08a12;
+  --gold2:#f0cd6d;
+  --gold-glow:rgba(200,150,25,.55);
+
+  --table:#8a5c38;
+  --table2:#a97246;
+  --btn:#ffffff;
+  --btn-ink:#241f18;
+  --accent:#1d4f79;
+  --shadow:0 2px 6px rgba(0,0,0,.12);
+  --chief-front:linear-gradient(180deg,#fff3cf,#f3d78a);
+  --chief-front-ink:#4a3607;
+}
+
+/* ---------- 색상 팔레트 : 어두운 화면 ---------- */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#14171c;
+    --panel:#1c2129;
+    --panel2:#232a33;
+    --ink:#eef2f7;
+    --muted:#a6b0bd;
+    --line:#333c48;
+    --line2:#48535f;
+
+    --head-bg:#2f74ad;
+    --head-ink:#ffffff;
+    --sub-bg:#2b3947;
+    --sub-bg2:#212c37;
+    --sub-ink:#d5e7f8;
+
+    --gold:#e0b23f;
+    --gold2:#7a5d15;
+    --gold-glow:rgba(224,178,63,.45);
+
+    --table:#5b3f28;
+    --table2:#77563a;
+    --btn:#28303a;
+    --btn-ink:#eef2f7;
+    --accent:#7fc0f2;
+    --shadow:0 2px 8px rgba(0,0,0,.45);
+    --chief-front:linear-gradient(180deg,#6c5215,#3f2f08);
+    --chief-front-ink:#ffe9ab;
+  }
+}
+
+
+/* ---------- 보는 사람이 화면 테마를 직접 바꿨을 때 (토글 우선) ---------- */
+:root[data-theme="dark"]{
+  --bg:#14171c;
+  --panel:#1c2129;
+  --panel2:#232a33;
+  --ink:#eef2f7;
+  --muted:#a6b0bd;
+  --line:#333c48;
+  --line2:#48535f;
+
+  --head-bg:#2f74ad;
+  --head-ink:#ffffff;
+  --sub-bg:#2b3947;
+  --sub-bg2:#212c37;
+  --sub-ink:#d5e7f8;
+
+  --gold:#e0b23f;
+  --gold2:#7a5d15;
+  --gold-glow:rgba(224,178,63,.45);
+
+  --table:#5b3f28;
+  --table2:#77563a;
+  --btn:#28303a;
+  --btn-ink:#eef2f7;
+  --accent:#7fc0f2;
+  --shadow:0 2px 8px rgba(0,0,0,.45);
+  --chief-front:linear-gradient(180deg,#6c5215,#3f2f08);
+  --chief-front-ink:#ffe9ab;
+}
+:root[data-theme="light"]{
+  --bg:#f2efe8;
+  --panel:#fffdf7;
+  --panel2:#f7f3ea;
+  --ink:#241f18;
+  --muted:#6d6357;
+  --line:#dcd3c2;
+  --line2:#c8bda7;
+
+  --head-bg:#1d4f79;      /* 처장 : 진한 색 */
+  --head-ink:#ffffff;
+  --sub-bg:#dfeaf5;       /* 부처장·실장 : 연한 색 */
+  --sub-bg2:#c9dcee;
+  --sub-ink:#12395a;
+
+  --gold:#c08a12;
+  --gold2:#f0cd6d;
+  --gold-glow:rgba(200,150,25,.55);
+
+  --table:#8a5c38;
+  --table2:#a97246;
+  --btn:#ffffff;
+  --btn-ink:#241f18;
+  --accent:#1d4f79;
+  --shadow:0 2px 6px rgba(0,0,0,.12);
+  --chief-front:linear-gradient(180deg,#fff3cf,#f3d78a);
+  --chief-front-ink:#4a3607;
+}
+
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",
+              "Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding:10px 10px 26px;
+}
+/* 좁은 폰 화면에서는 여백을 줄여 테이블 5+5 를 그대로 담는다 */
+@media (max-width:430px){
+  body{padding:8px 6px 22px}
+}
+.wrap{max-width:860px;margin:0 auto}
+
+/* ---------- 머리말 ---------- */
+.hd{text-align:center;margin:2px 0 10px}
+.hd h1{
+  margin:0;
+  font-size:clamp(16px,4.4vw,22px);
+  letter-spacing:-.02em;
+}
+.hd p{margin:3px 0 0;font-size:clamp(11px,2.9vw,13px);color:var(--muted)}
+
+/* ---------- 공통 패널 ---------- */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:9px 10px;
+  margin-bottom:9px;
+  box-shadow:var(--shadow);
+}
+.panel h2{
+  margin:0 0 7px;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:700;
+  letter-spacing:.02em;
+}
+
+/* ---------- 연출 선택 버튼 ---------- */
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+@media (min-width:620px){ .modes{grid-template-columns:repeat(4,1fr)} }
+.mode{
+  appearance:none;
+  border:1.5px solid var(--line2);
+  background:var(--btn);
+  color:var(--btn-ink);
+  border-radius:10px;
+  padding:8px 6px;
+  text-align:center;
+  cursor:pointer;
+  font-family:inherit;
+  transition:transform .12s, border-color .15s, background .15s;
+}
+.mode:active{transform:scale(.97)}
+.mode .mt{display:block;font-size:clamp(12px,3.1vw,13.5px);font-weight:700}
+.mode .ms{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.mode[aria-pressed="true"]{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,rgba(29,79,121,.10),rgba(29,79,121,.03));
+  box-shadow:0 0 0 2px rgba(29,79,121,.16);
+}
+.mode[aria-pressed="true"] .mt{color:var(--accent)}
+
+/* ---------- 실행 버튼 ---------- */
+.actions{display:flex;gap:7px;margin-top:8px}
+.go{
+  flex:1;
+  appearance:none;border:0;border-radius:11px;cursor:pointer;
+  font-family:inherit;font-weight:800;
+  font-size:clamp(14px,3.9vw,17px);
+  padding:13px 10px;
+  color:#fff;
+  background:linear-gradient(180deg,#2a6ea3,#1d4f79);
+  box-shadow:0 3px 0 rgba(0,0,0,.18);
+  transition:transform .1s, filter .15s;
+}
+.go:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.go[disabled]{filter:grayscale(.6) opacity(.6);cursor:default}
+.sub{
+  appearance:none;border:1.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
+  border-radius:11px;padding:13px 12px;font-family:inherit;font-weight:700;
+  font-size:clamp(12px,3.2vw,14px);cursor:pointer;white-space:nowrap;
+}
+.sub[disabled]{opacity:.45;cursor:default}
+
+/* ==========================================================================
+   테이블 무대 — 화면 크기와 상관없이 언제나 같은 배치
+     · 가로로 긴 직사각 테이블 하나
+     · 위쪽 가로줄에 5석 / 아래쪽 가로줄에 5석
+     · 테이블 좌·우 옆면에는 자리를 두지 않는다
+     · 위쪽 5석 중 가운데(3번째)가 총장 고정석
+   폰 세로화면에서도 방향을 바꾸지 않고, 카드와 글자만 작게 줄여서 담는다.
+   ========================================================================== */
+.stage{
+  position:relative;
+  display:grid;
+  gap:clamp(3px,1.1vw,6px);
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:auto minmax(clamp(38px,9vw,54px),auto) auto;
+  padding:clamp(9px,2.4vw,12px) clamp(4px,1.6vw,10px);
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:14px;
+}
+/* 위쪽 가로줄 5석 */
+.seat[data-slot="0"]{grid-area:1/1/2/2}
+.seat[data-slot="1"]{grid-area:1/2/2/3}
+.seat[data-slot="2"]{grid-area:1/3/2/4}   /* 가운데 = 총장 고정석 */
+.seat[data-slot="3"]{grid-area:1/4/2/5}
+.seat[data-slot="4"]{grid-area:1/5/2/6}
+/* 가로로 긴 테이블 상판 : 다섯 칸을 통으로 가로지른다 */
+.tabletop        {grid-area:2/1/3/6}
+/* 아래쪽 가로줄 5석 */
+.seat[data-slot="5"]{grid-area:3/1/4/2}
+.seat[data-slot="6"]{grid-area:3/2/4/3}
+.seat[data-slot="7"]{grid-area:3/3/4/4}
+.seat[data-slot="8"]{grid-area:3/4/4/5}
+.seat[data-slot="9"]{grid-area:3/5/4/6}
+
+/* ---------- 테이블 상판 ---------- */
+.tabletop{
+  position:relative;
+  border-radius:10px;
+  background:
+    linear-gradient(180deg,var(--table2),var(--table));
+  border:2px solid rgba(0,0,0,.18);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.22), 0 3px 8px rgba(0,0,0,.22);
+  display:flex;align-items:center;justify-content:center;
+  min-height:clamp(38px,9vw,54px);
+  overflow:hidden;
+}
+.tabletop::before{ /* 나뭇결 느낌 */
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 9px);
+  opacity:.7;
+}
+.tabletop span{
+  position:relative;
+  color:rgba(255,255,255,.82);
+  font-size:clamp(10px,2.7vw,13px);
+  font-weight:700;letter-spacing:.14em;
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+
+/* ---------- 좌석 ---------- */
+.seat{
+  position:relative;
+  min-width:0;                              /* 좁은 화면에서 격자가 밀려나지 않게 */
+  min-height:clamp(52px,12.5vw,68px);
+}
+.chair{ /* 아직 정해지지 않은 빈 자리 표시 */
+  position:absolute;inset:0;
+  border:1.5px dashed var(--line2);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:15px;font-weight:700;
+  opacity:.8;
+  transition:opacity .2s;
+}
+.seat.live .chair{opacity:0}
+
+.card{
+  position:absolute;inset:0;
+  perspective:700px;
+  opacity:0;
+  transition:opacity .18s, transform .5s cubic-bezier(.18,.9,.3,1.15);
+  will-change:transform,opacity;
+}
+.seat.live .card{opacity:1}
+
+.flipper{
+  position:absolute;inset:0;
+  transform-style:preserve-3d;
+  transition:transform .6s cubic-bezier(.3,.9,.3,1.1);
+}
+.seat.facedown .flipper{transform:rotateY(180deg)}
+
+.front,.back{
+  position:absolute;inset:0;
+  border-radius:10px;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.back{
+  transform:rotateY(180deg);
+  background-color:#24425c;
+  background-image:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.10) 0 5px,transparent 5px 10px),
+    linear-gradient(180deg,#31536f,#1d3a52);
+  border:1.5px solid rgba(255,255,255,.28);
+}
+.back::after{
+  content:"?";
+  color:rgba(255,255,255,.8);
+  font-size:22px;font-weight:800;
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+
+/* 좌석 카드 앞면 – 직급별 색 */
+.front{
+  background:var(--sub-bg);
+  color:var(--sub-ink);
+  border:1.5px solid rgba(0,0,0,.12);
+  box-shadow:0 2px 5px rgba(0,0,0,.16);
+  padding:3px;
+}
+.seat.tier-head .front{
+  background:linear-gradient(180deg,#2a6595,var(--head-bg));
+  color:var(--head-ink);
+  border-color:rgba(0,0,0,.22);
+}
+.seat.tier-sub .front{
+  background:linear-gradient(180deg,var(--sub-bg),var(--sub-bg2));
+  color:var(--sub-ink);
+}
+.seat.tier-vacant .front{
+  background:transparent;
+  color:var(--muted);
+  border:1.5px dashed var(--line2);
+  box-shadow:none;
+  opacity:.55;
+}
+/* 총장석 : 금색 테두리 + 은은한 발광 */
+.seat.tier-chief .front{
+  background:linear-gradient(180deg,#f6e2a6,#e8c667);
+  color:#3a2a05;
+  border:2.5px solid var(--gold);
+  box-shadow:0 0 0 2px rgba(255,255,255,.25) inset, 0 0 14px var(--gold-glow);
+  animation:glow 2.6s ease-in-out infinite;
+}
+.seat.tier-chief .front{
+  background:var(--chief-front);
+  color:var(--chief-front-ink);
+}
+@keyframes glow{
+  0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,.22) inset, 0 0 10px var(--gold-glow)}
+  50%    {box-shadow:0 0 0 2px rgba(255,255,255,.30) inset, 0 0 20px var(--gold-glow)}
+}
+
+/* 카드 글씨 : 부서명 / 직위 두 줄이 기본.
+   폭이 모자라면 부서명이 한 번 더 접혀 세 줄까지 늘어난다(글자는 안 잘림). */
+.face{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;line-height:1.1;text-align:center;padding:2px 1px;
+  transition:opacity .15s;
+}
+.face .l1,.face .l2,.ritem .l1,.ritem .l2{
+  display:block;max-width:100%;
+  word-break:keep-all;          /* 낱말(의미) 단위로 끊는다 */
+  overflow-wrap:anywhere;       /* 그래도 넘치면 그때 접는다 */
+}
+.face .l1{font-size:clamp(9.5px,2.95vw,15px);font-weight:800;letter-spacing:-.04em}
+.face .l2{font-size:clamp(9px,2.6vw,13px);font-weight:600;opacity:.92;letter-spacing:-.03em}
+.face.one .l1{font-size:clamp(13px,4vw,19px);letter-spacing:-.02em}
+.face.one .l2{display:none}
+
+/* 슬롯 릴(촤르륵 돌아가는 부분) */
+.reel{
+  position:absolute;inset:0;overflow:hidden;border-radius:9px;
+  opacity:0;pointer-events:none;transition:opacity .12s;
+}
+.seat.spinning .reel{opacity:1}
+.seat.spinning .face{opacity:0}
+.strip{position:absolute;left:0;right:0;top:0;height:200%;will-change:transform}
+.ritem{
+  height:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;line-height:1.1;text-align:center;padding:0 1px;
+  filter:blur(.35px);
+}
+.ritem .l1{font-size:clamp(9.5px,2.95vw,15px);font-weight:800;letter-spacing:-.04em}
+.ritem .l2{font-size:clamp(9px,2.6vw,13px);font-weight:600;opacity:.9;letter-spacing:-.03em}
+
+/* 확정 순간 : 살짝 튕기고 반짝 */
+.seat.pop .card{animation:pop .45s cubic-bezier(.2,.9,.25,1.3)}
+@keyframes pop{
+  0%{transform:scale(.86) translateY(-5px)}
+  55%{transform:scale(1.10) translateY(0)}
+  78%{transform:scale(.97)}
+  100%{transform:scale(1)}
+}
+.seat .flash{
+  position:absolute;inset:-3px;border-radius:12px;pointer-events:none;
+  opacity:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.9),transparent 68%);
+}
+.seat.pop .flash{animation:flash .5s ease-out}
+@keyframes flash{0%{opacity:.85}100%{opacity:0}}
+
+/* 상석 안내 꼬리표 */
+.headtag{
+  position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  background:var(--gold);color:#241a00;
+  font-size:9px;font-weight:800;letter-spacing:.08em;
+  white-space:nowrap;                      /* 좁은 화면에서 두 줄로 접히지 않게 */
+  padding:1px 6px;border-radius:99px;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+  z-index:3;
+}
+
+/* ---------- 결과 아래 날짜 ---------- */
+.meta{
+  text-align:center;margin-top:8px;
+  font-size:clamp(10.5px,2.7vw,12.5px);color:var(--muted);
+}
+.meta b{color:var(--ink);font-weight:700}
+
+/* ---------- 결과 공유 버튼 ---------- */
+.share-wrap{margin:9px 0 4px;text-align:center}
+.share{
+  appearance:none;border:0;border-radius:12px;cursor:pointer;
+  width:100%;max-width:340px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-weight:800;
+  font-size:clamp(13px,3.6vw,16px);
+  padding:13px 14px;
+  color:#fff;
+  background:linear-gradient(180deg,#3a8f5a,#256b40);
+  box-shadow:0 3px 0 rgba(0,0,0,.18);
+  transition:transform .1s, filter .15s;
+}
+.share .ic{font-size:1.15em;line-height:1}
+.share:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.share[disabled]{filter:grayscale(.75) opacity(.45);cursor:default;box-shadow:none}
+.share-hint{
+  font-size:clamp(10px,2.6vw,11.5px);color:var(--muted);
+  margin-top:5px;line-height:1.5;
+}
+
+/* ---------- 짧은 안내 쪽지 ---------- */
+.toast{
+  position:fixed;left:50%;bottom:22px;
+  transform:translateX(-50%) translateY(14px);
+  max-width:min(340px,90vw);
+  background:#232a33;color:#f2f5f9;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:11px;padding:11px 15px;
+  font-size:12.5px;font-weight:600;line-height:1.5;text-align:center;
+  white-space:pre-line;                 /* 안내문 줄바꿈 유지 */
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+  z-index:120;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- 명단 / 설정 ---------- */
+.roster{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 8px}
+@media (min-width:620px){ .roster{grid-template-columns:repeat(3,1fr)} }
+.rt{
+  display:flex;align-items:center;gap:6px;
+  font-size:clamp(11.5px,3vw,13px);
+  padding:4px 2px;border-radius:7px;cursor:pointer;
+  user-select:none;
+}
+.rt input{width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto}
+.rt.fixed{opacity:.9;cursor:default}
+.rt .dot{width:8px;height:8px;border-radius:99px;flex:0 0 auto}
+.dot.head{background:var(--head-bg)}
+.dot.sub{background:var(--line2)}
+.dot.chief{background:var(--gold)}
+.rowline{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;
+  padding-top:8px;border-top:1px dashed var(--line)}
+.snd{
+  appearance:none;border:1.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
+  border-radius:99px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+}
+.snd[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.hint{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ---------- 로또 추첨기 ---------- */
+#tub{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+  width:min(330px,88vw);height:112px;
+  border:3px solid rgba(120,120,120,.5);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(160,190,220,.20));
+  backdrop-filter:blur(2px);
+  box-shadow:0 8px 22px rgba(0,0,0,.28), inset 0 0 20px rgba(255,255,255,.28);
+  z-index:60;display:none;overflow:visible;
+}
+#tub.on{display:block}
+#tub .inner{position:absolute;inset:0;overflow:hidden;border-radius:11px}
+#tub .pipe{
+  position:absolute;top:-26px;left:50%;transform:translateX(-50%);
+  width:44px;height:28px;border:3px solid rgba(120,120,120,.5);border-bottom:0;
+  border-radius:9px 9px 0 0;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(160,190,220,.12));
+}
+#tub .cap{
+  position:absolute;top:-30px;left:50%;transform:translateX(-50%);
+  font-size:9px;font-weight:800;color:var(--muted);letter-spacing:.1em;
+  width:120px;text-align:center;margin-top:-12px;
+}
+.lball{
+  position:absolute;top:0;left:0;width:30px;height:30px;border-radius:99px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#3a2a05;
+  background:radial-gradient(circle at 33% 28%,#fff8dd,#f0cd6d 58%,#c9982a);
+  box-shadow:0 2px 5px rgba(0,0,0,.3), inset 0 -3px 6px rgba(0,0,0,.18);
+  will-change:transform;
+}
+.flyball{
+  position:fixed;z-index:80;width:30px;height:30px;margin:0;
+  transition:transform .3s ease-in, opacity .2s;
+}
+.flyball.arc{transition:transform .62s cubic-bezier(.35,.05,.35,1)}
+
+/* ---------- 카드 딜링용 덱 ---------- */
+#deck{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  width:56px;height:74px;border-radius:9px;z-index:55;display:none;
+  background:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.10) 0 5px,transparent 5px 10px);
+  background-color:#24425c;
+  border:1.5px solid rgba(255,255,255,.3);
+  box-shadow:0 6px 16px rgba(0,0,0,.35), 4px 4px 0 -1px #1d3a52, 8px 8px 0 -2px #16283a;
+}
+#deck.on{display:block}
+
+/* ---------- 진행 안내 ---------- */
+.status{
+  text-align:center;font-size:12px;color:var(--muted);
+  min-height:16px;margin:6px 0 2px;font-weight:600;
+}
+.foot{text-align:center;font-size:10.5px;color:var(--muted);margin-top:12px;line-height:1.6}
+</style>
+
+
+<div class="wrap">
+
+  <div class="hd">
+    <h1>동양미래대학교 처장단 회식 자리 뽑기</h1>
+    <p>총장님 자리는 상석에 고정, 나머지 아홉 분은 무작위로 정해집니다</p>
+  </div>
+
+  <!-- 연출 선택 -->
+  <div class="panel">
+    <h2>연출 고르기</h2>
+    <div class="modes" id="modes"></div>
+  </div>
+
+  <!-- 실행 -->
+  <div class="panel">
+    <div class="actions">
+      <button class="go" id="goBtn">자리 뽑기</button>
+      <button class="sub" id="againBtn" disabled>다시 돌리기</button>
+    </div>
+    <div class="status" id="status">연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</div>
+  </div>
+
+  <!-- 테이블 -->
+  <div class="stage" id="stage">
+    <div class="tabletop"><span>회 식 테 이 블</span></div>
+  </div>
+  <div class="meta" id="meta"></div>
+
+  <!-- 결과 공유 : 자리가 정해진 뒤에만 눌러진다 -->
+  <div class="share-wrap">
+    <button class="share" id="shareBtn" disabled>
+      <span class="ic">📷</span><span>결과 공유</span>
+    </button>
+    <div class="share-hint" id="shareHint">자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다</div>
+  </div>
+
+  <!-- 참석자 -->
+  <div class="panel" style="margin-top:9px">
+    <h2>참석자 (체크를 풀면 그 자리는 공석으로 남습니다)</h2>
+    <div class="roster" id="roster"></div>
+    <div class="rowline">
+      <span class="hint">효과음은 기본으로 꺼져 있습니다</span>
+      <button class="snd" id="sndBtn" aria-pressed="false">효과음 꺼짐</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    인터넷 없이도 이 파일 하나로 동작합니다 · 결과 화면을 그대로 사진 찍으면 기록이 됩니다
+  </div>
+</div>
+
+<!-- 로또 추첨기 -->
+<div id="tub">
+  <div class="cap">추 첨 기</div>
+  <div class="pipe"></div>
+  <div class="inner" id="tubInner"></div>
+</div>
+
+<!-- 카드 덱 -->
+<div id="deck"></div>
+
+<!-- 짧은 안내 쪽지 -->
+<div class="toast" id="toast"></div>
+
+
+<script>
+(function(){
+"use strict";
+
+/* ==========================================================================
+   1. 기본 자료
+   ========================================================================== */
+
+/* 구성원 10명 (지시받은 배열 순서 그대로) */
+var MEMBERS = [
+  {id:0, l1:'총장',        l2:'',      tier:'chief'},
+  {id:1, l1:'교무입학',    l2:'처장',  tier:'head'},
+  {id:2, l1:'기획혁신',    l2:'처장',  tier:'head'},
+  {id:3, l1:'학생',        l2:'처장',  tier:'head'},
+  {id:4, l1:'사무',        l2:'처장',  tier:'head'},
+  {id:5, l1:'교무입학',    l2:'부처장',tier:'sub'},
+  {id:6, l1:'기획혁신',    l2:'부처장',tier:'sub'},
+  {id:7, l1:'학생',        l2:'부처장',tier:'sub'},
+  {id:8, l1:'종합정보',    l2:'실장',  tier:'sub'},
+  {id:9, l1:'디자인홍보',  l2:'실장',  tier:'sub'}
+];
+
+var CHIEF_SLOT = 2;                       /* 총장 고정석 : 위쪽 5석 중 가운데 */
+var OTHER_SLOTS = [0,1,3,4,5,6,7,8,9];    /* 나머지 9석 */
+
+/* 확정 순서 : 바깥 자리부터, 총장 양옆(1번·3번 자리)이 마지막 */
+var STOP_ORDER = [0,4,5,9,6,8,7,1,3];
+var LAST_TWO   = [1,3];                   /* 총장 양옆 */
+
+var EFFECTS = [
+  {k:'A', t:'A. 로또볼', s:'추첨기에서 공이<br>튀어나옵니다 · 약 14초'},
+  {k:'B', t:'B. 슬롯머신', s:'촤르륵 돌다가<br>탁·탁 멈춥니다 · 약 9초'},
+  {k:'C', t:'C. 카드 딜링', s:'카드를 뿌린 뒤<br>뒤집습니다 · 약 7초'},
+  {k:'D', t:'D. 하이브리드', s:'돌리다 바깥부터 확정<br>약 6.5초 · 기본'}
+];
+
+/* ==========================================================================
+   2. 상태
+   ========================================================================== */
+var mode = 'D';                 /* 기본 연출 = D 하이브리드 */
+var soundOn = false;            /* 효과음 기본 꺼짐 */
+var running = false;
+var present = {};               /* 참석 여부 : present[memberId] = true */
+var lastKey = '';               /* 직전 배치 (겹침 방지용) */
+var runId = 0, timers = [];
+
+for(var i=0;i<MEMBERS.length;i++) present[MEMBERS[i].id] = true;
+
+/* ==========================================================================
+   3. 화면 만들기
+   ========================================================================== */
+var stage  = document.getElementById('stage');
+var seatEl = {};    /* slot -> element */
+var reelOf = {};    /* slot -> 릴 정보 */
+
+function twoLine(m){
+  /* 릴 안에 흘러가는 두 줄 글씨를 만든다 (한 줄짜리는 크게) */
+  var l1 = m ? m.l1 : '공석';
+  var l2 = m ? m.l2 : '';
+  return '<span class="l1">'+l1+'</span>' + (l2 ? '<span class="l2">'+l2+'</span>' : '');
+}
+
+function buildSeats(){
+  for(var s=0;s<10;s++){
+    var d = document.createElement('div');
+    d.className = 'seat';
+    d.setAttribute('data-slot', s);
+    d.innerHTML =
+      '<div class="chair">?</div>' +
+      (s===CHIEF_SLOT ? '<div class="headtag">상석</div>' : '') +
+      '<div class="flash"></div>' +
+      '<div class="card">' +
+        '<div class="flipper">' +
+          '<div class="front">' +
+            '<div class="reel"><div class="strip">' +
+              '<div class="ritem"></div><div class="ritem"></div>' +
+            '</div></div>' +
+            '<div class="face one"><span class="l1"></span><span class="l2"></span></div>' +
+          '</div>' +
+          '<div class="back"></div>' +
+        '</div>' +
+      '</div>';
+    stage.appendChild(d);
+    seatEl[s] = d;
+    reelOf[s] = {
+      strip: d.querySelector('.strip'),
+      items: d.querySelectorAll('.ritem'),
+      p: 0, period: 0.085, on:false
+    };
+  }
+}
+buildSeats();
+
+/* 연출 선택 버튼 */
+var modesBox = document.getElementById('modes');
+EFFECTS.forEach(function(e){
+  var b = document.createElement('button');
+  b.className='mode'; b.type='button';
+  b.setAttribute('data-k', e.k);
+  b.setAttribute('aria-pressed', e.k===mode ? 'true':'false');
+  b.innerHTML = '<span class="mt">'+e.t+'</span><span class="ms">'+e.s+'</span>';
+  b.addEventListener('click', function(){
+    if(running) return;
+    mode = e.k;
+    Array.prototype.forEach.call(modesBox.children, function(c){
+      c.setAttribute('aria-pressed', c.getAttribute('data-k')===mode ? 'true':'false');
+    });
+    setStatus('연출 '+e.k+' 선택 · ‘자리 뽑기’를 눌러 주세요');
+  });
+  modesBox.appendChild(b);
+});
+
+/* 참석자 명단 */
+var rosterBox = document.getElementById('roster');
+MEMBERS.forEach(function(m){
+  var lab = document.createElement('label');
+  lab.className = 'rt' + (m.id===0 ? ' fixed':'');
+  var name = m.l1 + (m.l2 ? ' '+m.l2 : '');
+  lab.innerHTML =
+    '<input type="checkbox" checked '+(m.id===0?'disabled':'')+'>' +
+    '<span class="dot '+m.tier+'"></span><span>'+name+'</span>';
+  var cb = lab.querySelector('input');
+  cb.addEventListener('change', function(){
+    if(running){ cb.checked = present[m.id]; return; }
+    present[m.id] = cb.checked;
+    var n = 0; for(var k in present){ if(present[k]) n++; }
+    setStatus('참석 '+n+'명 · 공석 '+(10-n)+'석');
+  });
+  rosterBox.appendChild(lab);
+});
+
+/* ==========================================================================
+   4. 소리 (Web Audio API 로 직접 생성 · 외부 파일 없음)
+   ========================================================================== */
+var ac = null;
+function ensureAC(){
+  if(!soundOn) return null;
+  try{
+    if(!ac){
+      var C = window.AudioContext || window.webkitAudioContext;
+      if(!C) return null;
+      ac = new C();
+    }
+    if(ac.state === 'suspended') ac.resume();
+  }catch(e){ ac = null; }
+  return ac;
+}
+function tone(freq, dur, type, vol, delay){
+  var a = ensureAC(); if(!a) return;
+  var t0 = a.currentTime + (delay||0);
+  var o = a.createOscillator(), g = a.createGain();
+  o.type = type||'square';
+  o.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.05, t0+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  o.connect(g); g.connect(a.destination);
+  o.start(t0); o.stop(t0+dur+0.03);
+}
+function sfxTick(){ tone(900,0.055,'square',0.05,0); tone(1400,0.035,'square',0.028,0.012); }
+function sfxDrop(){ tone(420,0.09,'triangle',0.05,0); tone(760,0.06,'triangle',0.035,0.05); }
+function sfxFanfare(){
+  var n=[[523.25,0],[659.25,0.11],[783.99,0.22],[1046.50,0.33]];
+  n.forEach(function(x){ tone(x[0],0.34,'triangle',0.075,x[1]); });
+  tone(1567.98,0.5,'triangle',0.05,0.45);
+}
+
+var sndBtn = document.getElementById('sndBtn');
+sndBtn.addEventListener('click', function(){
+  soundOn = !soundOn;
+  sndBtn.setAttribute('aria-pressed', soundOn?'true':'false');
+  sndBtn.textContent = soundOn ? '효과음 켜짐' : '효과음 꺼짐';
+  if(soundOn){ ensureAC(); sfxTick(); }
+});
+
+/* ==========================================================================
+   5. 배치 만들기 (Fisher-Yates)
+   ========================================================================== */
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+function buildAssignment(){
+  var others = MEMBERS.filter(function(m){ return m.id!==0 && present[m.id]; });
+  var vacancy = 9 - others.length;
+  var asg = null, key = '', tries = 0;
+
+  do{
+    var pool = others.slice();
+    for(var v=0; v<vacancy; v++) pool.push(null);   /* 공석도 섞어서 자리 배정 */
+    shuffle(pool);
+    asg = {};
+    for(var i=0;i<OTHER_SLOTS.length;i++) asg[OTHER_SLOTS[i]] = pool[i];
+    key = OTHER_SLOTS.map(function(s){ return asg[s] ? asg[s].id : 'x'; }).join('|');
+    tries++;
+  } while(key === lastKey && tries < 40 && others.length > 1);
+  /* 직전과 완전히 같은 배치면 다시 뽑는다 */
+
+  lastKey = key;
+  asg[CHIEF_SLOT] = MEMBERS[0];
+  return asg;
+}
+
+/* 릴에 흘려보낼 이름 후보 */
+function reelPool(){
+  var p = MEMBERS.filter(function(m){ return m.id!==0 && present[m.id]; });
+  if(p.length < 9) p.push(null);      /* 공석이 있으면 릴에도 섞어 보여 준다 */
+  if(!p.length) p = [null];
+  return p;
+}
+
+/* ==========================================================================
+   6. 좌석 조작
+   ========================================================================== */
+function setFace(slot, m){
+  var seat = seatEl[slot];
+  var face = seat.querySelector('.face');
+  face.className = 'face' + ((!m || !m.l2) ? ' one' : '');
+  face.querySelector('.l1').textContent = m ? m.l1 : '공석';
+  face.querySelector('.l2').textContent = m ? m.l2 : '';
+  seat.classList.remove('tier-head','tier-sub','tier-chief','tier-vacant');
+  seat.classList.add(m ? ('tier-'+m.tier) : 'tier-vacant');
+}
+
+function fillReelItem(el, m){ el.innerHTML = twoLine(m); }
+
+function startReel(slot){
+  var r = reelOf[slot], pool = reelPool();
+  fillReelItem(r.items[0], pool[Math.floor(Math.random()*pool.length)]);
+  fillReelItem(r.items[1], pool[Math.floor(Math.random()*pool.length)]);
+  r.p = 0; r.on = true; r.pool = pool;
+  seatEl[slot].classList.add('live','spinning');
+  ensureLoop();
+}
+
+function stopReel(slot, m, silent){
+  var r = reelOf[slot];
+  r.on = false;
+  r.strip.style.transform = 'translateY(0%)';
+  setFace(slot, m);
+  var seat = seatEl[slot];
+  seat.classList.remove('spinning');
+  seat.classList.add('live');
+  pop(seat);
+  if(!silent) sfxTick();
+}
+
+function pop(seat){
+  seat.classList.remove('pop');
+  void seat.offsetWidth;          /* 애니메이션 재시작을 위한 강제 리플로우 */
+  seat.classList.add('pop');
+}
+
+function resetSeats(){
+  for(var s=0;s<10;s++){
+    var seat = seatEl[s];
+    reelOf[s].on = false;
+    reelOf[s].strip.style.transform = 'translateY(0%)';
+    seat.classList.remove('live','spinning','pop','facedown','tier-head','tier-sub','tier-chief','tier-vacant');
+    seat.querySelector('.card').style.transition = '';
+    seat.querySelector('.card').style.transform = '';
+  }
+  /* 총장석은 처음부터 상석에 놓여 있다 */
+  setFace(CHIEF_SLOT, MEMBERS[0]);
+  seatEl[CHIEF_SLOT].classList.add('live');
+  document.getElementById('meta').innerHTML = '';
+}
+
+/* ==========================================================================
+   7. 애니메이션 공통 루프 (릴 회전 + 로또 공 물리)
+   ========================================================================== */
+var rafId = null, lastT = 0, physicsOn = false;
+
+function ensureLoop(){
+  if(rafId) return;
+  lastT = 0;
+  rafId = requestAnimationFrame(loop);
+}
+function loop(ts){
+  var dt = lastT ? Math.min(0.05,(ts-lastT)/1000) : 0.016;
+  lastT = ts;
+  var alive = false;
+
+  for(var s=0;s<10;s++){
+    var r = reelOf[s];
+    if(!r.on) continue;
+    alive = true;
+    r.p += dt / r.period;
+    while(r.p >= 1){
+      r.p -= 1;
+      /* 한 칸 지나갈 때마다 다음 이름을 채워 넣는다 */
+      r.items[0].innerHTML = r.items[1].innerHTML;
+      fillReelItem(r.items[1], r.pool[Math.floor(Math.random()*r.pool.length)]);
+    }
+    r.strip.style.transform = 'translateY(' + (-r.p*50) + '%)';
+  }
+
+  if(physicsOn){ alive = true; physStep(dt); }
+
+  if(alive) rafId = requestAnimationFrame(loop);
+  else rafId = null;
+}
+
+/* ==========================================================================
+   8. 로또 추첨기 (연출 A)
+   ========================================================================== */
+var tub = document.getElementById('tub');
+var tubInner = document.getElementById('tubInner');
+var balls = [];
+
+function spawnBalls(){
+  tubInner.innerHTML = '';
+  balls = [];
+  var W = tubInner.clientWidth || 300, H = tubInner.clientHeight || 106;
+  for(var i=0;i<9;i++){
+    var el = document.createElement('div');
+    el.className = 'lball';
+    el.textContent = (i+1);
+    tubInner.appendChild(el);
+    balls.push({
+      el: el, r: 15,
+      x: 20 + Math.random()*(W-40),
+      y: 20 + Math.random()*(H-40),
+      vx: (Math.random()-0.5)*320,
+      vy: (Math.random()-0.5)*260,
+      alive: true
+    });
+  }
+}
+
+function physStep(dt){
+  var W = tubInner.clientWidth || 300, H = tubInner.clientHeight || 106;
+  var i, j, b;
+  for(i=0;i<balls.length;i++){
+    b = balls[i]; if(!b.alive) continue;
+    b.vy += 1500*dt;
+    b.x  += b.vx*dt;
+    b.y  += b.vy*dt;
+    if(b.x < b.r){ b.x = b.r; b.vx = Math.abs(b.vx)*0.85; }
+    if(b.x > W-b.r){ b.x = W-b.r; b.vx = -Math.abs(b.vx)*0.85; }
+    if(b.y < b.r){ b.y = b.r; b.vy = Math.abs(b.vy)*0.6; }
+    if(b.y > H-b.r){
+      b.y = H-b.r;
+      b.vy = -Math.abs(b.vy)*0.78;
+      b.vx += (Math.random()-0.5)*180;
+      /* 바닥에서 힘이 빠지면 다시 튀어 오르게 (송풍기 느낌) */
+      if(Math.abs(b.vy) < 210) b.vy = -(330 + Math.random()*300);
+    }
+    if(b.vx >  700) b.vx =  700;
+    if(b.vx < -700) b.vx = -700;
+  }
+  /* 공끼리 겹치지 않게 살짝 밀어낸다 */
+  for(i=0;i<balls.length;i++){
+    if(!balls[i].alive) continue;
+    for(j=i+1;j<balls.length;j++){
+      if(!balls[j].alive) continue;
+      var a = balls[i], c = balls[j];
+      var dx = c.x-a.x, dy = c.y-a.y;
+      var d = Math.sqrt(dx*dx+dy*dy) || 0.01;
+      var ov = (a.r+c.r) - d;
+      if(ov > 0){
+        var nx = dx/d, ny = dy/d, s = ov/2;
+        a.x -= nx*s; a.y -= ny*s; c.x += nx*s; c.y += ny*s;
+        var tvx = a.vx, tvy = a.vy;
+        a.vx = c.vx*0.9; a.vy = c.vy*0.9;
+        c.vx = tvx*0.9;  c.vy = tvy*0.9;
+      }
+    }
+  }
+  for(i=0;i<balls.length;i++){
+    b = balls[i]; if(!b.alive) continue;
+    b.el.style.transform = 'translate3d('+(b.x-b.r)+'px,'+(b.y-b.r)+'px,0)';
+  }
+}
+
+/* 공 한 개를 관으로 내보내 좌석까지 날린다 */
+function releaseBall(slot, m){
+  var b = null;
+  for(var i=0;i<balls.length;i++){ if(balls[i].alive){ b = balls[i]; break; } }
+  if(!b){ stopReelToCard(slot, m); return; }
+  b.alive = false;
+
+  var rect = b.el.getBoundingClientRect();
+  var fly = document.createElement('div');
+  fly.className = 'lball flyball';
+  fly.textContent = b.el.textContent;
+  fly.style.left = rect.left + 'px';
+  fly.style.top  = rect.top  + 'px';
+  document.body.appendChild(fly);
+  b.el.style.display = 'none';
+
+  /* 1단계 : 관 입구까지 올라간다 */
+  var pipe = tub.getBoundingClientRect();
+  var px = pipe.left + pipe.width/2 - 15;
+  var py = pipe.top - 34;
+  requestAnimationFrame(function(){
+    fly.style.transform = 'translate('+(px-rect.left)+'px,'+(py-rect.top)+'px) scale(1.05)';
+  });
+  sfxDrop();
+
+  /* 2단계 : 좌석으로 날아가 카드로 바뀐다 */
+  setTimeout(function(){
+    var seat = seatEl[slot].getBoundingClientRect();
+    var tx = seat.left + seat.width/2 - 15;
+    var ty = seat.top  + seat.height/2 - 15;
+    fly.classList.add('arc');
+    fly.style.transform = 'translate('+(tx-rect.left)+'px,'+(ty-rect.top)+'px) scale(.7)';
+    setTimeout(function(){
+      fly.style.opacity = '0';
+      setTimeout(function(){ if(fly.parentNode) fly.parentNode.removeChild(fly); }, 220);
+      stopReelToCard(slot, m);
+    }, 620);
+  }, 320);
+}
+
+function stopReelToCard(slot, m){
+  reelOf[slot].on = false;
+  setFace(slot, m);
+  seatEl[slot].classList.remove('spinning');
+  seatEl[slot].classList.add('live');
+  pop(seatEl[slot]);
+  sfxTick();
+}
+
+/* ==========================================================================
+   9. 카드 딜링 (연출 C)
+   ========================================================================== */
+var deck = document.getElementById('deck');
+
+function dealCard(slot){
+  var seat = seatEl[slot];
+  var card = seat.querySelector('.card');
+  var d = deck.getBoundingClientRect();
+  var s = seat.getBoundingClientRect();
+  var dx = (d.left + d.width/2) - (s.left + s.width/2);
+  var dy = (d.top  + d.height/2) - (s.top  + s.height/2);
+
+  seat.classList.add('facedown','live');
+  card.style.transition = 'none';
+  card.style.transform  = 'translate('+dx+'px,'+dy+'px) scale(.55) rotate(-10deg)';
+  void card.offsetWidth;
+  card.style.transition = 'transform .42s cubic-bezier(.2,.75,.35,1.05), opacity .18s';
+  card.style.transform  = 'translate(0,0) scale(1) rotate(0deg)';
+  sfxDrop();
+}
+
+function flipCard(slot, m){
+  setFace(slot, m);
+  seatEl[slot].classList.remove('facedown');
+  setTimeout(function(){ pop(seatEl[slot]); }, 340);
+  sfxTick();
+}
+
+/* ==========================================================================
+   10. 연출 실행
+   ========================================================================== */
+function clearTimers(){
+  for(var i=0;i<timers.length;i++) clearTimeout(timers[i]);
+  timers = [];
+}
+function later(ms, fn){
+  var id = runId;
+  timers.push(setTimeout(function(){ if(id===runId) fn(); }, ms));
+}
+function setStatus(t){ document.getElementById('status').textContent = t; }
+
+/* --- A. 로또볼 추첨기 : 약 13.6초 --- */
+function runLotto(asg, done){
+  tub.classList.add('on');
+  spawnBalls();
+  physicsOn = true; ensureLoop();
+  setStatus('추첨기를 돌리는 중입니다…');
+
+  var t = 2500;
+  STOP_ORDER.forEach(function(slot, i){
+    if(i === 7){ t += 900; }               /* 총장 양옆 직전, 잠깐 뜸들이기 */
+    (function(sl, idx){
+      later(t, function(){
+        if(idx === 7) setStatus('이제 총장님 양옆 두 자리입니다');
+        releaseBall(sl, asg[sl]);
+      });
+    })(slot, i);
+    t += 1100;
+  });
+
+  later(t + 300, function(){
+    physicsOn = false;
+    tub.classList.remove('on');
+    tubInner.innerHTML = '';
+    done();
+  });
+}
+
+/* --- B. 슬롯머신 : 약 9.0초 --- */
+function runSlot(asg, done){
+  STOP_ORDER.forEach(function(s){ startReel(s); });
+  setStatus('아홉 자리를 돌리는 중입니다…');
+
+  var t = 1600;
+  STOP_ORDER.forEach(function(slot, i){
+    (function(sl, idx){
+      later(t, function(){
+        if(idx === 7) setStatus('이제 총장님 양옆 두 자리입니다');
+        stopReel(sl, asg[sl]);
+      });
+    })(slot, i);
+    t += 800;
+  });
+  later(t + 400, done);
+}
+
+/* --- C. 카드 딜링 : 약 6.6초 --- */
+function runDeal(asg, done){
+  deck.classList.add('on');
+  setStatus('카드를 돌리고 있습니다…');
+
+  STOP_ORDER.forEach(function(slot, i){
+    later(i*480, function(){ dealCard(slot); });
+  });
+
+  var landed = 8*480 + 420;                       /* 마지막 카드가 놓이는 시각 */
+  later(landed + 200, function(){ deck.classList.remove('on'); });
+  later(landed + 1200, function(){
+    setStatus('공개합니다');
+    /* 바깥 일곱 자리를 동시에 뒤집는다 */
+    STOP_ORDER.slice(0,7).forEach(function(s){ flipCard(s, asg[s]); });
+  });
+  later(landed + 1700, function(){
+    setStatus('총장님 양옆은…');
+    LAST_TWO.forEach(function(s){ flipCard(s, asg[s]); });   /* 총장 양옆이 마지막 */
+  });
+  later(landed + 2400, done);
+}
+
+/* --- D. 하이브리드 (기본) : 약 6.5초 --- */
+function runHybrid(asg, done){
+  STOP_ORDER.forEach(function(s){ startReel(s); });
+  setStatus('아홉 자리를 돌리는 중입니다…');
+
+  var gaps = [420,380,340,300,260,220,0];   /* 뒤로 갈수록 빨라진다 */
+  var t = 3000;
+  STOP_ORDER.slice(0,7).forEach(function(slot, i){
+    (function(sl){ later(t, function(){ stopReel(sl, asg[sl]); }); })(slot);
+    /* 남은 칸은 조금씩 더 빠르게 돈다 */
+    (function(idx){
+      later(t, function(){
+        STOP_ORDER.slice(idx+1).forEach(function(s2){
+          if(reelOf[s2].on) reelOf[s2].period = Math.max(0.045, reelOf[s2].period*0.9);
+        });
+      });
+    })(i);
+    t += gaps[i];
+  });
+
+  later(t + 120, function(){ setStatus('총장님 양옆 두 자리가 남았습니다'); });
+  later(t + 1000, function(){
+    LAST_TWO.forEach(function(s){ stopReel(s, asg[s]); });   /* 동시에 확정 */
+  });
+  later(t + 1600, done);
+}
+
+/* ==========================================================================
+   11. 결과를 그림으로 만들어 공유하기
+   화면을 사진 찍는 것이 아니라, 지금 배치를 읽어 캔버스에 새로 그린다.
+   (외부 라이브러리 없이 순수 canvas 로만 그린다)
+   ========================================================================== */
+
+var CV_FONT = '"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif';
+
+/* 그림은 화면 테마와 상관없이 언제나 밝은 바탕으로 고정한다
+   (어두운 화면에서 뽑은 그림이 카카오톡에서 시커멓게 보이지 않도록) */
+var CV_COLOR = {
+  bg:'#ffffff', panel:'#f7f3ea', panelLine:'#dcd3c2',
+  ink:'#241f18', muted:'#6d6357',
+  headA:'#2a6595', headB:'#1d4f79', headInk:'#ffffff',
+  subA:'#dfeaf5',  subB:'#c9dcee',  subInk:'#12395a',
+  chiefA:'#fff3cf',chiefB:'#f3d78a',chiefInk:'#4a3607', gold:'#c08a12',
+  vacantLine:'#c8bda7', vacantInk:'#9a9086',
+  tableA:'#a97246', tableB:'#8a5c38'
+};
+
+/* 둥근 네모 (구형 브라우저에도 있는 기능만 써서 직접 그린다) */
+function cvRound(g,x,y,w,h,r){
+  r = Math.min(r, w/2, h/2);
+  g.beginPath();
+  g.moveTo(x+r,y);
+  g.lineTo(x+w-r,y); g.quadraticCurveTo(x+w,y,x+w,y+r);
+  g.lineTo(x+w,y+h-r); g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  g.lineTo(x+r,y+h); g.quadraticCurveTo(x,y+h,x,y+h-r);
+  g.lineTo(x,y+r); g.quadraticCurveTo(x,y,x+r,y);
+  g.closePath();
+}
+
+/* 글자가 칸을 넘치면 넘치지 않을 때까지 크기를 줄인다 */
+function cvFit(g, text, maxW, size, weight){
+  g.font = weight+' '+size+'px '+CV_FONT;
+  while(size > 7 && g.measureText(text).width > maxW){
+    size -= 0.5;
+    g.font = weight+' '+size+'px '+CV_FONT;
+  }
+  return size;
+}
+
+function cvSeatCard(g, x, y, w, h, m, isChief){
+  var grad = g.createLinearGradient(0,y,0,y+h);
+  var ink;
+
+  if(isChief){                                   /* 총장석 : 금색 */
+    grad.addColorStop(0,CV_COLOR.chiefA); grad.addColorStop(1,CV_COLOR.chiefB);
+    ink = CV_COLOR.chiefInk;
+    cvRound(g,x,y,w,h,9); g.fillStyle=grad; g.fill();
+    g.lineWidth=3; g.strokeStyle=CV_COLOR.gold; g.stroke();
+  } else if(!m){                                 /* 결석 : 공석 */
+    cvRound(g,x,y,w,h,9);
+    g.fillStyle='#ffffff'; g.fill();
+    g.lineWidth=1.6; g.strokeStyle=CV_COLOR.vacantLine;
+    if(g.setLineDash) g.setLineDash([5,4]);
+    g.stroke();
+    if(g.setLineDash) g.setLineDash([]);
+    ink = CV_COLOR.vacantInk;
+  } else if(m.tier === 'head'){                  /* 처장 : 진한 색 */
+    grad.addColorStop(0,CV_COLOR.headA); grad.addColorStop(1,CV_COLOR.headB);
+    ink = CV_COLOR.headInk;
+    cvRound(g,x,y,w,h,9); g.fillStyle=grad; g.fill();
+  } else {                                       /* 부처장·실장 : 연한 색 */
+    grad.addColorStop(0,CV_COLOR.subA); grad.addColorStop(1,CV_COLOR.subB);
+    ink = CV_COLOR.subInk;
+    cvRound(g,x,y,w,h,9); g.fillStyle=grad; g.fill();
+    g.lineWidth=1; g.strokeStyle='rgba(0,0,0,.10)'; g.stroke();
+  }
+
+  g.fillStyle = ink;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  var cx = x + w/2, cy = y + h/2, pad = w - 12;
+
+  if(!m || !m.l2){                               /* 한 줄짜리 (총장·공석) */
+    var t = m ? m.l1 : '공석';
+    cvFit(g, t, pad, isChief ? 21 : 17, '800');
+    g.fillText(t, cx, cy);
+  } else {                                       /* 부서명 / 직위 두 줄 */
+    cvFit(g, m.l1, pad, 16.5, '800');
+    g.fillText(m.l1, cx, cy - 10);
+    cvFit(g, m.l2, pad, 14.5, '600');
+    g.fillText(m.l2, cx, cy + 11);
+  }
+}
+
+/* 지금 배치를 A4 가로 느낌의 그림 한 장으로 그린다 */
+function drawSeatingCanvas(asg){
+  var S = 2.5;                       /* 2.5배로 그려서 폰에서도 또렷하게 */
+  var W = 600, H = 400;
+  var cv = document.createElement('canvas');
+  cv.width  = Math.round(W*S);
+  cv.height = Math.round(H*S);
+  var g = cv.getContext('2d');
+  g.scale(S,S);
+
+  /* 바탕 */
+  g.fillStyle = CV_COLOR.bg;
+  g.fillRect(0,0,W,H);
+
+  /* 제목 */
+  g.fillStyle = CV_COLOR.ink;
+  g.textAlign='center'; g.textBaseline='alphabetic';
+  g.font = '800 24px '+CV_FONT;
+  g.fillText('동양미래대학교 처장단 회식 자리', W/2, 41);
+
+  /* 테이블이 놓인 판 */
+  cvRound(g,14,58,W-28,278,16);
+  g.fillStyle = CV_COLOR.panel; g.fill();
+  g.lineWidth=1.2; g.strokeStyle=CV_COLOR.panelLine; g.stroke();
+
+  var x0 = 27, innerW = W - 54, gap = 9;
+  var cw = (innerW - gap*4)/5, ch = 76;
+  var yTop = 84, yTable = 170, tableH = 70, yBottom = 250;
+
+  /* 위쪽 가로줄 5석 (가운데가 총장) */
+  var i, m;
+  for(i=0;i<5;i++){
+    m = asg[i];
+    cvSeatCard(g, x0 + i*(cw+gap), yTop, cw, ch, m, i===CHIEF_SLOT);
+  }
+
+  /* 총장석 위 '상석' 꼬리표 */
+  var chiefCx = x0 + CHIEF_SLOT*(cw+gap) + cw/2;
+  cvRound(g, chiefCx-18, yTop-16, 36, 15, 7.5);
+  g.fillStyle = CV_COLOR.gold; g.fill();
+  g.fillStyle = '#241a00';
+  g.font = '800 10px '+CV_FONT;
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText('상석', chiefCx, yTop-8.2);
+
+  /* 가로로 긴 테이블 */
+  var tg = g.createLinearGradient(0,yTable,0,yTable+tableH);
+  tg.addColorStop(0,CV_COLOR.tableA); tg.addColorStop(1,CV_COLOR.tableB);
+  cvRound(g, x0, yTable, innerW, tableH, 10);
+  g.fillStyle = tg; g.fill();
+  g.lineWidth = 2; g.strokeStyle = 'rgba(0,0,0,.20)'; g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.88)';
+  g.font = '700 14px '+CV_FONT;
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText('회 식 테 이 블', W/2, yTable + tableH/2);
+
+  /* 아래쪽 가로줄 5석 */
+  for(i=0;i<5;i++){
+    cvSeatCard(g, x0 + i*(cw+gap), yBottom, cw, ch, asg[i+5], false);
+  }
+
+  /* 아래 설명 : 총장 양옆 + 날짜 */
+  var nm = function(x){ return x ? (x.l2 ? x.l1+' '+x.l2 : x.l1) : '공석'; };
+  g.textAlign='center'; g.textBaseline='alphabetic';
+  g.fillStyle = CV_COLOR.ink;
+  g.font = '700 13.5px '+CV_FONT;
+  g.fillText('총장님 양옆 : ' + nm(asg[1]) + ' · ' + nm(asg[3]), W/2, 359);
+  g.fillStyle = CV_COLOR.muted;
+  g.font = '600 12px '+CV_FONT;
+  g.fillText(dateKo(), W/2, 380);
+
+  return cv;
+}
+
+function dateKo(){
+  var d = new Date();
+  var w = ['일','월','화','수','목','금','토'][d.getDay()];
+  return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+w+')';
+}
+function dateSlug(){
+  var d = new Date(), p = function(n){ return (n<10?'0':'')+n; };
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+
+/* 짧은 안내 쪽지 */
+var toastEl = document.getElementById('toast'), toastTimer = null;
+function toast(msg, ms){
+  toastEl.textContent = msg;
+  toastEl.classList.add('on');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, ms || 3200);
+}
+
+/* 그림 파일을 내려받기 (공유창을 못 쓰는 환경의 대체 동작) */
+function downloadPng(blob, fname){
+  try{
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      if(a.parentNode) a.parentNode.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1500);
+    toast('이미지를 저장했습니다\n' + fname + '\n(다운로드 폴더에서 카카오톡·메일로 보내세요)', 4600);
+    return true;
+  }catch(e){
+    toast('이미지를 저장하지 못했습니다. 화면을 사진 찍어 주세요.', 4200);
+    return false;
+  }
+}
+
+var lastAssign = null;                 /* 마지막으로 확정된 배치 */
+var shareBtn  = document.getElementById('shareBtn');
+var shareHint = document.getElementById('shareHint');
+
+function shareResult(){
+  if(!lastAssign){ toast('먼저 자리를 뽑아 주세요'); return; }
+
+  var cv;
+  try{ cv = drawSeatingCanvas(lastAssign); }
+  catch(e){ toast('이미지를 만들지 못했습니다: '+e.message, 4200); return; }
+
+  /* 파일명은 영문·숫자로 (한글 파일명은 기기에 따라 깨지는 경우가 있다) */
+  var fname = 'seating_' + dateSlug() + '.png';
+
+  var handle = function(blob){
+    if(!blob){ toast('이미지를 만들지 못했습니다', 4000); return; }
+
+    var file = null;
+    try{ file = new File([blob], fname, {type:'image/png'}); }catch(e){ file = null; }
+
+    /* ① 폰의 기본 공유창 (카카오톡·메일·문자·저장 등) */
+    if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({
+        files:[file],
+        title:'처장단 회식 자리',
+        text:'동양미래대학교 처장단 회식 자리 배치 ('+dateKo()+')'
+      }).then(function(){
+        toast('공유했습니다');
+      }).catch(function(err){
+        if(err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return; /* 사용자가 닫음 */
+        downloadPng(blob, fname);   /* 공유가 실패하면 저장으로 떨어진다 */
+      });
+      return;
+    }
+
+    /* ② 공유창을 못 쓰는 환경(PC 브라우저 등)에서는 그림 파일로 저장 */
+    downloadPng(blob, fname);
+  };
+
+  if(cv.toBlob){
+    cv.toBlob(handle, 'image/png');
+  }else{
+    /* 아주 오래된 브라우저용 대비책 */
+    try{
+      var parts = cv.toDataURL('image/png').split(',');
+      var bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+      handle(new Blob([arr], {type:'image/png'}));
+    }catch(e){ toast('이 브라우저에서는 이미지 저장이 어렵습니다. 화면을 사진 찍어 주세요.', 4600); }
+  }
+}
+shareBtn.addEventListener('click', shareResult);
+
+/* ==========================================================================
+   12. 실행 / 마무리
+   ========================================================================== */
+var goBtn = document.getElementById('goBtn');
+var againBtn = document.getElementById('againBtn');
+
+function setBusy(b){
+  running = b;
+  goBtn.disabled = b;
+  againBtn.disabled = b;
+  Array.prototype.forEach.call(modesBox.children, function(c){ c.disabled = b; });
+}
+
+function showMeta(asg){
+  /* 1번 자리·3번 자리가 총장 양옆이다 */
+  var nm = function(m){ return m ? (m.l1+' '+m.l2) : '공석'; };
+  document.getElementById('meta').innerHTML =
+    '총장님 양옆 : <b>'+nm(asg[1])+'</b> · <b>'+nm(asg[3])+'</b><br>' +
+    '추첨 일시 : ' + dateKo();
+}
+
+function start(){
+  if(running) return;
+  runId++; clearTimers();
+  physicsOn = false;
+  tub.classList.remove('on'); tubInner.innerHTML='';
+  deck.classList.remove('on');
+
+  var asg = buildAssignment();
+  resetSeats();
+  /* 릴 회전 속도 초기화 */
+  for(var s=0;s<10;s++) reelOf[s].period = 0.085;
+  /* 새로 뽑는 동안에는 공유 버튼을 잠근다 */
+  lastAssign = null;
+  shareBtn.disabled = true;
+  shareHint.textContent = '자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다';
+  setBusy(true);
+
+  var finish = function(){
+    setBusy(false);
+    showMeta(asg);
+    setStatus('자리가 정해졌습니다');
+    sfxFanfare();
+    goBtn.textContent = '다시 뽑기';
+    /* 자리가 확정된 뒤에만 공유가 열린다 */
+    lastAssign = asg;
+    shareBtn.disabled = false;
+    shareHint.textContent = '카카오톡·메일·문자로 보내거나 사진으로 저장할 수 있습니다';
+  };
+
+  if(mode === 'A')      runLotto(asg, finish);
+  else if(mode === 'B') runSlot(asg, finish);
+  else if(mode === 'C') runDeal(asg, finish);
+  else                  runHybrid(asg, finish);
+}
+
+goBtn.addEventListener('click', start);
+againBtn.addEventListener('click', start);
+
+/* 첫 화면 : 총장석만 미리 놓아 둔다 */
+resetSeats();
+
+})();
+</script>
+
+</body>
+</html>
