@@ -513,14 +513,62 @@ body{
 .dot.head{background:var(--head-bg)}
 .dot.sub{background:var(--line2)}
 .dot.chief{background:var(--gold)}
-.rowline{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;
-  padding-top:8px;border-top:1px dashed var(--line)}
-.snd{
-  appearance:none;border:1.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
-  border-radius:99px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+/* ---------- 효과음 스위치 (화면 맨 위) ---------- */
+.sndrow{
+  appearance:none;
+  display:flex;align-items:center;gap:9px;
+  width:100%;
+  border:1.5px solid var(--line2);
+  background:var(--panel);
+  color:var(--ink);
+  border-radius:12px;
+  padding:11px 13px;
+  margin-bottom:9px;
+  font-family:inherit;cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:border-color .18s, background .18s;
 }
-.snd[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
-.hint{font-size:11px;color:var(--muted);line-height:1.5}
+.sndrow:active{transform:scale(.995)}
+.sndico{font-size:19px;line-height:1;flex:0 0 auto}
+.sndtxt{
+  font-size:clamp(13px,3.5vw,15px);font-weight:800;letter-spacing:-.02em;
+  margin-right:auto;
+}
+/* 미닫이 스위치 */
+.switch{
+  position:relative;flex:0 0 auto;
+  width:50px;height:28px;border-radius:99px;
+  background:var(--line2);
+  transition:background .2s;
+}
+.knob{
+  position:absolute;top:3px;left:3px;
+  width:22px;height:22px;border-radius:99px;
+  background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.35);
+  transition:transform .2s;
+}
+.sndstate{
+  font-size:clamp(12px,3.2vw,13.5px);font-weight:800;
+  min-width:2.6em;text-align:right;
+  color:var(--muted);
+}
+/* 켜짐 상태 */
+.sndrow[aria-pressed="true"]{
+  border-color:#2f8a55;
+  background:linear-gradient(180deg,rgba(47,138,85,.10),rgba(47,138,85,.03));
+}
+.sndrow[aria-pressed="true"] .switch{background:#2f8a55}
+.sndrow[aria-pressed="true"] .knob{transform:translateX(22px)}
+.sndrow[aria-pressed="true"] .sndstate{color:#2f8a55}
+@media (prefers-color-scheme: dark){
+  .sndrow[aria-pressed="true"]{border-color:#4fbf80}
+  .sndrow[aria-pressed="true"] .switch{background:#3d9c65}
+  .sndrow[aria-pressed="true"] .sndstate{color:#6fd39a}
+}
+:root[data-theme="dark"] .sndrow[aria-pressed="true"]{border-color:#4fbf80}
+:root[data-theme="dark"] .sndrow[aria-pressed="true"] .switch{background:#3d9c65}
+:root[data-theme="dark"] .sndrow[aria-pressed="true"] .sndstate{color:#6fd39a}
 
 /* ---------- 로또 추첨기 ---------- */
 #tub{
@@ -588,6 +636,14 @@ body{
     <p>총장님 자리는 상석에 고정, 나머지 아홉 분은 무작위로 정해집니다</p>
   </div>
 
+  <!-- 효과음 켜기/끄기 : 가장 위에 크게 -->
+  <button class="sndrow" id="sndBtn" aria-pressed="true">
+    <span class="sndico" id="sndIco">🔊</span>
+    <span class="sndtxt">효과음</span>
+    <span class="switch"><span class="knob"></span></span>
+    <span class="sndstate" id="sndState">켜짐</span>
+  </button>
+
   <!-- 연출 선택 -->
   <div class="panel">
     <h2>연출 고르기</h2>
@@ -621,10 +677,6 @@ body{
   <div class="panel" style="margin-top:9px">
     <h2>참석자 (체크를 풀면 그 자리는 공석으로 남습니다)</h2>
     <div class="roster" id="roster"></div>
-    <div class="rowline">
-      <span class="hint">효과음은 기본으로 꺼져 있습니다</span>
-      <button class="snd" id="sndBtn" aria-pressed="false">효과음 꺼짐</button>
-    </div>
   </div>
 
   <div class="foot">
@@ -686,7 +738,13 @@ var EFFECTS = [
    2. 상태
    ========================================================================== */
 var mode = 'D';                 /* 기본 연출 = D 하이브리드 */
-var soundOn = false;            /* 효과음 기본 꺼짐 */
+var SND_KEY = 'seatShuffle.sound';
+var soundOn = true;             /* 효과음 기본 켜짐 */
+/* 지난번에 끄셨으면 그대로 기억한다 */
+try{
+  var _s = window.localStorage ? localStorage.getItem(SND_KEY) : null;
+  if(_s === 'off') soundOn = false;
+}catch(e){ /* 저장소를 못 쓰는 환경이면 기본값 사용 */ }
 var running = false;
 var present = {};               /* 참석 여부 : present[memberId] = true */
 var lastKey = '';               /* 직전 배치 (겹침 방지용) */
@@ -773,6 +831,8 @@ MEMBERS.forEach(function(m){
     present[m.id] = cb.checked;
     var n = 0; for(var k in present){ if(present[k]) n++; }
     setStatus('참석 '+n+'명 · 공석 '+(10-n)+'석');
+    /* 명단이 바뀌었으니 미리 만들어 둔 그림을 버리고 다시 만든다 */
+    invalidateSharePng();
   });
   rosterBox.appendChild(lab);
 });
@@ -780,9 +840,13 @@ MEMBERS.forEach(function(m){
 /* ==========================================================================
    4. 소리 (Web Audio API 로 직접 생성 · 외부 파일 없음)
    ========================================================================== */
-var ac = null;
-function ensureAC(){
-  if(!soundOn) return null;
+var ac = null, audioUnlocked = false;
+
+/* ⚠️ 아이폰·안드로이드 브라우저는 화면을 한 번 누르기 전에는 소리를 내지 못한다.
+   그래서 소리통(AudioContext)을 페이지가 열릴 때 만들지 않고,
+   사용자가 처음 무언가를 누른 그 순간에 만들고 깨운다.
+   이 함수는 반드시 클릭 핸들러 '안에서' 곧바로 불러야 한다. */
+function unlockAudio(){
   try{
     if(!ac){
       var C = window.AudioContext || window.webkitAudioContext;
@@ -790,7 +854,22 @@ function ensureAC(){
       ac = new C();
     }
     if(ac.state === 'suspended') ac.resume();
+    if(!audioUnlocked){
+      /* 아이폰은 아주 짧은 무음을 한 번 재생해 줘야 잠금이 풀린다 */
+      var b = ac.createBuffer(1, 1, 22050);
+      var s = ac.createBufferSource();
+      s.buffer = b;
+      s.connect(ac.destination);
+      s.start(0);
+      audioUnlocked = true;
+    }
   }catch(e){ ac = null; }
+  return ac;
+}
+
+function ensureAC(){
+  if(!soundOn || !ac) return null;
+  try{ if(ac.state === 'suspended') ac.resume(); }catch(e){}
   return ac;
 }
 function tone(freq, dur, type, vol, delay){
@@ -813,12 +892,24 @@ function sfxFanfare(){
   tone(1567.98,0.5,'triangle',0.05,0.45);
 }
 
-var sndBtn = document.getElementById('sndBtn');
+var sndBtn   = document.getElementById('sndBtn');
+var sndState = document.getElementById('sndState');
+var sndIco   = document.getElementById('sndIco');
+
+function paintSound(){
+  sndBtn.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+  sndState.textContent = soundOn ? '켜짐' : '꺼짐';
+  sndIco.textContent   = soundOn ? '🔊' : '🔇';
+  sndBtn.setAttribute('aria-label', '효과음 ' + (soundOn ? '켜짐' : '꺼짐'));
+}
+paintSound();
+
 sndBtn.addEventListener('click', function(){
+  unlockAudio();                 /* 누른 그 순간에 소리통을 깨운다 */
   soundOn = !soundOn;
-  sndBtn.setAttribute('aria-pressed', soundOn?'true':'false');
-  sndBtn.textContent = soundOn ? '효과음 켜짐' : '효과음 꺼짐';
-  if(soundOn){ ensureAC(); sfxTick(); }
+  try{ if(window.localStorage) localStorage.setItem(SND_KEY, soundOn ? 'on' : 'off'); }catch(e){}
+  paintSound();
+  if(soundOn) sfxTick();         /* 켰을 때 소리로 확인시켜 준다 */
 });
 
 /* ==========================================================================
@@ -1301,7 +1392,7 @@ function cvSeatCard(g, x, y, w, h, m, isChief){
 /* 지금 배치를 A4 가로 느낌의 그림 한 장으로 그린다 */
 function drawSeatingCanvas(asg){
   var S = 2.5;                       /* 2.5배로 그려서 폰에서도 또렷하게 */
-  var W = 600, H = 400;
+  var W = 600, H = 376;
   var cv = document.createElement('canvas');
   cv.width  = Math.round(W*S);
   cv.height = Math.round(H*S);
@@ -1359,15 +1450,11 @@ function drawSeatingCanvas(asg){
     cvSeatCard(g, x0 + i*(cw+gap), yBottom, cw, ch, asg[i+5], false);
   }
 
-  /* 아래 설명 : 총장 양옆 + 날짜 */
-  var nm = function(x){ return x ? (x.l2 ? x.l1+' '+x.l2 : x.l1) : '공석'; };
+  /* 아래 설명 : 기록용 날짜만 */
   g.textAlign='center'; g.textBaseline='alphabetic';
-  g.fillStyle = CV_COLOR.ink;
-  g.font = '700 13.5px '+CV_FONT;
-  g.fillText('총장님 양옆 : ' + nm(asg[1]) + ' · ' + nm(asg[3]), W/2, 359);
   g.fillStyle = CV_COLOR.muted;
-  g.font = '600 12px '+CV_FONT;
-  g.fillText(dateKo(), W/2, 380);
+  g.font = '600 13px '+CV_FONT;
+  g.fillText(dateKo(), W/2, 358);
 
   return cv;
 }
@@ -1411,56 +1498,121 @@ function downloadPng(blob, fname){
   }
 }
 
-var lastAssign = null;                 /* 마지막으로 확정된 배치 */
+/* 이미지를 클립보드에 복사 (공유창은 있는데 파일은 못 보내는 경우) */
+function copyPng(blob, done){
+  try{
+    if(!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem)){ done(false); return; }
+    var item = new ClipboardItem({'image/png': blob});
+    navigator.clipboard.write([item]).then(function(){ done(true); })
+                                     .catch(function(){ done(false); });
+  }catch(e){ done(false); }
+}
+
+var lastAssign   = null;               /* 마지막으로 확정된 배치 */
+var sharedBlob   = null;               /* 미리 만들어 둔 그림 (공유를 즉시 띄우기 위함) */
+var prepareToken = 0;                  /* 준비 작업 순번 (뒤늦게 끝난 옛 작업을 버리려고) */
 var shareBtn  = document.getElementById('shareBtn');
 var shareHint = document.getElementById('shareHint');
 
+/* 배치를 그림(PNG)으로 만든다 */
+function makeSharePng(asg, cb){
+  var cv;
+  try{ cv = drawSeatingCanvas(asg); }
+  catch(e){ cb(null); return; }
+
+  if(cv.toBlob){ cv.toBlob(cb, 'image/png'); return; }
+
+  /* 아주 오래된 브라우저용 대비책 */
+  try{
+    var parts = cv.toDataURL('image/png').split(',');
+    var bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+    cb(new Blob([arr], {type:'image/png'}));
+  }catch(e){ cb(null); }
+}
+
+/* ⚠️ 핵심 : 자리가 정해지는 순간 그림을 미리 만들어 둔다.
+   폰(특히 아이폰)은 "버튼을 누른 그 순간"에만 공유창을 열어 주는데,
+   누른 뒤에 그림을 만들면 그 사이에 자격이 풀려 공유창이 안 뜬다.
+   그래서 미리 만들어 두었다가 누르는 즉시 공유창을 띄운다. */
+function prepareSharePng(){
+  sharedBlob = null;
+  if(!lastAssign) return;
+  var my = ++prepareToken;
+  var asg = lastAssign;
+  makeSharePng(asg, function(blob){
+    if(my !== prepareToken) return;    /* 그 사이 다시 뽑았으면 버린다 */
+    sharedBlob = blob;
+  });
+}
+
+/* 배치가 아직 그대로여도, 명단을 건드리면 그림을 다시 만들어 둔다 */
+function invalidateSharePng(){
+  prepareToken++;
+  sharedBlob = null;
+  if(lastAssign) prepareSharePng();
+}
+
+function shareFileName(){
+  /* 파일명은 영문·숫자로 (한글 파일명은 기기에 따라 깨지는 경우가 있다) */
+  return 'seating_' + dateSlug() + '.png';
+}
+
+/* 실제 공유 — ① 공유창 → ② 클립보드 복사 → ③ 내려받기 순으로 시도 */
+function doShare(blob, fname){
+  if(!blob){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
+
+  var file = null;
+  try{ file = new File([blob], fname, {type:'image/png'}); }catch(e){ file = null; }
+
+  /* ① 폰의 기본 공유창 (카카오톡·메일·문자·저장 등) */
+  if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({
+      files:[file],
+      title:'처장단 회식 자리',
+      text:'동양미래대학교 처장단 회식 자리 배치 ('+dateKo()+')'
+    }).then(function(){
+      toast('공유했습니다');
+    }).catch(function(err){
+      /* 사용자가 공유창을 닫은 것은 실패가 아니다 — 조용히 끝낸다 */
+      if(err && err.name === 'AbortError') return;
+      fallbackShare(blob, fname);
+    });
+    return;
+  }
+
+  fallbackShare(blob, fname);
+}
+
+function fallbackShare(blob, fname){
+  /* ② 공유창으로 파일을 못 보내면 클립보드에 이미지를 복사해 준다 */
+  if(navigator.share){
+    copyPng(blob, function(ok){
+      if(ok){
+        toast('이미지를 복사했습니다.\n카카오톡 대화창을 길게 눌러 붙여넣기 하세요.', 5200);
+      }else{
+        downloadPng(blob, fname);      /* ③ 그래도 안 되면 내려받기 */
+      }
+    });
+    return;
+  }
+  /* PC 브라우저처럼 공유창 자체가 없으면 바로 내려받기 */
+  downloadPng(blob, fname);
+}
+
 function shareResult(){
   if(!lastAssign){ toast('먼저 자리를 뽑아 주세요'); return; }
+  var fname = shareFileName();
 
-  var cv;
-  try{ cv = drawSeatingCanvas(lastAssign); }
-  catch(e){ toast('이미지를 만들지 못했습니다: '+e.message, 4200); return; }
+  /* 미리 만들어 둔 그림이 있으면 기다리지 않고 곧바로 공유창을 띄운다 */
+  if(sharedBlob){ doShare(sharedBlob, fname); return; }
 
-  /* 파일명은 영문·숫자로 (한글 파일명은 기기에 따라 깨지는 경우가 있다) */
-  var fname = 'seating_' + dateSlug() + '.png';
-
-  var handle = function(blob){
-    if(!blob){ toast('이미지를 만들지 못했습니다', 4000); return; }
-
-    var file = null;
-    try{ file = new File([blob], fname, {type:'image/png'}); }catch(e){ file = null; }
-
-    /* ① 폰의 기본 공유창 (카카오톡·메일·문자·저장 등) */
-    if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      navigator.share({
-        files:[file],
-        title:'처장단 회식 자리',
-        text:'동양미래대학교 처장단 회식 자리 배치 ('+dateKo()+')'
-      }).then(function(){
-        toast('공유했습니다');
-      }).catch(function(err){
-        if(err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return; /* 사용자가 닫음 */
-        downloadPng(blob, fname);   /* 공유가 실패하면 저장으로 떨어진다 */
-      });
-      return;
-    }
-
-    /* ② 공유창을 못 쓰는 환경(PC 브라우저 등)에서는 그림 파일로 저장 */
-    downloadPng(blob, fname);
-  };
-
-  if(cv.toBlob){
-    cv.toBlob(handle, 'image/png');
-  }else{
-    /* 아주 오래된 브라우저용 대비책 */
-    try{
-      var parts = cv.toDataURL('image/png').split(',');
-      var bin = atob(parts[1]), arr = new Uint8Array(bin.length);
-      for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-      handle(new Blob([arr], {type:'image/png'}));
-    }catch(e){ toast('이 브라우저에서는 이미지 저장이 어렵습니다. 화면을 사진 찍어 주세요.', 4600); }
-  }
+  /* 아직 준비 중인 드문 경우에만 기다린다 */
+  toast('이미지를 준비하고 있습니다…', 1600);
+  makeSharePng(lastAssign, function(blob){
+    sharedBlob = blob;
+    doShare(blob, fname);
+  });
 }
 shareBtn.addEventListener('click', shareResult);
 
@@ -1477,16 +1629,14 @@ function setBusy(b){
   Array.prototype.forEach.call(modesBox.children, function(c){ c.disabled = b; });
 }
 
-function showMeta(asg){
-  /* 1번 자리·3번 자리가 총장 양옆이다 */
-  var nm = function(m){ return m ? (m.l1+' '+m.l2) : '공석'; };
-  document.getElementById('meta').innerHTML =
-    '총장님 양옆 : <b>'+nm(asg[1])+'</b> · <b>'+nm(asg[3])+'</b><br>' +
-    '추첨 일시 : ' + dateKo();
+function showMeta(){
+  /* 기록용 날짜만 남긴다 (누가 총장님 양옆인지는 표에서 바로 보이므로 적지 않는다) */
+  document.getElementById('meta').innerHTML = '추첨 일시 : ' + dateKo();
 }
 
 function start(){
   if(running) return;
+  unlockAudio();                 /* 누른 그 순간에 소리통을 깨운다 (아이폰 대응) */
   runId++; clearTimers();
   physicsOn = false;
   tub.classList.remove('on'); tubInner.innerHTML='';
@@ -1498,20 +1648,23 @@ function start(){
   for(var s=0;s<10;s++) reelOf[s].period = 0.085;
   /* 새로 뽑는 동안에는 공유 버튼을 잠근다 */
   lastAssign = null;
+  prepareToken++; sharedBlob = null;
   shareBtn.disabled = true;
   shareHint.textContent = '자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다';
   setBusy(true);
 
   var finish = function(){
     setBusy(false);
-    showMeta(asg);
+    showMeta();
     setStatus('자리가 정해졌습니다');
     sfxFanfare();
     goBtn.textContent = '다시 뽑기';
     /* 자리가 확정된 뒤에만 공유가 열린다 */
     lastAssign = asg;
     shareBtn.disabled = false;
-    shareHint.textContent = '카카오톡·메일·문자로 보내거나 사진으로 저장할 수 있습니다';
+    shareHint.textContent = '카카오톡·메일·문자로 바로 보낼 수 있습니다';
+    /* 누르자마자 공유창이 뜨도록 그림을 지금 미리 만들어 둔다 */
+    prepareSharePng();
   };
 
   if(mode === 'A')      runLotto(asg, finish);
