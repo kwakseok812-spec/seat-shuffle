@@ -512,17 +512,21 @@ body{
   max-width:760px;margin:0 auto;
   display:flex;flex-direction:column;gap:10px;
 }
-/* ⚠️ 그림을 꾹 눌렀을 때 기기 메뉴('사진에 저장' 등)가 떠야 하므로
-   touch-callout 과 선택을 막지 않는다. */
+/* ⚠️ 그림을 꾹 눌렀을 때 기기 메뉴('사진에 저장' 등)가 반드시 떠야 한다.
+   그래서 이 그림에는 롱프레스를 막는 어떤 성질도 걸지 않는다.
+   (touch-callout / user-select / touch-action / pointer-events 모두 기본값으로 명시) */
 #imgOut{
   display:block;width:100%;height:auto;
   border-radius:10px;
   background:#fff;
   box-shadow:0 8px 28px rgba(0,0,0,.5);
-  -webkit-touch-callout:default;
-  -webkit-user-select:auto;
-  user-select:auto;
-  pointer-events:auto;
+  -webkit-touch-callout:default !important;
+  -webkit-user-select:auto !important;
+  -moz-user-select:auto !important;
+  user-select:auto !important;
+  touch-action:auto !important;
+  pointer-events:auto !important;
+  -webkit-user-drag:auto;
 }
 .imgtip{
   text-align:center;color:#eef2f7;line-height:1.55;
@@ -541,6 +545,39 @@ body{
 }
 .imgbtn.copy{background:rgba(47,138,85,.9);border-color:rgba(255,255,255,.25)}
 .imgbtn:active{transform:translateY(1px)}
+/* 공유하기 · 새 창으로 열기 : 그림 바로 아래 크게 */
+.imgbtn.go2,.imgbtn.go3{
+  width:100%;padding:14px 12px;
+  font-size:clamp(14px,3.9vw,16px);
+}
+.imgbtn.go2{background:linear-gradient(180deg,#3a8f5a,#256b40);border-color:rgba(255,255,255,.3)}
+.imgbtn.go3{background:linear-gradient(180deg,#2a6ea3,#1d4f79);border-color:rgba(255,255,255,.3)}
+
+/* ---------- 진단 정보 ---------- */
+.diag{
+  color:#dfe6ee;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;padding:8px 10px;
+}
+.diag summary{
+  cursor:pointer;font-size:12px;font-weight:800;
+  padding:2px 0;list-style:none;
+}
+.diag summary::-webkit-details-marker{display:none}
+.diag pre{
+  margin:8px 0;padding:9px 10px;
+  background:rgba(0,0,0,.45);
+  border-radius:8px;
+  font-family:ui-monospace,Consolas,"Courier New",monospace;
+  font-size:11px;line-height:1.6;
+  white-space:pre-wrap;word-break:break-all;
+  color:#e8eef5;
+  max-height:44vh;overflow:auto;
+  /* 교수님이 글자를 골라 복사하실 수 있어야 한다 */
+  -webkit-user-select:text !important;
+  user-select:text !important;
+}
 
 /* ---------- 명단 / 설정 ---------- */
 .roster{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 8px}
@@ -745,14 +782,28 @@ body{
 <div class="imgview" id="imgView">
   <div class="imgbox">
     <img id="imgOut" alt="회식 자리 배치도">
+
+    <button class="imgbtn go2" id="imgShare">📤 공유하기</button>
+    <button class="imgbtn go3" id="imgOpen">🔗 이미지 새 창으로 열기</button>
+
     <div class="imgtip">
-      <b id="imgTipMain">그림을 꾹 눌러 &lsquo;이미지 공유&rsquo; 또는 &lsquo;사진에 저장&rsquo;을 선택하세요</b>
-      <span id="imgTipSub">PC에서는 그림에 오른쪽 클릭 → &lsquo;이미지 복사&rsquo;</span>
+      <b>① 위 &lsquo;📤 공유하기&rsquo; 버튼을 먼저 눌러 보세요</b>
+      <span>② 안 되면 &lsquo;🔗 새 창으로 열기&rsquo; → 열린 그림을 꾹 눌러 &lsquo;사진에 저장&rsquo;</span>
+      <span>③ 여기서 그림을 바로 꾹 눌러 &lsquo;사진에 저장&rsquo; 해도 됩니다</span>
+      <span>④ 그것도 안 되면 폰 화면을 캡처(전원 + 음량↓)해서 보내셔도 됩니다</span>
+      <span id="imgTipPc">PC에서는 그림에 오른쪽 클릭 → &lsquo;이미지 복사&rsquo;</span>
     </div>
+
     <div class="imgbtns">
       <button class="imgbtn copy" id="imgCopy">이미지 복사</button>
       <button class="imgbtn" id="imgClose">닫기</button>
     </div>
+
+    <details class="diag" id="diagBox">
+      <summary>ⓘ 진단 정보 (안 될 때 눌러 주세요)</summary>
+      <pre id="diagText"></pre>
+      <button class="imgbtn" id="diagCopy">📋 진단 복사</button>
+    </details>
   </div>
 </div>
 
@@ -1640,29 +1691,41 @@ var imgView  = document.getElementById('imgView');
 var imgOut   = document.getElementById('imgOut');
 var imgCopy  = document.getElementById('imgCopy');
 var imgClose = document.getElementById('imgClose');
-var shownUrl = null, shownBlob = null;
+var imgShare = document.getElementById('imgShare');
+var imgOpen  = document.getElementById('imgOpen');
+var imgTipPc = document.getElementById('imgTipPc');
+var diagBox  = document.getElementById('diagBox');
+var diagText = document.getElementById('diagText');
+var diagCopy = document.getElementById('diagCopy');
 
-var imgTipMain = document.getElementById('imgTipMain');
-var imgTipSub  = document.getElementById('imgTipSub');
+var shownBlob = null;      /* 공유·새 창용 원본 */
+var shownDataUrl = null;   /* 화면 표시용 (data URI) */
+var openedUrl = null;      /* 새 창으로 연 blob 주소 */
+var lastShareError = '';   /* 마지막 공유 오류 (진단에 그대로 보여 준다) */
+var imgSrcKind = '-';
 
-function showImage(blob){
-  if(!blob){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
-  if(shownUrl){ URL.revokeObjectURL(shownUrl); shownUrl = null; }
-  shownBlob = blob;
-  shownUrl = URL.createObjectURL(blob);
-  imgOut.src = shownUrl;
+/* ⚠️ 화면에 보여 주는 <img> 는 blob: 이 아니라 data URI 를 쓴다.
+   아이폰 사파리는 blob: 이미지를 꾹 눌러도 '사진에 저장'을 주지 않는 경우가 많다. */
+function showImage(blob, dataUrl){
+  if(!blob && !dataUrl){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
+  shownBlob = blob || null;
+  shownDataUrl = dataUrl || null;
 
-  /* 쓰는 기기에 맞춰 안내 문구를 앞뒤로 바꾼다 (두 줄 다 보여 준다) */
-  if(isTouchDevice){
-    imgTipMain.textContent = '그림을 꾹 눌러 ‘이미지 공유’ 또는 ‘사진에 저장’을 선택하세요';
-    imgTipSub.textContent  = 'PC에서는 그림에 오른쪽 클릭 → ‘이미지 복사’';
+  if(shownDataUrl){
+    imgOut.src = shownDataUrl;
+    imgSrcKind = 'data URI (' + Math.round(shownDataUrl.length/1024) + ' KB)';
   }else{
-    imgTipMain.textContent = '그림에 오른쪽 클릭 → ‘이미지 복사’ 를 누르세요';
-    imgTipSub.textContent  = '폰에서는 그림을 꾹 눌러 ‘이미지 공유’ 또는 ‘사진에 저장’';
+    if(openedUrl){ URL.revokeObjectURL(openedUrl); openedUrl = null; }
+    openedUrl = URL.createObjectURL(blob);
+    imgOut.src = openedUrl;
+    imgSrcKind = 'blob URL (data URI 생성 실패)';
   }
 
+  imgTipPc.style.display = isTouchDevice ? 'none' : '';
   /* 클립보드 복사 단추는 PC에서만 (폰은 꾹 누르기가 더 편하다) */
   imgCopy.style.display = (!isTouchDevice && navigator.clipboard && window.ClipboardItem) ? '' : 'none';
+
+  refreshDiag();
   imgView.classList.add('on');
   document.body.style.overflow = 'hidden';
 }
@@ -1671,9 +1734,131 @@ function closeImage(){
   imgView.classList.remove('on');
   document.body.style.overflow = '';
 }
+/* ⚠️ 닫기는 'click' 으로만 받는다.
+   touchstart/pointerdown 으로 받으면 그림을 꾹 누르는 동작이 중간에 취소된다. */
 imgClose.addEventListener('click', closeImage);
 imgView.addEventListener('click', function(e){
-  if(e.target === imgView) closeImage();      /* 바깥을 누르면 닫힌다 */
+  /* 그림·버튼 위에서는 절대 닫지 않는다 (바깥 여백을 눌렀을 때만) */
+  if(e.target === imgView) closeImage();
+});
+
+/* ---------- 진단 정보 ---------- */
+function testFile(){
+  try{
+    if(!shownBlob) return null;
+    return new File([shownBlob], shareFileName(), {type:'image/png'});
+  }catch(e){ return null; }
+}
+function buildDiag(){
+  var f = testFile();
+  var canFiles;
+  try{
+    if(!navigator.canShare) canFiles = '(canShare 없음)';
+    else if(!f)             canFiles = '(테스트 파일을 못 만듦)';
+    else                    canFiles = String(navigator.canShare({files:[f]}));
+  }catch(e){ canFiles = '오류 ' + e.name + ': ' + e.message; }
+
+  var lines = [
+    'navigator.share      : ' + (navigator.share ? '있음' : '없음'),
+    'navigator.canShare   : ' + (navigator.canShare ? '있음' : '없음'),
+    'canShare({files})    : ' + canFiles,
+    'File 객체 생성       : ' + (f ? '성공 (' + f.size + ' bytes)' : '실패'),
+    'clipboard.write      : ' + ((navigator.clipboard && navigator.clipboard.write) ? '있음' : '없음'),
+    'ClipboardItem        : ' + (window.ClipboardItem ? '있음' : '없음'),
+    '마지막 공유 오류     : ' + (lastShareError || '(아직 없음)'),
+    '이미지 표시 방식     : ' + imgSrcKind,
+    '원본 PNG 용량        : ' + (shownBlob ? Math.round(shownBlob.size/1024) + ' KB' : '-'),
+    '화면 폭              : ' + window.innerWidth + 'px (dpr ' + (window.devicePixelRatio || 1) + ')',
+    'isSecureContext      : ' + (typeof window.isSecureContext !== 'undefined' ? String(window.isSecureContext) : '알 수 없음'),
+    '주소                 : ' + location.protocol + '//' + (location.host || '(로컬 파일)'),
+    '터치 기기 판정       : ' + (isTouchDevice ? '예' : '아니오'),
+    'userAgent            : ' + String(navigator.userAgent).slice(0,60)
+  ];
+  return lines.join('\n');
+}
+function refreshDiag(){ diagText.textContent = buildDiag(); }
+
+diagCopy.addEventListener('click', function(){
+  var t = diagText.textContent;
+  var done = function(ok){
+    toast(ok ? '진단 정보를 복사했습니다. 소장에게 붙여넣어 주세요.'
+             : '복사가 안 됩니다. 글자를 직접 길게 눌러 선택해 주세요.', 4200);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){ done(true); }).catch(function(){ done(false); });
+  }else{ done(false); }
+});
+
+/* ---------- 그림 표시창 안에서 공유를 다시 시도 ----------
+   버튼을 누른 그 순간이 새로운 '사용자 동작'이므로,
+   처음 자동 시도가 막혔더라도 여기서 성공할 수 있다. */
+imgShare.addEventListener('click', function(){
+  lastShareError = '';
+  if(!shownBlob){
+    lastShareError = '이미지가 준비되지 않았습니다';
+    refreshDiag(); diagBox.open = true;
+    toast('이미지가 준비되지 않았습니다', 3200);
+    return;
+  }
+  var f = testFile();
+  var canFiles = false;
+  try{ canFiles = !!(f && navigator.canShare && navigator.canShare({files:[f]})); }
+  catch(e){ lastShareError = 'canShare 오류 ' + e.name + ': ' + e.message; }
+
+  /* ① 그림 파일 자체를 공유 */
+  if(f && canFiles && navigator.share){
+    navigator.share({ files:[f], title:'처장단 회식 자리' })
+      .then(function(){ toast('공유했습니다'); closeImage(); })
+      .catch(function(err){
+        if(err && err.name === 'AbortError') return;      /* 사용자가 닫음 */
+        lastShareError = (err && err.name ? err.name : '오류') + ': ' + (err && err.message ? err.message : '');
+        refreshDiag(); diagBox.open = true;
+        toast('그림 공유가 막혔습니다.\n아래 진단 정보를 소장에게 알려 주세요.', 5200);
+      });
+    return;
+  }
+
+  /* ② 파일 공유가 안 되면 앱 주소만이라도 공유해 본다 */
+  if(navigator.share){
+    lastShareError = lastShareError || '이 브라우저는 파일 공유(canShare files)를 지원하지 않습니다';
+    navigator.share({ title:'처장단 회식 자리', text:'회식 자리 배치도', url:location.href })
+      .then(function(){ toast('그림은 못 보내고 앱 주소만 공유되었습니다.\n그림은 꾹 눌러 저장해 주세요.', 5600); })
+      .catch(function(err){
+        if(err && err.name === 'AbortError') return;
+        lastShareError = (err && err.name ? err.name : '오류') + ': ' + (err && err.message ? err.message : '');
+        refreshDiag(); diagBox.open = true;
+        toast('공유가 되지 않습니다.\n아래 진단 정보를 소장에게 알려 주세요.', 5200);
+      });
+    refreshDiag();
+    return;
+  }
+
+  /* ③ 공유 기능 자체가 없는 브라우저 */
+  lastShareError = '이 브라우저에는 공유 기능(navigator.share)이 없습니다';
+  refreshDiag(); diagBox.open = true;
+  toast('이 브라우저에는 공유 기능이 없습니다.\n‘새 창으로 열기’를 눌러 보세요.', 5200);
+});
+
+/* ---------- 이미지를 새 창(순수 이미지 페이지)으로 열기 ----------
+   그 화면에서는 꾹 누르기 저장·브라우저 자체 공유가 확실히 동작한다.
+   data: 주소는 최상위 이동이 막히는 브라우저가 많아 blob: 주소를 쓴다. */
+imgOpen.addEventListener('click', function(){
+  if(!shownBlob){ toast('이미지가 준비되지 않았습니다', 3200); return; }
+  var w = null;
+  try{
+    if(openedUrl){ URL.revokeObjectURL(openedUrl); openedUrl = null; }
+    openedUrl = URL.createObjectURL(shownBlob);
+    w = window.open(openedUrl, '_blank');       /* 반드시 클릭 안에서 바로 호출 */
+  }catch(e){
+    lastShareError = '새 창 열기 오류 ' + e.name + ': ' + e.message;
+  }
+  if(!w){
+    lastShareError = lastShareError || '팝업이 차단되어 새 창을 열지 못했습니다';
+    refreshDiag(); diagBox.open = true;
+    toast('새 창이 차단되었습니다.\n주소창 옆의 팝업 차단을 풀어 주시거나,\n여기 있는 그림을 꾹 눌러 주세요.', 6000);
+  }else{
+    toast('새 창에서 그림을 꾹 눌러 ‘사진에 저장’을 선택하세요', 5200);
+  }
 });
 imgCopy.addEventListener('click', function(){
   if(!shownBlob) return;
@@ -1684,41 +1869,47 @@ imgCopy.addEventListener('click', function(){
 });
 
 var lastAssign   = null;               /* 마지막으로 확정된 배치 */
-var sharedBlob   = null;               /* 미리 만들어 둔 그림 (공유를 즉시 띄우기 위함) */
+var sharedBlob   = null;               /* 미리 만들어 둔 그림 (공유·새 창용) */
+var sharedDataUrl= null;               /* 미리 만들어 둔 그림 (화면 표시용 data URI) */
 var prepareToken = 0;                  /* 준비 작업 순번 (뒤늦게 끝난 옛 작업을 버리려고) */
 var shareBtn  = document.getElementById('shareBtn');
 var shareHint = document.getElementById('shareHint');
 
-/* 배치를 그림(PNG)으로 만든다 */
-function makeSharePng(asg, cb){
-  var cv;
-  try{ cv = drawSeatingCanvas(asg); }
-  catch(e){ cb(null); return; }
-
-  if(cv.toBlob){ cv.toBlob(cb, 'image/png'); return; }
-
-  /* 아주 오래된 브라우저용 대비책 */
+/* data URI → Blob */
+function dataUrlToBlob(u){
   try{
-    var parts = cv.toDataURL('image/png').split(',');
-    var bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+    var bin = atob(u.split(',')[1]);
+    var arr = new Uint8Array(bin.length);
     for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-    cb(new Blob([arr], {type:'image/png'}));
-  }catch(e){ cb(null); }
+    return new Blob([arr], {type:'image/png'});
+  }catch(e){ return null; }
 }
 
 /* ⚠️ 핵심 : 자리가 정해지는 순간 그림을 미리 만들어 둔다.
    폰(특히 아이폰)은 "버튼을 누른 그 순간"에만 공유창을 열어 주는데,
    누른 뒤에 그림을 만들면 그 사이에 자격이 풀려 공유창이 안 뜬다.
-   그래서 미리 만들어 두었다가 누르는 즉시 공유창을 띄운다. */
+   그래서 미리 만들어 두었다가 누르는 즉시 공유창을 띄운다.
+   화면 표시용 data URI 도 이때 같이 만들어 둔다. */
 function prepareSharePng(){
-  sharedBlob = null;
+  sharedBlob = null; sharedDataUrl = null;
   if(!lastAssign) return;
   var my = ++prepareToken;
-  var asg = lastAssign;
-  makeSharePng(asg, function(blob){
-    if(my !== prepareToken) return;    /* 그 사이 다시 뽑았으면 버린다 */
-    sharedBlob = blob;
-  });
+
+  var cv;
+  try{ cv = drawSeatingCanvas(lastAssign); }
+  catch(e){ return; }
+
+  /* data URI 는 바로 만들어진다 (화면에 띄울 때 쓴다) */
+  try{ sharedDataUrl = cv.toDataURL('image/png'); }catch(e){ sharedDataUrl = null; }
+
+  if(cv.toBlob){
+    cv.toBlob(function(b){
+      if(my !== prepareToken) return;   /* 그 사이 다시 뽑았으면 버린다 */
+      sharedBlob = b;
+    }, 'image/png');
+  }else if(sharedDataUrl){
+    sharedBlob = dataUrlToBlob(sharedDataUrl);
+  }
 }
 
 function shareFileName(){
@@ -1727,27 +1918,42 @@ function shareFileName(){
 }
 
 /* 실제 공유 — ① 공유창을 띄우고, 안 되면 ② 그림을 화면에 그대로 보여 준다.
-   파일 내려받기는 쓰지 않는다 (폰에서 조용히 실패하기 때문). */
-function doShare(blob, fname){
-  if(!blob){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
+   파일 내려받기는 쓰지 않는다 (폰에서 조용히 실패하기 때문).
+   어떤 경로로 가든 오류는 삼키지 않고 진단에 남긴다. */
+function doShare(blob, dataUrl, fname){
+  if(!blob && !dataUrl){ toast('이미지를 만들지 못했습니다. 화면을 사진 찍어 주세요.', 4200); return; }
+  lastShareError = '';
 
   var file = null;
-  try{ file = new File([blob], fname, {type:'image/png'}); }catch(e){ file = null; }
+  if(blob){
+    try{ file = new File([blob], fname, {type:'image/png'}); }
+    catch(e){ file = null; lastShareError = 'File 생성 실패 ' + e.name + ': ' + e.message; }
+  }
+
+  var canFiles = false;
+  try{ canFiles = !!(file && navigator.canShare && navigator.canShare({files:[file]})); }
+  catch(e){ lastShareError = 'canShare 오류 ' + e.name + ': ' + e.message; }
 
   /* ① 폰의 기본 공유창 (카카오톡·메일·문자 등) */
-  if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+  if(file && canFiles && navigator.share){
     navigator.share({ files:[file], title:'처장단 회식 자리' })
       .then(function(){ toast('공유했습니다'); })
       .catch(function(err){
         /* 사용자가 공유창을 닫은 것은 실패가 아니다 — 조용히 끝낸다 */
         if(err && err.name === 'AbortError') return;
-        showImage(blob);            /* ② 공유가 막히면 그림을 눈앞에 띄운다 */
+        lastShareError = (err && err.name ? err.name : '오류') + ': ' + (err && err.message ? err.message : '');
+        showImage(blob, dataUrl);   /* ② 공유가 막히면 그림을 눈앞에 띄운다 */
       });
     return;
   }
 
+  if(!lastShareError){
+    lastShareError = navigator.share
+      ? '이 브라우저는 그림 파일 공유를 지원하지 않습니다 (canShare files = false)'
+      : '이 브라우저에는 공유 기능(navigator.share)이 없습니다';
+  }
   /* 공유창을 못 쓰는 환경 → 바로 그림을 보여 준다 */
-  showImage(blob);
+  showImage(blob, dataUrl);
 }
 
 function shareResult(){
@@ -1755,14 +1961,12 @@ function shareResult(){
   var fname = shareFileName();
 
   /* 미리 만들어 둔 그림이 있으면 기다리지 않고 곧바로 공유창을 띄운다 */
-  if(sharedBlob){ doShare(sharedBlob, fname); return; }
+  if(sharedBlob || sharedDataUrl){ doShare(sharedBlob, sharedDataUrl, fname); return; }
 
   /* 아직 준비 중인 드문 경우에만 기다린다 */
   toast('이미지를 준비하고 있습니다…', 1600);
-  makeSharePng(lastAssign, function(blob){
-    sharedBlob = blob;
-    doShare(blob, fname);
-  });
+  prepareSharePng();
+  setTimeout(function(){ doShare(sharedBlob, sharedDataUrl, fname); }, 260);
 }
 shareBtn.addEventListener('click', shareResult);
 
