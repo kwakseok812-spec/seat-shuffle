@@ -228,6 +228,10 @@ body{
 }
 .go:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
 .go[disabled]{filter:grayscale(.6) opacity(.6);cursor:default}
+/* ⚠️ '다시 돌리기' 버튼은 없앴지만 이 .sub 규칙은 지우지 말 것.
+   참석자 명단의 부처장·실장 표시 점(<span class="dot sub">) 5개가
+   이 규칙을 같이 받고 있어서, 지우면 그 점들의 크기가 26×28 → 8×8 로 갑자기 줄어든다.
+   (원래는 8×8 이 맞고 지금이 부풀려진 상태 — 다만 교수님이 요청하신 변경이 아니므로 그대로 둔다) */
 .sub{
   appearance:none;border:1.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
   border-radius:11px;padding:13px 12px;font-family:inherit;font-weight:700;
@@ -823,7 +827,6 @@ body{
   <div class="panel">
     <div class="actions">
       <button class="go" id="goBtn">자리 뽑기</button>
-      <button class="sub" id="againBtn" disabled>다시 돌리기</button>
     </div>
     <div class="status" id="status">연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</div>
   </div>
@@ -2506,12 +2509,10 @@ shareBtn.addEventListener('click', shareResult);
    12. 실행 / 마무리
    ========================================================================== */
 var goBtn = document.getElementById('goBtn');
-var againBtn = document.getElementById('againBtn');
 
 function setBusy(b){
   running = b;
   goBtn.disabled = b;
-  againBtn.disabled = b;
   Array.prototype.forEach.call(modesBox.children, function(c){ c.disabled = b; });
 }
 
@@ -2564,7 +2565,6 @@ function start(){
 }
 
 goBtn.addEventListener('click', start);
-againBtn.addEventListener('click', start);
 
 /* 첫 화면 : 총장석을 상석에 놓고, 명단대로 공석을 미리 표시한다 */
 resetSeats();
