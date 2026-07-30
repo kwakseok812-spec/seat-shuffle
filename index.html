@@ -811,7 +811,7 @@ body{
       <span class="ic">📷</span><span>배치도 이미지</span>
     </button>
     <div class="share-hint" id="shareHint">자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다</div>
-    <button class="linkbtn" id="copyLinkBtn">🔗 앱 주소 복사</button>
+    <button class="linkbtn" id="copyLinkBtn">🔗 공유용 주소 복사 (카톡에서 바로 열림)</button>
   </div>
 
   <!-- 참석자 -->
@@ -1728,7 +1728,8 @@ function toast(msg, ms){
    폰에서는 조용히 실패하면서 "저장했습니다"라는 거짓 안내만 남기 때문이다.
    대신 그림을 화면에 그대로 띄워서, 꾹 눌러 보내시게 한다. */
 
-var lastCopyResult = '(아직 안 해봄)';   /* 마지막 복사 결과 (진단에 남긴다) */
+var lastCopyResult   = '(아직 안 해봄)';  /* 마지막 복사 결과 (진단에 남긴다) */
+var lastExternalTry  = '(아직 안 해봄)';  /* 크롬·사파리로 넘어가기 시도 결과 */
 
 /* 이미지를 클립보드에 복사.
    ⚠️ 반드시 클릭 핸들러 '안에서' 곧바로 불러야 한다 (사용자 동작 자격이 필요). */
@@ -1829,6 +1830,15 @@ function chromeIntentUrl(){
   return 'intent://' + appPlainUrl() + '#Intent;scheme=https;package=com.android.chrome;end';
 }
 
+/* ⚠️ 카카오톡으로 링크를 보낼 때 쓰는 주소.
+   끝에 ?openExternalBrowser=1 을 붙이면 카카오톡이 자기 인앱 브라우저로 열지 않고
+   기기의 기본 브라우저(안드로이드=크롬·삼성인터넷 / 아이폰=사파리)로 넘겨 준다.
+   이 앱은 이 값을 전혀 읽지 않으므로 동작에는 아무 영향이 없다. */
+function shareableUrl(){
+  if(!location.host) return location.href;          /* 로컬 파일이면 그대로 */
+  return location.origin + location.pathname + '?openExternalBrowser=1';
+}
+
 /* ---------- 그림을 화면에 띄우기 ---------- */
 var imgView  = document.getElementById('imgView');
 var imgOut   = document.getElementById('imgOut');
@@ -1881,6 +1891,7 @@ function layoutImageButtons(){
   var shareOk = canShareFiles() && !isInApp;
   var copyOk  = canCopyImage();
   var steps = [];
+  var inAppSteps = false;
 
   [imgCopy, imgShare, imgOpen, imgChrome].forEach(function(b){
     b.style.display = 'none';
@@ -1903,16 +1914,23 @@ function layoutImageButtons(){
     if(copyOk) put(imgCopy, '또는 ‘📋 이미지 복사’ 후 대화창에 붙여넣기');
     put(imgOpen, '안 되면 ‘🔗 새 창으로 열기’ → 그림을 꾹 눌러 저장');
   }else{
-    /* ── 카카오톡 인앱 등, 공유창을 믿을 수 없는 환경 ── */
-    if(copyOk) put(imgCopy, '‘📋 이미지 복사’ 를 누른 뒤, 카카오톡 대화창을 꾹 눌러 ‘붙여넣기’');
-    steps.push('<span>' + (++n) + '. 또는 위 그림을 꾹 눌러 ‘이미지 저장’</span>');
-    /* 공유 기능이 있다고는 하니, 밑에 두고 시도해 볼 수 있게 남긴다 */
+    /* ── 카카오톡 인앱 등, 공유도 복사도 막히는 환경 ──
+       실제로 복사가 실패하는 것이 확인됐으므로 '외부 브라우저로 나가기'를 맨 앞에 둔다. */
+    if((isAndroid || isIOS) && location.host){
+      imgChrome.textContent = externalLabel();
+      put(imgChrome, '‘' + externalLabel() + '’ 를 눌러 나간 뒤 공유하세요 (가장 확실합니다)');
+      if(isIOS) steps.push('<span>' + (++n) + '. 안 되면 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요</span>');
+    }
+    steps.push('<span>' + (++n) + '. 또는 <b>폰 화면을 캡처</b>(전원 + 음량↓)해서 보내셔도 됩니다 — 어떤 폰에서도 됩니다</span>');
+    steps.push('<span>' + (++n) + '. 위 그림을 꾹 눌러 ‘이미지 저장’ 이 되는 기기도 있습니다</span>');
+    /* 복사·공유는 이 환경에서 막히는 경우가 많지만, 되는 기기도 있으니 아래에 남겨 둔다 */
+    if(copyOk) put(imgCopy, '‘📋 이미지 복사’ 가 되면 대화창에 붙여넣기 하셔도 됩니다');
     if(navigator.share) put(imgShare, '‘📤 공유하기’ 도 눌러 보실 수 있습니다');
-    if(isAndroid && !isIOS && location.host) put(imgChrome, '그래도 안 되면 ‘🌐 크롬으로 열기’');
-    else if(isIOS && isInApp) steps.push('<span>' + (++n) + '. 화면 오른쪽 아래 사파리 아이콘으로 사파리에서 열어 보세요</span>');
-    else put(imgOpen, '‘🔗 새 창으로 열기’ → 그림을 꾹 눌러 저장');
+    if(!((isAndroid || isIOS) && location.host)) put(imgOpen, '‘🔗 새 창으로 열기’ → 그림을 꾹 눌러 저장');
+    inAppSteps = true;
   }
-  steps.push('<span>' + (++n) + '. 그것도 안 되면 폰 화면을 캡처(전원 + 음량↓)해서 보내셔도 됩니다</span>');
+  /* 인앱에서는 위에서 이미 캡처를 안내했으므로 다시 넣지 않는다 */
+  if(!inAppSteps) steps.push('<span>' + (++n) + '. 그것도 안 되면 폰 화면을 캡처(전원 + 음량↓)해서 보내셔도 됩니다</span>');
   if(!isTouchDevice) steps.push('<span>PC에서는 그림에 오른쪽 클릭 → ‘이미지 복사’</span>');
 
   imgTip.innerHTML = steps.join('');
@@ -1957,6 +1975,7 @@ function buildDiag(){
     'ClipboardItem        : ' + (window.ClipboardItem ? '있음' : '없음'),
     '마지막 공유 오류     : ' + (lastShareError || '(아직 없음)'),
     '마지막 복사 결과     : ' + lastCopyResult,
+    '마지막 외부브라우저  : ' + lastExternalTry,
     '이미지 표시 방식     : ' + imgSrcKind,
     '원본 PNG 용량        : ' + (shownBlob ? Math.round(shownBlob.size/1024) + ' KB' : '-'),
     '화면 폭              : ' + window.innerWidth + 'px (dpr ' + (window.devicePixelRatio || 1) + ')',
@@ -2069,78 +2088,132 @@ imgCopy.addEventListener('click', function(){
   });
 });
 
-/* ---------- 🌐 크롬으로 열기 (안드로이드 인앱 브라우저 탈출) ---------- */
-function openInChrome(){
+/* ---------- 앱 안의 브라우저에서 진짜 브라우저로 넘어가기 ----------
+   안드로이드 → intent 주소로 크롬
+   아이폰    → x-safari-https:// 로 사파리
+   ⚠️ 두 방식 모두 기기·앱 버전에 따라 막힐 수 있으므로,
+      2초 안에 넘어가지 않으면 주소를 복사해 드리고 그 사실을 화면에 알린다. */
+function externalName(){ return isIOS ? '사파리' : '크롬'; }
+function externalLabel(){ return isIOS ? '🧭 사파리로 열기' : '🌐 크롬으로 열기'; }
+function safariSchemeUrl(){ return 'x-safari-https://' + appPlainUrl(); }
+
+function openExternalBrowser(auto){
+  var appName = externalName();
+
   if(!location.host){
-    toast('이 파일은 인터넷 주소가 없어 크롬으로 넘길 수 없습니다', 4200);
+    lastExternalTry = '실패 (인터넷 주소가 없는 파일이라 넘길 수 없음)';
+    refreshDiag();
+    if(!auto) toast('이 파일은 인터넷 주소가 없어\n다른 브라우저로 넘길 수 없습니다.', 4600);
     return;
   }
-  if(isIOS){
-    toast('아이폰은 화면 오른쪽 아래 사파리 아이콘을 눌러\n사파리에서 열어 주세요.', 6000);
-    return;
-  }
+
   var moved = false;
   var mark = function(){ moved = true; };
   window.addEventListener('pagehide', mark, {once:true});
   window.addEventListener('blur', mark, {once:true});
   document.addEventListener('visibilitychange', function(){ if(document.hidden) moved = true; }, {once:true});
 
-  /* 크롬이 없거나 intent 가 막히면 아무 일도 안 일어난다 → 주소를 복사해 드린다 */
-  setTimeout(function(){
-    if(moved) return;
-    copyText(location.href, function(ok){
-      toast(ok ? '크롬이 열리지 않아 주소를 복사했습니다.\n크롬 주소창에 붙여넣어 주세요.'
-               : '크롬을 열지 못했습니다.\n주소창의 주소를 직접 복사해 주세요.', 6000);
-    });
-  }, 2200);
+  lastExternalTry = appName + ' 열기 시도 중…';
+  if(auto) noticeWarnBar(appName + '(으)로 여는 중입니다…');
 
-  try{ location.href = chromeIntentUrl(); }
-  catch(e){
-    lastShareError = '크롬 열기 오류 ' + e.name + ': ' + e.message;
+  setTimeout(function(){
+    if(moved){
+      lastExternalTry = '성공 (' + appName + '으로 넘어감)';
+      refreshDiag();
+      return;
+    }
+    /* 넘어가지 못했다 — 되는 척하지 않고 그대로 알린다 */
+    lastExternalTry = '실패 (' + appName + ' 열기 안 됨)' + (auto ? ' [자동 시도]' : '');
+    refreshDiag();
+    restoreWarnBar();
+
+    if(auto){
+      /* 자동 시도였다면 조용히 물러난다. 앱은 그대로 쓸 수 있고,
+         화면 위 안내 띠의 수동 버튼이 계속 보인다. */
+      return;
+    }
+    copyText(shareableUrl(), function(ok){
+      if(ok) lastExternalTry += ' → 주소는 복사해 둠';
+      refreshDiag();
+      if(diagBox) diagBox.open = true;
+      var msg = ok
+        ? ('주소를 복사했습니다.\n' + appName + ' 앱을 열어 주소창에 붙여넣어 주세요.')
+        : (appName + ' 앱을 열지 못했습니다.\n주소창의 주소를 직접 복사해 주세요.');
+      if(isIOS) msg += '\n또는 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요.';
+      toast(msg, 7000);
+    });
+  }, 2000);
+
+  try{
+    location.href = isIOS ? safariSchemeUrl() : chromeIntentUrl();
+  }catch(e){
+    lastExternalTry = '실패 (' + e.name + ': ' + e.message + ')';
     refreshDiag();
   }
 }
-imgChrome.addEventListener('click', openInChrome);
+imgChrome.addEventListener('click', function(){ openExternalBrowser(false); });
 
 /* ---------- 화면 위 안내 띠 (인앱 브라우저일 때만) ---------- */
+var warnBar   = document.getElementById('warnBar');
+var warnBtn   = document.getElementById('openChrome');
+var warnTitle = document.getElementById('warnTitle');
+var warnDesc  = document.getElementById('warnDesc');
+var warnDescText = '';
+
+function noticeWarnBar(msg){
+  if(warnDesc) warnDesc.textContent = msg;
+}
+function restoreWarnBar(){
+  if(warnDesc) warnDesc.textContent = warnDescText;
+}
+
 (function(){
-  var bar = document.getElementById('warnBar');
-  var btn = document.getElementById('openChrome');
-  var ttl = document.getElementById('warnTitle');
-  var dsc = document.getElementById('warnDesc');
-  if(!bar) return;
+  if(!warnBar) return;
 
   /* 앱 안의 브라우저이거나, 폰인데 그림 공유가 안 되는 환경이면 띄운다.
      크롬·사파리 등 정상 브라우저와 PC 에서는 아예 보이지 않는다. */
   var show = isInApp || ((isAndroid || isIOS) && !canShareFiles());
   if(!show) return;
 
-  ttl.textContent = isInApp
+  warnTitle.textContent = isInApp
     ? '⚠️ 지금 ' + inAppName + ' 브라우저로 보고 계십니다'
     : '⚠️ 이 브라우저는 이미지 공유가 제한됩니다';
-  dsc.textContent = canCopyImage()
-    ? '이미지 복사는 됩니다 — 복사해서 대화창에 붙여넣으세요'
-    : '이미지 공유가 제한됩니다';
+  /* 아이폰 카카오톡도 자체 인앱 브라우저다. 다만 사파리로 넘기기가 쉽다. */
+  warnDescText = isIOS
+    ? '사파리에서 열면 공유가 잘 됩니다 — 오른쪽 버튼을 눌러 주세요'
+    : '여기서는 공유·복사가 막힙니다 — 오른쪽 버튼을 눌러 주세요';
+  warnDesc.textContent = warnDescText;
 
-  if(isIOS){
-    btn.textContent = '사파리로 열기';
-    btn.addEventListener('click', function(){
-      toast('화면 오른쪽 아래 사파리 아이콘을 눌러\n사파리에서 열어 주세요.', 6000);
-    });
-  }else if(isAndroid && location.host){
-    btn.textContent = '크롬으로 열기';
-    btn.addEventListener('click', openInChrome);
+  if((isIOS || isAndroid) && location.host){
+    warnBtn.textContent = isIOS ? '사파리로 열기' : '크롬으로 열기';
+    warnBtn.addEventListener('click', function(){ openExternalBrowser(false); });
   }else{
-    btn.style.display = 'none';
+    warnBtn.style.display = 'none';
   }
-  bar.classList.add('on');
+  warnBar.classList.add('on');
 })();
 
-/* ---------- 🔗 앱 주소 복사 (참석자들께 링크를 뿌릴 때) ---------- */
+/* ---------- 인앱 브라우저로 들어왔으면 한 번만 자동으로 빠져나가 본다 ----------
+   ⚠️ sessionStorage 에 기록해 '딱 한 번만' 시도한다.
+      되돌아왔을 때 또 튕기면 사용자가 갇혀 버린다.
+   자동 이동이 막혀도 앱은 그대로 쓸 수 있고, 위 안내 띠의 버튼이 계속 보인다. */
+(function(){
+  if(!isInApp || !location.host) return;
+  var KEY = 'seatShuffle.escapeTried';
+  var tried = true;
+  try{ tried = (sessionStorage.getItem(KEY) === '1'); }
+  catch(e){ tried = true; }        /* 저장소를 못 쓰면 자동 시도를 하지 않는다 */
+  if(tried) return;
+  try{ sessionStorage.setItem(KEY, '1'); }catch(e){ return; }
+
+  setTimeout(function(){ openExternalBrowser(true); }, 350);
+})();
+
+/* ---------- 🔗 공유용 주소 복사 (참석자들께 링크를 뿌릴 때) ---------- */
 document.getElementById('copyLinkBtn').addEventListener('click', function(){
-  copyText(location.href, function(ok){
-    toast(ok ? '주소를 복사했습니다. 카카오톡 등에 붙여넣어 보내세요.'
-             : '주소를 복사하지 못했습니다. 주소창에서 직접 복사해 주세요.', 4600);
+  copyText(shareableUrl(), function(ok){
+    toast(ok ? '주소를 복사했습니다.\n카카오톡에 붙여넣어 보내세요.\n받는 분은 크롬·사파리로 바로 열립니다.'
+             : '주소를 복사하지 못했습니다.\n주소창에서 직접 복사해 주세요.', 6000);
   });
 });
 
