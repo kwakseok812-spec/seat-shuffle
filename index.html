@@ -228,16 +228,11 @@ body{
 }
 .go:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
 .go[disabled]{filter:grayscale(.6) opacity(.6);cursor:default}
-/* ⚠️ '다시 돌리기' 버튼은 없앴지만 이 .sub 규칙은 지우지 말 것.
-   참석자 명단의 부처장·실장 표시 점(<span class="dot sub">) 5개가
-   이 규칙을 같이 받고 있어서, 지우면 그 점들의 크기가 26×28 → 8×8 로 갑자기 줄어든다.
-   (원래는 8×8 이 맞고 지금이 부풀려진 상태 — 다만 교수님이 요청하신 변경이 아니므로 그대로 둔다) */
-.sub{
-  appearance:none;border:1.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
-  border-radius:11px;padding:13px 12px;font-family:inherit;font-weight:700;
-  font-size:clamp(12px,3.2vw,14px);cursor:pointer;white-space:nowrap;
-}
-.sub[disabled]{opacity:.45;cursor:default}
+/* ⚠️ 예전에 여기 '다시 돌리기' 버튼용 .sub 규칙이 있었다 (버튼과 함께 삭제).
+   그 규칙이 참석자 명단의 점(<span class="dot sub">)에까지 잘못 걸려서
+   부처장·실장 5명의 점만 26×28 로 부풀어 있었다.
+   재발을 막으려고 점 쪽 클래스는 .dot-head / .dot-sub / .dot-chief 로 이름을 갈랐다.
+   → 앞으로 .sub 같은 '짧고 흔한' 이름을 버튼에 다시 쓰지 말 것. */
 
 /* ==========================================================================
    테이블 무대 — 화면 크기와 상관없이 언제나 같은 배치
@@ -648,9 +643,9 @@ body{
 .rt input{width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto}
 .rt.fixed{opacity:.9;cursor:default}
 .rt .dot{width:8px;height:8px;border-radius:99px;flex:0 0 auto}
-.dot.head{background:var(--head-bg)}
-.dot.sub{background:var(--line2)}
-.dot.chief{background:var(--gold)}
+.dot.dot-head{background:var(--head-bg)}
+.dot.dot-sub{background:var(--line2)}
+.dot.dot-chief{background:var(--gold)}
 /* ---------- 인앱 브라우저 안내 띠 (평소에는 숨어 있다) ---------- */
 .warnbar{
   display:none;
@@ -1062,7 +1057,7 @@ MEMBERS.forEach(function(m){
   var name = m.l1 + (m.l2 ? ' '+m.l2 : '');
   lab.innerHTML =
     '<input type="checkbox" checked '+(m.id===0?'disabled':'')+'>' +
-    '<span class="dot '+m.tier+'"></span><span>'+name+'</span>';
+    '<span class="dot dot-'+m.tier+'"></span><span>'+name+'</span>';
   var cb = lab.querySelector('input');
   cb.addEventListener('change', function(){
     if(running){ cb.checked = present[m.id]; return; }
