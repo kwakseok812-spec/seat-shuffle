@@ -665,7 +665,11 @@ body{
    ⚠️ 새 이름은 모두 길고 뚜렷하게 지었다.
       예전에 버튼용 '.sub' 가 명단의 점(.dot.sub)까지 잘못 건드린 사고가 있었다.
    ========================================================================== */
+/* ⚠️ 단계 수가 갈래마다 다르다 — 자리 뽑기 4칸 / 당첨자 뽑기 3칸.
+   맨 처음 '무엇을 할까요' 화면에서는 아직 몇 단계인지 알 수 없으므로 아예 감춘다. */
 .stepbar{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px}
+.stepbar[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+.stepbar.hidebar{display:none}
 .stepchip{
   display:flex;align-items:center;justify-content:center;gap:5px;
   border:1.5px solid var(--line2);background:var(--panel);
@@ -713,6 +717,39 @@ body{
 }
 .cntnum{font-size:clamp(28px,8vw,36px);font-weight:800;color:var(--accent);line-height:1}
 .cnttxt{font-size:clamp(12px,3.2vw,14px);font-weight:800;color:var(--muted)}
+
+/* ---------- 뽑을 인원 고르개 (당첨자 뽑기 ② 화면에서만 보인다) ----------
+   ⚠️ 2026-08-13 이 자리로 옮겼다. 예전에는 부품 안쪽 화면에서만 바꿀 수 있어서,
+      처장단 명단으로 뽑을 때 '당첨 1명'을 바꾸려면 부품의 「참가자 고치기」로 들어가야 했고
+      그러면 명단이 '직접 입력' 모드로 넘어가 버렸다. 참가자를 정하는 이 화면에서
+      함께 정하는 것이 맞다.
+   ⚠️ .ld- 스타일을 쓰지 않는다 — 그 색값(--ld-*)은 .ld-root 안에서만 살아 있다. */
+.winrow{
+  display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;
+  margin:0 0 9px;padding:9px 8px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:11px;
+}
+.winlabel{font-size:clamp(12px,3.2vw,14px);font-weight:800;color:var(--muted)}
+.winstep{display:flex;align-items:center;gap:6px}
+.winbtn{
+  appearance:none;width:38px;height:38px;flex:0 0 auto;
+  border:1.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
+  border-radius:10px;font-family:inherit;font-size:19px;font-weight:800;cursor:pointer;line-height:1;
+}
+.winbtn:active{transform:scale(.94)}
+.winbtn:disabled{opacity:.35;cursor:default}
+.winnum{
+  width:56px;height:38px;text-align:center;
+  border:1.5px solid var(--line2);border-radius:10px;
+  background:var(--panel);color:var(--ink);
+  font-family:inherit;font-size:17px;font-weight:800;
+}
+/* 부품 안쪽의 되돌아가기 단추 두 개를 감춘다 (지우지 않았다 — 되살리려면 이 줄만 지우면 된다).
+   ⚠️ 「◀ 참가자 고치기」·「✏️ 참가자·인원 고치기」는 둘 다 부품의 '인원·이름' 화면으로 간다.
+      그 화면에서만 하던 「뽑을 인원」 정하기를 위 .winrow 로 옮겼고, 이름 바꾸기는
+      ② 화면의 「✏️ 다른 이름으로 뽑기」가 맡으므로 이 두 단추는 더 이상 필요 없다.
+      되돌아가기는 「◀ 이전」·「🏠 처음으로」 둘로 통일한다 (교수님이 헷갈려 하신다). */
+#ld-back1, #ld-backCfg{display:none !important}
 
 /* ---------- 테이블 배치 고르기 ---------- */
 .laylist{display:grid;grid-template-columns:1fr;gap:9px}
@@ -1227,10 +1264,17 @@ details.ld-paste summary::-webkit-details-marker{display:none}
   background:rgba(0,0,0,.72);overflow-y:auto;padding:16px 10px;
 }
 .ld-imgview.ld-on{display:block}
+/* ⚠️ 단추 순서를 JS 가 order 로 바꾼다(카카오톡 인앱이면 '다른 브라우저로 열기'가 1번).
+   order 는 flex 안에서만 듣기 때문에 이 상자는 반드시 flex 여야 한다.
+   그림·안내문·닫기는 자리를 고정해 둔다. */
 .ld-imgbox{
   max-width:620px;margin:0 auto;background:var(--ld-panel);
   border-radius:14px;padding:12px;box-shadow:0 10px 40px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;
 }
+#ld-imgOut{order:-1}
+.ld-imgtip{order:50}
+#ld-imgClose{order:60}
 .ld-imgbox img{display:block;width:100%;height:auto;border-radius:9px;border:1px solid var(--ld-line)}
 .ld-imgbtn{
   width:100%;margin-top:8px;min-height:48px;border-radius:11px;
@@ -1238,7 +1282,14 @@ details.ld-paste summary::-webkit-details-marker{display:none}
   font-size:14px;font-weight:800;cursor:pointer;
 }
 .ld-imgbtn.ld-primary{background:var(--ld-accent);border-color:var(--ld-accent);color:var(--ld-accent-ink)}
+/* 복사·공유가 막혔을 때 '나가는 단추'가 어디 있는지 눈에 띄게 알려 준다 */
+.ld-imgbtn.ld-flash{animation:ld-flash .55s ease-in-out 3}
+@keyframes ld-flash{50%{transform:scale(1.03);box-shadow:0 0 0 4px rgba(255,196,60,.55)}}
 .ld-imgtip{font-size:11.5px;color:var(--ld-muted);margin-top:9px;line-height:1.7;text-align:center}
+.ld-imgtip b{display:block;font-size:13px;font-weight:800;color:var(--ld-ink)}
+.ld-imgtip span{display:block;margin-top:3px;font-size:11.5px;text-align:left}
+.ld-imgtip span b{display:inline;font-size:inherit}
+.ld-imgtip span:first-child{color:var(--ld-ink)}
 
 /* ---------- 짧은 안내 쪽지 ---------- */
 .ld-toast{
@@ -1279,6 +1330,44 @@ details.ld-paste summary::-webkit-details-marker{display:none}
 }
 .laygroup:first-child{margin-top:0}
 
+/* ==========================================================================
+   ① 무엇을 할까요 — 맨 처음 갈래를 고르는 화면
+   ⚠️ 교수님은 컴퓨터 초보이시다. 단추는 크게, 글자는 굵고 분명하게.
+   ========================================================================== */
+.pickwrap{display:flex;flex-direction:column;gap:11px;margin-top:4px}
+.pickbtn{
+  appearance:none;text-align:left;display:flex;align-items:center;gap:13px;
+  width:100%;min-height:104px;
+  border:2.5px solid var(--line2);background:var(--btn);color:var(--btn-ink);
+  border-radius:15px;padding:16px 15px;cursor:pointer;font-family:inherit;
+  transition:border-color .15s, background .15s;
+}
+.pickbtn:active{transform:scale(.995)}
+.pickbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pickico{font-size:clamp(30px,8vw,40px);line-height:1;flex:0 0 auto}
+.picktxt{display:block;min-width:0}
+.pickttl{
+  display:block;font-size:clamp(17px,4.8vw,21px);font-weight:900;
+  letter-spacing:-.02em;line-height:1.25;
+}
+.pickdesc{
+  display:block;margin-top:5px;line-height:1.5;
+  font-size:clamp(12px,3.2vw,14px);color:var(--muted);font-weight:600;
+}
+.pickbtn[aria-pressed="true"]{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,rgba(29,79,121,.12),rgba(29,79,121,.03));
+}
+.pickbtn[aria-pressed="true"] .pickttl{color:var(--accent)}
+
+/* 당첨자 뽑기 ② 화면에서 '직접 입력한 명단'을 쓰고 있을 때 띄우는 알림 띠 */
+.freenote{
+  border:2px dashed var(--line2);border-radius:12px;
+  padding:11px 12px;margin-bottom:10px;
+  font-size:clamp(12px,3.1vw,13.5px);font-weight:700;line-height:1.55;color:var(--muted);
+}
+.freenote b{color:var(--btn-ink)}
+
 /* 당첨자 뽑기 화면의 안내줄 (지금 누가 뽑히는지) */
 .drawwho{
   margin-top:7px;line-height:1.6;
@@ -1312,33 +1401,81 @@ details.ld-paste summary::-webkit-details-marker{display:none}
     <span class="sndstate" id="sndState">켜짐</span>
   </button>
 
-  <!-- 지금 몇 번째 단계인지 -->
-  <div class="stepbar" id="stepBar">
-    <div class="stepchip" data-step="1"><b>①</b><span>명단</span></div>
-    <div class="stepchip" data-step="2"><b>②</b><span>고르기</span></div>
-    <div class="stepchip" data-step="3"><b>③</b><span id="step3Label">자리 뽑기</span></div>
-  </div>
+  <!-- 지금 몇 번째 단계인지.
+       ⚠️ 칸 수·글자는 고른 갈래에 따라 JS 가 다시 만든다 (자리 뽑기 4칸 / 당첨자 뽑기 3칸). -->
+  <div class="stepbar hidebar" id="stepBar"></div>
 
-  <!-- ================= ① 명단 확인 ================= -->
+  <!-- ================= ① 무엇을 할까요 (맨 처음 화면) ================= -->
+  <section class="screen nowscreen" id="scr0">
+    <div class="panel">
+      <h2>① 무엇을 하시겠습니까?</h2>
+      <div class="pickwrap">
+        <button class="pickbtn" id="pickSeat" type="button" aria-pressed="false">
+          <span class="pickico" aria-hidden="true">🍽️</span>
+          <span class="picktxt">
+            <span class="pickttl">자리 뽑기</span>
+            <span class="pickdesc">회식 자리를 무작위로 정합니다</span>
+          </span>
+        </button>
+        <button class="pickbtn" id="pickDraw" type="button" aria-pressed="false">
+          <span class="pickico" aria-hidden="true">🎯</span>
+          <span class="picktxt">
+            <span class="pickttl">당첨자 뽑기</span>
+            <span class="pickdesc">참가자 중에서 당첨자를 뽑습니다</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ② 참석자 / 참가자 고르기 =================
+       ⚠️ 한 화면을 두 갈래가 같이 쓴다. 다른 점은 딱 두 가지다.
+          · 자리 뽑기 : 총장님은 체크를 풀 수 없다 (반드시 참석)
+          · 당첨자 뽑기 : 총장님을 포함한 11명 전원을 체크로 뺄 수 있다 -->
   <section class="screen" id="scr1">
     <div class="panel">
-      <h2>① 오늘 오시는 분에 체크해 주세요 (체크한 인원수만큼만 자리를 만듭니다)</h2>
+      <h2 id="rosterTitle">② 오늘 오시는 분에 체크해 주세요 (체크한 인원수만큼만 자리를 만듭니다)</h2>
+
+      <!-- 당첨자 뽑기에서 '직접 입력한 명단'을 쓰고 있을 때만 보인다 -->
+      <div class="freenote" id="freeNote" style="display:none">
+        지금은 <b>직접 입력한 명단</b>으로 뽑도록 되어 있습니다.<br>
+        아래 명단 체크는 쓰이지 않습니다.
+      </div>
+
       <div class="cntbox">
-        <span class="cnttxt">참석</span>
+        <span class="cnttxt" id="cntLabel">참석</span>
         <span class="cntnum" id="cntNum">11</span>
         <span class="cnttxt">명 &nbsp;/&nbsp; 모두 11명</span>
       </div>
       <div class="roster" id="roster"></div>
+
+      <!-- 당첨자 뽑기에서만 보인다 : 몇 명을 뽑을지 -->
+      <div class="winrow" id="winRow" style="display:none">
+        <span class="winlabel">뽑을 인원</span>
+        <span class="winstep">
+          <button class="winbtn" id="winMinus" type="button" aria-label="뽑을 인원 줄이기">−</button>
+          <input class="winnum" id="winNum" type="number" inputmode="numeric" min="1" max="29" value="1">
+          <button class="winbtn" id="winPlus" type="button" aria-label="뽑을 인원 늘리기">+</button>
+        </span>
+        <span class="winlabel">명 당첨</span>
+      </div>
+
+      <!-- 당첨자 뽑기에서만 보인다 : 처장단이 아닌 다른 명단으로 뽑기 -->
+      <div class="navrow" id="freeRow" style="display:none">
+        <button class="navbtn bwdbtn" id="freeBtn" type="button">✏️ 다른 이름으로 뽑기 (학과 행사 등)</button>
+      </div>
     </div>
     <div class="navrow">
+      <button class="navbtn bwdbtn" id="back0" type="button">◀ 이전</button>
       <button class="navbtn fwdbtn" id="go2" type="button">다음 : 테이블 고르기 ▶</button>
     </div>
+    <div class="status" id="rosterWarn" style="display:none"></div>
   </section>
 
-  <!-- ================= ② 테이블 배치 고르기 ================= -->
+  <!-- ================= ③ 테이블 배치 고르기 (자리 뽑기 전용) ================= -->
   <section class="screen" id="scr2">
     <div class="panel">
-      <h2>② 무엇을 할지 골라 주세요</h2>
+      <h2>③ 테이블 배치를 골라 주세요</h2>
       <div class="laylist" id="layList"></div>
     </div>
     <div class="navrow">
@@ -1347,10 +1484,10 @@ details.ld-paste summary::-webkit-details-marker{display:none}
     </div>
   </section>
 
-  <!-- ================= ③ 연출 고르고 자리 뽑기 ================= -->
+  <!-- ================= ④ 연출 고르고 자리 뽑기 ================= -->
   <section class="screen" id="scr3">
     <div class="panel">
-      <h2>③ 연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</h2>
+      <h2>④ 연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</h2>
       <div class="modes" id="modes"></div>
       <div class="actions">
         <button class="go" id="goBtn" type="button">자리 뽑기</button>
@@ -1374,7 +1511,8 @@ details.ld-paste summary::-webkit-details-marker{display:none}
     </div>
 
     <div class="navrow">
-      <button class="navbtn bwdbtn" id="back2" type="button">◀ 이전 (테이블 다시 고르기)</button>
+      <button class="navbtn bwdbtn" id="back2" type="button">◀ 이전</button>
+      <button class="navbtn bwdbtn" id="home3" type="button">🏠 처음으로</button>
     </div>
   </section>
 
@@ -1382,20 +1520,12 @@ details.ld-paste summary::-webkit-details-marker{display:none}
   <!-- ⚠ 자리배치와 따로 도는 길이다. 둘은 서로 아무것도 바꾸지 않는다. -->
   <section class="screen" id="scr3d">
     <div class="panel">
-      <h2>③ 오늘 오신 분 중에서 당첨자를 뽑습니다</h2>
+      <h2>③ 방식을 고르고 당첨자를 뽑아 주세요</h2>
 
-      <button class="sndrow" id="vipBtn" type="button" aria-pressed="true">
-        <span class="sndico">👑</span>
-        <span class="sndtxt">총장님·상임이사님도 함께 뽑기</span>
-        <span class="switch"><span class="knob"></span></span>
-        <span class="sndstate" id="vipState">포함</span>
-      </button>
-
+      <!-- ⚠️ 옛 '총장님·상임이사님도 함께 뽑기' 스위치는 없앴다.
+           이제 ② 화면에서 11명 전원을 체크로 직접 빼고 넣으므로,
+           같은 일을 두 곳에서 하게 되어 오히려 헷갈렸다 (교수님 지시). -->
       <div class="drawwho" id="drawWho"></div>
-
-      <div class="navrow">
-        <button class="navbtn bwdbtn" id="freeBtn" type="button">✏️ 다른 이름으로 뽑기</button>
-      </div>
     </div>
 
 <!-- ② 마크업 : 최상위는 #ld-root 하나뿐이다 -->
@@ -1556,6 +1686,11 @@ details.ld-paste summary::-webkit-details-marker{display:none}
       <button class="ld-imgbtn ld-primary" id="ld-imgCopy" type="button">📋 이미지 복사</button>
       <button class="ld-imgbtn" id="ld-imgShare" type="button">📤 공유하기</button>
       <button class="ld-imgbtn" id="ld-imgOpen" type="button">🔗 이미지 새 창으로 열기</button>
+      <!-- ⚠️ 카카오톡 인앱 브라우저에서만 보이는 단추.
+           자리배치 쪽 imgChrome 과 똑같은 일을 하며, 실제 탈출 코드는
+           host(자리배치 스크립트)가 window.SeatEscape 로 내주는 것을 그대로 쓴다.
+           여기서 intent:// 를 다시 구현하지 않는다 — 두 벌로 갈리면 또 어긋난다. -->
+      <button class="ld-imgbtn" id="ld-imgChrome" type="button" style="display:none">🌐 다른 브라우저로 열기</button>
       <div class="ld-imgtip" id="ld-imgTip"></div>
       <button class="ld-imgbtn" id="ld-imgClose" type="button">닫기</button>
     </div>
@@ -1565,7 +1700,8 @@ details.ld-paste summary::-webkit-details-marker{display:none}
 </div>
 
     <div class="navrow">
-      <button class="navbtn bwdbtn" id="back2d" type="button">◀ 이전 (다시 고르기)</button>
+      <button class="navbtn bwdbtn" id="back2d" type="button">◀ 참가자 고르기</button>
+      <button class="navbtn bwdbtn" id="home3d" type="button">🏠 처음으로</button>
     </div>
   </section>
 
@@ -2777,6 +2913,78 @@ function boot(){
 
   var shownBlob = null, shownUrl = null, shownDataUrl = null;
 
+  /* ==========================================================================
+     카카오톡 인앱 브라우저 대응 — 자리배치 쪽과 똑같이 맞춘다
+     ⚠️ 실제 탈출(intent:// · x-safari-https://)은 여기서 다시 만들지 않는다.
+        host(자리배치 스크립트)가 window.SeatEscape 로 내주는 것을 그대로 빌려 쓴다.
+     ⚠️ 카카오톡 인앱은 navigator.share 가 아예 없고, clipboard.write 는 '있다'고
+        나오면서 실제로는 실패한다(갤럭시 S25 실측). 그래서 인앱이면 무엇보다
+        '바깥 브라우저로 나가기'를 1순위로 둔다.
+     ========================================================================== */
+  function esc(){ return window.SeatEscape || null; }
+
+  /* 그림 파일을 공유창으로 보낼 수 있는 환경인가 (창구가 없을 때 쓰는 자체 판정) */
+  function canShareFilesLocal(){
+    try{
+      if(!(navigator.share && navigator.canShare)) return false;
+      var f = new File([new Blob(['x'], {type:'image/png'})], 't.png', {type:'image/png'});
+      return !!navigator.canShare({files:[f]});
+    }catch(e){ return false; }
+  }
+  function canCopyImageLocal(){
+    return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem);
+  }
+
+  /* 쓰는 브라우저에 따라 단추 순서와 안내를 통째로 바꾼다 (자리배치 layoutImageButtons 와 같은 규칙) */
+  function layoutImgButtons(){
+    var E = esc();
+    var shareOk = E ? E.shareOk() : canShareFilesLocal();
+    var copyOk  = E ? E.copyOk()  : canCopyImageLocal();
+    var canLeave = !!(E && E.canLeave());
+    var touch   = E ? E.touch : (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+    var steps = [], n = 0, inAppSteps = false;
+
+    ['imgCopy','imgShare','imgOpen','imgChrome'].forEach(function(k){
+      var b = $(k); if(!b) return;
+      b.style.display = 'none';
+      b.classList.remove('ld-primary');
+      b.style.order = '';
+    });
+
+    function put(k, label){
+      var b = $(k); if(!b) return;
+      n++;
+      b.style.display = '';
+      b.style.order = String(n);
+      if(n === 1) b.classList.add('ld-primary');
+      steps.push('<span>' + (n===1?'<b>':'') + n + '. ' + label + (n===1?'</b>':'') + '</span>');
+    }
+
+    if(shareOk){
+      /* ── 공유창을 쓸 수 있는 환경 (크롬·사파리 등) ── */
+      put('imgShare', '‘📤 공유하기’ 를 눌러 카카오톡을 고르세요');
+      if(copyOk) put('imgCopy', '또는 ‘📋 이미지 복사’ 후 대화창에 붙여넣기');
+      put('imgOpen', '안 되면 ‘🔗 새 창으로 열기’ → 그림을 꾹 눌러 저장');
+    }else{
+      /* ── 카카오톡 인앱 등, 공유도 복사도 막히는 환경 ── */
+      if(canLeave){
+        $('imgChrome').textContent = E.label();
+        put('imgChrome', '‘' + E.label() + '’ 를 눌러 나간 뒤 공유하세요 (가장 확실합니다)');
+        if(E.isIOS) steps.push('<span>' + (++n) + '. 안 되면 화면 오른쪽 아래 사파리 아이콘을 눌러 주세요</span>');
+      }
+      steps.push('<span>' + (++n) + '. 또는 <b>폰 화면을 캡처</b>(전원 + 음량↓)해서 보내셔도 됩니다 — 어떤 폰에서도 됩니다</span>');
+      steps.push('<span>' + (++n) + '. 위 그림을 꾹 눌러 ‘이미지 저장’ 이 되는 기기도 있습니다</span>');
+      if(copyOk) put('imgCopy', '‘📋 이미지 복사’ 가 되면 대화창에 붙여넣기 하셔도 됩니다');
+      if(navigator.share) put('imgShare', '‘📤 공유하기’ 도 눌러 보실 수 있습니다');
+      if(!canLeave) put('imgOpen', '‘🔗 새 창으로 열기’ → 그림을 꾹 눌러 저장');
+      inAppSteps = true;
+    }
+    if(!inAppSteps) steps.push('<span>' + (++n) + '. 그것도 안 되면 폰 화면을 캡처(전원 + 음량↓)해서 보내셔도 됩니다</span>');
+    if(!touch) steps.push('<span>PC에서는 그림에 오른쪽 클릭 → ‘이미지를 다른 이름으로 저장’</span>');
+
+    $('imgTip').innerHTML = steps.join('');
+  }
+
   /* data: 그림 → Blob. 복사·공유·새 창에 쓸 알맹이를 기다리지 않고 바로 만든다. */
   function dataUrlToBlob(u){
     try{
@@ -2796,9 +3004,7 @@ function boot(){
     var put = function(url){
       $('imgOut').src = url;
       $('imgView').classList.add('ld-on');
-      $('imgTip').textContent = navigator.share
-        ? '그림을 꾹 누르면 ‘이미지 저장’이 되는 기기도 있습니다'
-        : 'PC에서는 그림에 오른쪽 클릭 → ‘이미지를 다른 이름으로 저장’';
+      layoutImgButtons();
     };
 
     /* 지난번 새 창 주소를 먼저 반납한다 (그림을 다시 만드는 중이므로) */
@@ -2827,19 +3033,37 @@ function boot(){
 
   $('imgClose').onclick = function(){ $('imgView').classList.remove('ld-on'); };
 
+  /* ⚠️ 막다른 길을 만들지 않는다.
+     카카오톡 인앱에서는 복사도 공유도 실패하므로, 실패했을 때
+     '이미지 복사를 써 보세요'(그것도 실패한다) 대신 반드시 '나가는 길'을 안내한다. */
+  function deadEndHelp(why){
+    var E = esc();
+    if(E && E.inApp && E.canLeave()){
+      toast(why + '\n아래 ‘' + E.label() + '’ 를 눌러 주세요.', 5200);
+      var b = $('imgChrome');
+      if(b && b.style.display !== 'none'){
+        b.classList.add('ld-flash');
+        setTimeout(function(){ b.classList.remove('ld-flash'); }, 1800);
+        try{ b.scrollIntoView({block:'nearest'}); }catch(e){}
+      }
+    }else{
+      toast(why + '\n그림을 꾹 눌러 저장하시거나 화면을 캡처해 주세요.', 4600);
+    }
+  }
+
   $('imgCopy').onclick = function(){
-    if(!shownBlob){ toast('이 브라우저에서는 복사가 되지 않습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200); return; }
+    if(!shownBlob){ deadEndHelp('이 브라우저에서는 복사가 되지 않습니다.'); return; }
     if(!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem)){
-      toast('이 브라우저에는 복사 기능이 없습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200); return;
+      deadEndHelp('이 브라우저에는 복사 기능이 없습니다.'); return;
     }
     try{
       navigator.clipboard.write([ new ClipboardItem({'image/png': shownBlob}) ]).then(function(){
         toast('이미지를 복사했습니다.\n대화창을 꾹 눌러 ‘붙여넣기’ 하세요.', 4500);
       }).catch(function(){
-        toast('복사가 막혔습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200);
+        deadEndHelp('복사가 막혔습니다.');
       });
     }catch(e){
-      toast('복사가 막혔습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200);
+      deadEndHelp('복사가 막혔습니다.');
     }
   };
 
@@ -2852,8 +3076,18 @@ function boot(){
         return;
       }
     }catch(e){}
-    toast('이 브라우저는 공유창을 열 수 없습니다.\n‘이미지 복사’를 써 보세요.', 4200);
+    deadEndHelp('이 브라우저는 공유창을 열 수 없습니다.');
   };
+
+  /* 카카오톡 인앱에서만 보이는 단추 — 실제 탈출은 host 의 창구가 한다 */
+  var imgChromeBtn = $('imgChrome');
+  if(imgChromeBtn){
+    imgChromeBtn.onclick = function(){
+      var E = esc();
+      if(E && E.leave) E.leave();
+      else toast('이 브라우저에서는 바깥으로 넘길 수 없습니다.\n화면을 캡처해 주세요.', 4600);
+    };
+  }
 
   $('imgOpen').onclick = function(){
     if(!shownBlob){ toast('그림이 준비되지 않았습니다.'); return; }
@@ -3276,12 +3510,23 @@ var EFFECTS = [
    ========================================================================== */
 var mode = 'D';                 /* 기본 연출 = D 하이브리드 */
 var kind = 'one';               /* 기본 배치 = 한 테이블 */
-/* ②에서 고른 갈래 : 'seat' = 자리 배치 / 'draw' = 당첨자 뽑기.
-   ⚠ kind 와 섞지 않는다 — kind 는 오직 자리 배치 모양(one/multi)을 뜻한다. */
-var branch     = 'seat';
+/* ①에서 고른 갈래 : 'seat' = 자리 뽑기 / 'draw' = 당첨자 뽑기.
+   ⚠ 예전에는 ②에서 갈라졌지만, 2026-08-13 교수님 지시로 맨 처음부터 갈라진다.
+     (명단 화면이 두 기능에 걸쳐 있어 중간부터 길이 갈리는 것이 불편하다고 하셨다)
+   ⚠ kind 와 섞지 않는다 — kind 는 오직 자리 배치 모양(one/multi)을 뜻한다.
+   ⚠ 위의 mode 와도 섞지 않는다 — mode 는 연출(A~D)이다. */
+var branch     = '';            /* 아직 안 고름 = 빈 값 */
 var drawSource = 'roster';      /* 당첨자 뽑기 명단 : 'roster' 처장단 / 'free' 직접 입력 */
-var vipInDraw  = true;          /* 총장님·상임이사님을 뽑기에 포함할지 (기본 포함)*/
-var step = 1;                   /* 지금 화면 : ①명단 ②테이블 ③뽑기 */
+/* 지금 화면 번호. 갈래마다 뜻이 다르다.
+     자리 뽑기   1=무엇을 2=참석자 3=테이블 4=자리 뽑기   (네 단계)
+     당첨자 뽑기 1=무엇을 2=참가자 3=당첨자 뽑기          (세 단계) */
+var step = 1;
+
+/* 단계 표시줄에 넣을 글자 — 갈래마다 칸 수가 다르다 */
+var STEP_LABELS = {
+  seat: ['무엇을', '참석자', '테이블', '자리 뽑기'],
+  draw: ['무엇을', '참가자', '당첨자 뽑기']
+};
 var chiefSlotNow = -1;          /* 이번 판에 총장님이 앉으신 자리 */
 var SND_KEY = 'seatShuffle.sound';
 var soundOn = true;             /* 효과음 기본 켜짐 */
@@ -3421,26 +3666,126 @@ function updateCount(){
   cntNum.textContent = presentCount();             /* 총장님 포함 */
 }
 
+/* 총장님 칸을 따로 들고 있는다 — 갈래에 따라 잠갔다 풀었다 해야 하기 때문 */
+var chiefLab = null, chiefCb = null;
+
 MEMBERS.forEach(function(m){
   var lab = document.createElement('label');
-  lab.className = 'rt' + (m.id === CHIEF_ID ? ' fixed' : '');
+  lab.className = 'rt';
   var name = m.l1 + (m.l2 ? ' ' + m.l2 : '');
   lab.innerHTML =
-    '<input type="checkbox" checked ' + (m.id === CHIEF_ID ? 'disabled' : '') + '>' +
+    '<input type="checkbox" checked>' +
     '<span class="dot dot-' + m.tier + '"></span><span>' + name + '</span>';
   var cb = lab.querySelector('input');
+  if(m.id === CHIEF_ID){ chiefLab = lab; chiefCb = cb; }
   cb.addEventListener('change', function(){
     if(running){ cb.checked = present[m.id]; return; }
     present[m.id] = cb.checked;
     if(cb.checked) lab.classList.remove('away'); else lab.classList.add('away');
     updateCount();
-    paintLayoutChoices();        /* 인원이 바뀌면 테이블 나눔도 달라진다 */
-    paintSubTitle();             /* 상임이사님 참석 여부에 따라 문구가 달라진다 */
-    invalidateResult();          /* 명단이 바뀌면 지난 결과는 무효 */
+    /* ⚠️ 테이블 나눔 계산(computePlan)은 총장님이 계신 것을 전제로 한다.
+          당첨자 뽑기에서는 총장님을 뺄 수 있으므로 이 계산을 부르면 안 된다. */
+    if(branch === 'seat'){
+      paintLayoutChoices();      /* 인원이 바뀌면 테이블 나눔도 달라진다 */
+      paintSubTitle();           /* 상임이사님 참석 여부에 따라 문구가 달라진다 */
+      invalidateResult();        /* 명단이 바뀌면 지난 결과는 무효 */
+    }
+    paintRosterMode();           /* 인원수 안내·다음 단추 잠금을 다시 그린다 */
   });
   rosterBox.appendChild(lab);
 });
 updateCount();
+
+/* ==========================================================================
+   ② 화면을 갈래에 맞게 갈아입힌다
+   · 자리 뽑기   : 총장님 고정(체크 못 풂) · 나머지 10명 선택
+   · 당첨자 뽑기 : 11명 전원 선택 가능 · 2명 미만이면 다음으로 못 감
+   ========================================================================== */
+var rosterTitle = document.getElementById('rosterTitle');
+var cntLabel    = document.getElementById('cntLabel');
+var rosterWarn  = document.getElementById('rosterWarn');
+var freeRow     = document.getElementById('freeRow');
+var freeNote    = document.getElementById('freeNote');
+var go2Btn      = document.getElementById('go2');
+var winRow      = document.getElementById('winRow');
+var winNum      = document.getElementById('winNum');
+var winMinus    = document.getElementById('winMinus');
+var winPlus     = document.getElementById('winPlus');
+
+/* 몇 명을 뽑을지. ⚠️ 참가 인원보다 적어야 한다(전원 당첨은 뽑기가 아니다).
+   부품도 똑같이 1 ~ (참가인원-1) 로 잘라내므로 여기서도 같은 규칙을 쓴다. */
+var winWanted = 1;
+
+function drawPoolSize(){
+  /* 직접 입력한 명단을 쓸 때는 부품이 인원을 들고 있다 */
+  if(drawSource === 'free'){
+    try{ return (LuckyDraw.getNames() || []).length; }catch(e){ return 2; }
+  }
+  return presentCount();
+}
+function paintWinRow(){
+  var pool = drawPoolSize();
+  var max  = Math.max(1, pool - 1);
+  if(winWanted > max) winWanted = max;
+  if(winWanted < 1)   winWanted = 1;
+  winNum.value = String(winWanted);
+  winNum.max   = String(max);
+  winMinus.disabled = (winWanted <= 1);
+  winPlus.disabled  = (winWanted >= max);
+}
+function setWinWanted(v){
+  var pool = drawPoolSize();
+  var max  = Math.max(1, pool - 1);
+  v = Math.round(Number(v) || 1);
+  winWanted = Math.min(Math.max(v, 1), max);
+  paintWinRow();
+  try{ LuckyDraw.setWinners(winWanted); }catch(e){}
+}
+winMinus.addEventListener('click', function(){ setWinWanted(winWanted - 1); });
+winPlus .addEventListener('click', function(){ setWinWanted(winWanted + 1); });
+winNum  .addEventListener('change', function(){ setWinWanted(this.value); });
+winNum  .addEventListener('blur',   function(){ setWinWanted(this.value); });
+
+function paintRosterMode(){
+  var draw = (branch === 'draw');
+  var free = (draw && drawSource === 'free');
+  var n    = presentCount();
+
+  /* 총장님 잠금 : 자리 뽑기에서만 잠근다 */
+  if(chiefCb){
+    chiefCb.disabled = !draw;
+    if(!draw && !present[CHIEF_ID]){        /* 자리 뽑기로 돌아오면 반드시 참석으로 */
+      present[CHIEF_ID] = true;
+      chiefCb.checked = true;
+      chiefLab.classList.remove('away');
+      updateCount();
+      n = presentCount();
+    }
+    chiefLab.classList.toggle('fixed', !draw);
+  }
+
+  rosterTitle.textContent = draw
+    ? '② 뽑기에 참가할 분에 체크해 주세요 (총장님도 빼실 수 있습니다)'
+    : '② 오늘 오시는 분에 체크해 주세요 (체크한 인원수만큼만 자리를 만듭니다)';
+  cntLabel.textContent = draw ? '참가' : '참석';
+
+  freeRow.style.display  = draw ? '' : 'none';
+  freeNote.style.display = free ? '' : 'none';
+  winRow.style.display   = draw ? '' : 'none';
+  if(draw) paintWinRow();
+  rosterBox.style.opacity = free ? '.45' : '';
+  document.getElementById('freeBtn').textContent = free
+    ? '👥 처장단 명단으로 돌아가기'
+    : '✏️ 다른 이름으로 뽑기 (학과 행사 등)';
+
+  go2Btn.textContent = draw ? '다음 : 당첨자 뽑기 ▶' : '다음 : 테이블 고르기 ▶';
+
+  /* 당첨자 뽑기는 2명부터. 직접 입력 명단을 쓸 때는 체크와 상관없다. */
+  var tooFew = (draw && !free && n < 2);
+  go2Btn.disabled = tooFew;
+  rosterWarn.style.display = tooFew ? '' : 'none';
+  if(tooFew) rosterWarn.textContent = '뽑기는 2명부터 하실 수 있습니다 — 최소 2명에 체크해 주세요';
+}
 
 /* ---------- ② 테이블 배치 고르기 ----------
    ⚠️ 참석 인원에 따라 실제 나뉘는 모양이 매번 달라지므로,
@@ -3522,12 +3867,8 @@ function paintLayoutChoices(){
 
   layList.innerHTML = '';
 
-  /* — 묶음 ① 자리 배치 — */
-  var g1 = document.createElement('div');
-  g1.className = 'laygroup';
-  g1.textContent = '자리 배치';
-  layList.appendChild(g1);
-
+  /* ⚠️ 2026-08-13 개편 : 여기 있던 '당첨자 뽑기' 칸은 없앴다.
+        이제 갈래는 맨 처음 ① 화면에서 고르므로, 이 화면은 자리 뽑기만 다룬다. */
   [['one','한 테이블'], ['multi','여러 테이블']].forEach(function(pair){
     var k = pair[0], title = pair[1];
     var usable = (k === 'one') || multiOk;
@@ -3535,7 +3876,7 @@ function paintLayoutChoices(){
     b.type = 'button';
     b.className = 'laybtn';
     b.setAttribute('data-lay', k);
-    b.setAttribute('aria-pressed', (branch === 'seat' && k === kind && usable) ? 'true' : 'false');
+    b.setAttribute('aria-pressed', (k === kind && usable) ? 'true' : 'false');
     if(!usable) b.disabled = true;
 
     var body;
@@ -3551,65 +3892,27 @@ function paintLayoutChoices(){
 
     b.addEventListener('click', function(){
       if(running || b.disabled) return;
-      kind = k; branch = 'seat';
+      kind = k;
       paintLaySel();
       paintSubTitle();
-      paintGo3();
       invalidateResult();
     });
     layList.appendChild(b);
   });
 
-  /* — 묶음 ② 당첨자 뽑기 — */
-  var g2 = document.createElement('div');
-  g2.className = 'laygroup';
-  g2.textContent = '당첨자 뽑기';
-  layList.appendChild(g2);
-
-  var drawOk = (n >= 2);           /* 뽑기는 최소 2명부터 */
-  var db = document.createElement('button');
-  db.type = 'button';
-  db.className = 'laybtn';
-  db.setAttribute('data-lay', 'draw');
-  db.setAttribute('aria-pressed', branch === 'draw' && drawOk ? 'true' : 'false');
-  if(!drawOk) db.disabled = true;
-  db.innerHTML =
-    '<span class="laytitle">🎯 당첨자 뽑기</span>' +
-    (drawOk
-      ? '<span class="laydesc">자리는 그대로 두고, 오늘 오신 분 중에서 당첨자를 뽑습니다<br>' +
-        '사다리타기 · 원판 돌리기 · 카드 뽑기 · 달리기 — 네 가지 연출</span>'
-      : '<span class="laydesc">참석이 2명부터 뽑기를 하실 수 있습니다</span>');
-  db.addEventListener('click', function(){
-    if(running || db.disabled) return;
-    branch = 'draw';
-    paintLaySel();
-    paintSubTitle();
-    paintGo3();
-  });
-  layList.appendChild(db);
-
-  if(branch === 'draw' && !drawOk) branch = 'seat';
   paintLaySel();
-  paintGo3();
 }
 
-/* ② 화면에서 지금 고른 칸에만 불이 들어오게 한다 */
-function selKey(){ return branch === 'draw' ? 'draw' : kind; }
+/* ③ 화면에서 지금 고른 칸에만 불이 들어오게 한다 */
 function paintLaySel(){
-  var sel = selKey();
   Array.prototype.forEach.call(layList.children, function(c){
-    if(!c.getAttribute || !c.getAttribute('data-lay')) return;   /* 묶음 제목은 건너례다 */
-    c.setAttribute('aria-pressed', c.getAttribute('data-lay') === sel ? 'true' : 'false');
+    if(!c.getAttribute || !c.getAttribute('data-lay')) return;
+    c.setAttribute('aria-pressed', c.getAttribute('data-lay') === kind ? 'true' : 'false');
   });
 }
 
-/* ②의 '다음' 단추 · 단계표시줄 ③ 글자를 갈래에 맞춰 바꾼다 */
-function paintGo3(){
-  var b  = document.getElementById('go3');
-  var lb = document.getElementById('step3Label');
-  if(b)  b.textContent  = (branch === 'draw') ? '다음 : 당첨자 뽑기 ▶' : '다음 : 자리 뽑기 ▶';
-  if(lb) lb.textContent = (branch === 'draw') ? '당첨자 뽑기' : '자리 뽑기';
-}
+/* ⚠️ paintGo3 는 없앴다 — ③의 '다음' 단추 글자는 이제 갈래에 따라 달라지지 않는다
+      (③은 자리 뽑기 전용 화면이므로 언제나 '다음 : 자리 뽑기'). */
 
 /* ==========================================================================
    4. 소리 (Web Audio API 로 직접 생성 · 외부 파일 없음)
@@ -4959,6 +5262,28 @@ if(escStay){
   }, 3900);
 })();
 
+/* ==========================================================================
+   탈출 장치를 '당첨자 뽑기 부품'에도 빌려 주는 창구  (window.SeatEscape)
+   ⚠️ 당첨자 뽑기는 따로 만든 부품(IIFE)이라 위의 함수들에 손이 닿지 않는다.
+      그래서 필요한 것만 여기서 내준다. 부품 쪽에서 intent:// 를 다시 구현하면
+      두 벌로 갈려 나중에 반드시 어긋나므로, 반드시 이 창구를 쓰게 한다.
+   ⚠️ 이름·모양을 바꾸면 부품 쪽이 조용히 못 쓰게 된다 — 바꿀 때는 양쪽을 같이 고칠 것.
+   ========================================================================== */
+window.SeatEscape = {
+  inApp     : isInApp,                  /* 카카오톡 등 '앱 안의 브라우저' 인가 */
+  inAppName : inAppName,                /* '카카오톡' 같은 이름 (아니면 빈 값) */
+  isIOS     : isIOS,
+  isAndroid : isAndroid,
+  touch     : isTouchDevice,            /* PC 안내를 낼지 말지 가르는 값 */
+  /* 바깥 브라우저로 넘어갈 수 있는 환경인가 (주소가 있는 폰일 때만) */
+  canLeave  : function(){ return (isIOS || isAndroid) && !!location.host; },
+  label     : function(){ return externalLabel(); },   /* '🌐 다른 브라우저로 열기' / '🧭 사파리로 열기' */
+  name      : function(){ return externalName(); },    /* '다른 브라우저' / '사파리' */
+  leave     : function(){ openExternalBrowser(false); },
+  shareOk   : function(){ return canShareFiles() && !isInApp; },
+  copyOk    : function(){ return canCopyImage(); }
+};
+
 var lastAssign   = null;               /* 마지막으로 확정된 배치 */
 var sharedBlob   = null;               /* 미리 만들어 둔 그림 (공유·새 창용) */
 var sharedDataUrl= null;               /* 미리 만들어 둔 그림 (화면 표시용 data URI) */
@@ -5073,9 +5398,11 @@ function setBusy(b){
   running = b;
   goBtn.disabled = b;
   Array.prototype.forEach.call(modesBox.children, function(c){ c.disabled = b; });
-  /* 돌아가는 도중에는 '이전'도 잠근다 (화면이 중간에 바뀌면 연출이 깨진다) */
-  var back2 = document.getElementById('back2');
-  if(back2) back2.disabled = b;
+  /* 돌아가는 도중에는 '이전'·'처음으로'도 잠근다 (화면이 중간에 바뀌면 연출이 깨진다) */
+  ['back2','home3'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.disabled = b;
+  });
 }
 
 function showMeta(){
@@ -5132,11 +5459,14 @@ goBtn.addEventListener('click', start);
 var stageWrap  = document.getElementById('stageWrap');
 var scrollHint = document.getElementById('scrollHint');
 var subTitle   = document.getElementById('subTitle');
-var stepChips  = document.getElementById('stepBar').children;
-var screens    = {1:document.getElementById('scr1'),
-                  2:document.getElementById('scr2'),
-                  3:document.getElementById('scr3')};
-var scr3d      = document.getElementById('scr3d');   /* ③의 다른 얼굴 : 당첨자 뽑기 */
+var stepBar    = document.getElementById('stepBar');
+/* 화면 조각들. 어느 단계에 무엇을 보여 줄지는 screenFor() 가 정한다. */
+var scr0       = document.getElementById('scr0');    /* ① 무엇을 할까요 */
+var screens    = {1:document.getElementById('scr1'), /* 참석자·참가자 */
+                  2:document.getElementById('scr2'), /* 테이블 배치 (자리 뽑기 전용) */
+                  3:document.getElementById('scr3')};/* 자리 뽑기 */
+var scr3d      = document.getElementById('scr3d');   /* 당첨자 뽑기 */
+var allScreens = [scr0, screens[1], screens[2], screens[3], scr3d];
 
 /* 명단이나 배치가 바뀌면 지난 결과는 무효로 돌린다 */
 function invalidateResult(){
@@ -5155,13 +5485,18 @@ function paintSubTitle(){
   if(!subTitle) return;
   var t, viceOn = viceComing();
   var multi = (kind === 'multi' && canMulti(presentCount()));
-  if(step >= 2 && branch === 'draw'){
+
+  if(step <= 1){                 /* ① 무엇을 할까요 */
+    subTitle.textContent = '자리 뽑기와 당첨자 뽑기 중에서 골라 주세요';
+    return;
+  }
+  if(branch === 'draw'){
     subTitle.textContent = (step === 2)
-      ? '책임자 명단은 그대로 · 무엇을 하실지 골라 주세요'
+      ? '뽑기에 참가할 분을 정해 주세요 · 총장님도 빼실 수 있습니다'
       : '체크하신 분들 중에서 당첨자를 뽑습니다 · 자리 배치와는 상관없습니다';
     return;
   }
-  if(step <= 1){
+  if(step === 2){
     t = '총장님은 반드시 참석하십니다 · 오늘 오시는 분만 체크해 주세요';
   }else if(multi){
     t = viceOn
@@ -5189,56 +5524,39 @@ function updateScrollHint(){
         ⚠ 둘은 서로 독립이다 — 뽑기 결과가 자리 배치를 바꾸지 않는다.
           (onResult 는 나중을 위해 부품에 준비만 되어 있고 지금은 쓰지 않는다.)
    ========================================================================== */
-var vipBtn   = document.getElementById('vipBtn');
-var vipState = document.getElementById('vipState');
 var drawWho  = document.getElementById('drawWho');
 var freeBtn  = document.getElementById('freeBtn');
 
-/* ①에서 체크한 분들을 뽑기용 이름 배열로 만든다 (서열 순서 그대로) */
-function rosterNames(withVip){
+/* ⚠️ 2026-08-13 개편 : '총장님·상임이사님도 함께 뽑기' 스위치(vipBtn)는 없앴다.
+      이제 ② 화면에서 11명 전원을 체크로 직접 넣고 뺀다. 같은 일을 두 곳에서
+      하면 오히려 헷갈린다는 교수님 지시. vipInDraw 변수도 함께 없앴다. */
+
+/* ②에서 체크한 분들을 뽑기용 이름 배열로 만든다 (서열 순서 그대로) */
+function rosterNames(){
   var out = [];
   for(var i=0;i<MEMBERS.length;i++){
     var m = MEMBERS[i];
-    if(!present[m.id]) continue;
-    if(!withVip && (m.id === VICE_ID || m.id === CHIEF_ID)) continue;
-    out.push(m.l1 + m.l2);
+    if(present[m.id]) out.push(m.l1 + m.l2);
   }
   return out;
 }
 
 /* 부품에 명단을 넘긴다. ⚠ 화면을 열기 전에 부른다 (MERGE_NOTES 7-6) */
 function pushRoster(){
-  var list = rosterNames(vipInDraw);
-  if(list.length < 2){ vipInDraw = true; list = rosterNames(true); }   /* 2명이 안 되면 되돌린다 */
-  return LuckyDraw.setNames(list, {screen:2});   /* screen:2 = 이름 입력칸을 건너뛰고 방식 고르기부터 */
+  var list = rosterNames();
+  /* ⚠️ winners 를 같이 넘긴다 — 안 넘기면 부품이 명단을 새로 받을 때마다
+        '당첨 1명'으로 되돌아가, ② 화면에서 정한 뽑을 인원이 조용히 사라진다. */
+  var want = Math.min(Math.max(winWanted, 1), Math.max(1, list.length - 1));
+  return LuckyDraw.setNames(list, {screen:2, winners:want});   /* screen:2 = 이름 입력칸을 건너뛰고 방식 고르기부터 */
 }
 
 function paintDrawPanel(){
   var roster = (drawSource === 'roster');
-  vipBtn.style.display  = roster ? '' : 'none';
   drawWho.style.display = roster ? '' : 'none';
-  freeBtn.textContent   = roster
-    ? '✏️ 다른 이름으로 뽑기 (학과 행사 등)'
-    : '👥 처장단 명단으로 돌아가기';
   if(!roster) return;
-
-  var list   = rosterNames(vipInDraw);
-  var canOff = rosterNames(false).length >= 2;
-  vipBtn.setAttribute('aria-pressed', vipInDraw ? 'true' : 'false');
-  vipBtn.disabled = (vipInDraw && !canOff);
-  vipState.textContent = vipInDraw ? '포함' : '제외';
-  drawWho.innerHTML = '뽑기 참가 <b>' + list.length + '명</b> : ' + list.join(' · ') +
-    (vipBtn.disabled ? '<br>(두 분을 빼면 2명이 안 돼 지금은 끄실 수 없습니다)' : '');
+  var list = rosterNames();
+  drawWho.innerHTML = '뽑기 참가 <b>' + list.length + '명</b> : ' + list.join(' · ');
 }
-
-vipBtn.addEventListener('click', function(){
-  if(drawSource !== 'roster' || vipBtn.disabled) return;
-  var next = !vipInDraw;
-  if(rosterNames(next).length < 2){ toast('두 분을 빼면 참가자가 2명이 되지 않습니다'); return; }
-  vipInDraw = next;
-  pushRoster();
-  paintDrawPanel();
-});
 
 /* 부품 안의 「참가자 고치기」로 들어가면 그때부터 직접 입력한 명단으로 본다
    (안 그러면 다음에 들어올 때 처장단 명단이 그 위에 덮어써진다) */
@@ -5249,15 +5567,20 @@ vipBtn.addEventListener('click', function(){
   });
 });
 
+/* ② 화면의 「다른 이름으로 뽑기」 ↔ 「처장단 명단으로 돌아가기」
+   ⚠️ 2026-08-13 개편으로 ③(뽑기 화면)에서 ②(참가자 화면)로 옮겨 왔다.
+      참가자를 정하는 자리가 여기이기 때문이다. 기능(2~30명·붙여넣기)은 그대로. */
 freeBtn.addEventListener('click', function(){
   if(drawSource === 'roster'){
     drawSource = 'free';
-    LuckyDraw.goScreen(1);        /* 자유 입력 화면(2~30명)으로 */
+    paintRosterMode();
+    goStep(3);                    /* 뽑기 화면으로 넘어가서 */
+    LuckyDraw.goScreen(1);        /* 자유 입력 화면(2~30명)을 연다 */
   }else{
-    drawSource = 'roster';
-    pushRoster();
+    drawSource = 'roster';        /* 처장단 명단으로 되돌아온다 */
+    paintRosterMode();
+    paintDrawPanel();
   }
-  paintDrawPanel();
 });
 
 /* 밝기(테마)를 자리배치와 맞춴 준다.
@@ -5273,7 +5596,7 @@ try{
   }
 }catch(e){}
 
-/* ③ 당첨자 뽑기 화면으로 들어올 때 */
+/* 당첨자 뽑기 화면으로 들어올 때 */
 function enterDraw(){
   syncDrawTheme();
   if(drawSource === 'roster') pushRoster();
@@ -5281,34 +5604,85 @@ function enterDraw(){
   LuckyDraw.show();
 }
 
+/* 단계 표시줄을 고른 갈래에 맞게 다시 만든다 (자리 뽑기 4칸 / 당첨자 뽑기 3칸).
+   ① 화면에서는 아직 몇 단계인지 알 수 없으므로 통째로 감춘다. */
+var CIRCLED = ['','①','②','③','④'];
+function paintStepBar(){
+  if(!branch || step <= 1){ stepBar.className = 'stepbar hidebar'; return; }
+  var labels = STEP_LABELS[branch];
+  stepBar.className = 'stepbar';
+  stepBar.setAttribute('data-cols', String(labels.length));
+  var html = '';
+  for(var i=0;i<labels.length;i++){
+    var k = i + 1;
+    var cls = 'stepchip' + (k === step ? ' nowstep' : (k < step ? ' donestep' : ''));
+    html += '<div class="' + cls + '"><b>' + CIRCLED[k] + '</b><span>' + labels[i] + '</span></div>';
+  }
+  stepBar.innerHTML = html;
+}
+
+/* ①에서 갈래를 고른다.
+   ⚠️ 갈래가 '바뀌면' 뒤 화면을 전부 처음으로 되돌린다 — 옛 선택·옛 결과가 남아
+      섞이면 안 된다는 교수님 지시. 같은 갈래를 다시 고르면 그대로 이어 간다. */
+function pickBranch(b){
+  if(running) return;
+  if(branch !== b){
+    branch = b;
+    /* 명단·배치·명단출처·지난 결과를 모두 처음 상태로 */
+    for(var i=0;i<MEMBERS.length;i++) present[MEMBERS[i].id] = true;
+    Array.prototype.forEach.call(rosterBox.children, function(lab){
+      var cb = lab.querySelector('input');
+      if(cb) cb.checked = true;
+      lab.classList.remove('away');
+    });
+    kind = 'one';
+    drawSource = 'roster';
+    winWanted = 1;                /* 뽑을 인원도 처음값으로 */
+    updateCount();
+    invalidateResult();           /* 자리배치 결과·공유 잠금 초기화 */
+    LuckyDraw.reset();            /* 뽑기 결과·공유 잠금 초기화 */
+  }
+  scr0.querySelector('#pickSeat').setAttribute('aria-pressed', b === 'seat' ? 'true' : 'false');
+  scr0.querySelector('#pickDraw').setAttribute('aria-pressed', b === 'draw' ? 'true' : 'false');
+  paintRosterMode();
+  goStep(2);
+}
+
 function goStep(n){
   if(running) return;              /* 뽑는 도중에는 화면을 넘기지 않는다 */
+  if(n > 1 && !branch) n = 1;      /* 갈래를 안 골랐으면 ①에서 더 못 나간다 */
   step = n;
 
-  var drawNow = (n === 3 && branch === 'draw');
-  for(var i=1;i<=3;i++){
-    if(i === n && !(i === 3 && drawNow)) screens[i].classList.add('nowscreen');
-    else                                 screens[i].classList.remove('nowscreen');
-  }
-  if(drawNow) scr3d.classList.add('nowscreen');
-  else        scr3d.classList.remove('nowscreen');
-  Array.prototype.forEach.call(stepChips, function(c){
-    var k = parseInt(c.getAttribute('data-step'), 10);
-    c.classList.remove('nowstep','donestep');
-    if(k === n)      c.classList.add('nowstep');
-    else if(k < n)   c.classList.add('donestep');
-  });
+  var seat = (branch === 'seat');
+  /* 이 단계에 어떤 화면을 띄울지
+       ①=scr0 / ②=scr1(명단)
+       자리 뽑기 ③=scr2(테이블) ④=scr3(자리 뽑기)
+       당첨자 뽑기 ③=scr3d(당첨자 뽑기) */
+  var shown =
+    (n === 1) ? scr0 :
+    (n === 2) ? screens[1] :
+    (n === 3) ? (seat ? screens[2] : scr3d) :
+                screens[3];
+  var drawNow = (shown === scr3d);
 
-  if(n === 2){
+  allScreens.forEach(function(s){
+    if(s === shown) s.classList.add('nowscreen');
+    else            s.classList.remove('nowscreen');
+  });
+  paintStepBar();
+
+  if(seat && n === 3){
     paintLayoutChoices();          /* 오늘 인원에 맞춰 고를 것을 다시 그린다 */
   }
+  if(n === 2) paintRosterMode();   /* 갈래에 맞게 명단 화면을 갈아입힌다 */
+
   /* 자리배치 화면으로 갈 때는 뽑기 부품을 반드시 멈춰 숨긴다
      (안 그러면 두 연출이 동시에 돌아 폰이 느려진다 — MERGE_NOTES 3-다) */
   if(!drawNow) LuckyDraw.hide();
 
   if(drawNow){
     enterDraw();
-  }else if(n === 3){
+  }else if(seat && n === 4){
     /* 인원이나 배치가 바뀌었을 수 있으므로 계획부터 새로 세우고 무대를 짓는다 */
     plan = makePlan();
     buildStage(plan);
@@ -5321,19 +5695,30 @@ function goStep(n){
   try{ window.scrollTo(0,0); }catch(e){}
 }
 
-document.getElementById('go2').addEventListener('click', function(){ goStep(2); });
-document.getElementById('go3').addEventListener('click', function(){ goStep(3); });
-document.getElementById('back1').addEventListener('click', function(){ goStep(1); });
-document.getElementById('back2').addEventListener('click', function(){ goStep(2); });
+/* ① 갈래 고르기 */
+document.getElementById('pickSeat').addEventListener('click', function(){ pickBranch('seat'); });
+document.getElementById('pickDraw').addEventListener('click', function(){ pickBranch('draw'); });
+
+/* ② 명단 → 다음 (갈래에 따라 테이블 고르기 / 당첨자 뽑기로 갈린다) */
+document.getElementById('go2').addEventListener('click', function(){ goStep(3); });
+document.getElementById('back0').addEventListener('click', function(){ goStep(1); });
+
+/* ③ 테이블 → ④ 자리 뽑기 (자리 뽑기 갈래에서만) */
+document.getElementById('go3').addEventListener('click', function(){ goStep(4); });
+document.getElementById('back1').addEventListener('click', function(){ goStep(2); });
+
+/* ④ 자리 뽑기 화면 · ③ 당첨자 뽑기 화면의 되돌아가기 */
+document.getElementById('back2').addEventListener('click', function(){ goStep(3); });
 document.getElementById('back2d').addEventListener('click', function(){ goStep(2); });
+document.getElementById('home3').addEventListener('click', function(){ goStep(1); });
+document.getElementById('home3d').addEventListener('click', function(){ goStep(1); });
 window.addEventListener('resize', updateScrollHint);
 
-/* 첫 화면 : ① 명단부터 */
+/* 첫 화면 : ① 무엇을 할까요 부터 */
 plan = makePlan();
 buildStage(plan);
 resetSeats(plan);
 paintLayoutChoices();
-paintGo3();
 goStep(1);
 window.addEventListener('resize', fitStageFont);
 
