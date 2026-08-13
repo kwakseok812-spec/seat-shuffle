@@ -3303,6 +3303,39 @@ var TOTAL    = MEMBERS.length;    /* 11 */
       이 셈은 오직 여기 한 곳에만 적는다. */
 function midTableIdx(t){ return (t === 2) ? 0 : Math.floor((t - 1) / 2); }
 
+/* 🔑 고정석(상임이사님 · 총장님)은 「전체 배치의 한가운데에 가장 가까운 자리」에 앉으신다.
+   ⚠️ 배치마다 '왼쪽/오른쪽'을 손으로 적으면 반드시 어긋난다 → 이 판정 함수 하나만 쓴다.
+       (한 테이블 · 여러 테이블 두 배치가 모두 이것을 부른다)
+
+   재는 방법 — 화면이 실제로 그리는 모양 그대로 셈한다
+     · 테이블 폭 = 그 테이블의 칸수(cols). 화면에서도 cols 를 fr 로 넣어 폭을 맞춘다.
+     · 테이블 사이 간격 = 아래 TBL_GAP_UNITS (자리 칸 폭을 1 로 본 값).
+     · 위쪽 줄은 테이블 안에서 한가운데로 모인다 (CSS .seatrow 가 justify-content:center).
+   같은 거리면 왼쪽을 고른다 (한 테이블에서 위쪽이 짝수일 때의 선택 — 교수님께 보고한 소장 판단). */
+var TBL_GAP_UNITS = 1;
+function topIdxNearestOverallCenter(tbls, tblIdx){
+  var t = tbls[tblIdx];
+  if(!t || !t.top.length) return 0;
+  if(t.top.length === 1) return 0;
+
+  var widthUnits = 0, i;
+  for(i=0;i<tbls.length;i++) widthUnits += tbls[i].cols;
+  widthUnits += TBL_GAP_UNITS * (tbls.length - 1);
+
+  var leftUnits = 0;
+  for(i=0;i<tblIdx;i++) leftUnits += tbls[i].cols + TBL_GAP_UNITS;
+
+  var rowStartUnits = leftUnits + (t.cols - t.top.length) / 2;   /* 줄이 한가운데로 모이는 몫 */
+  var mid = widthUnits / 2;
+
+  var bestIdx = 0, bestDist = Infinity;
+  for(i=0;i<t.top.length;i++){
+    var d = Math.abs((rowStartUnits + i + 0.5) - mid);
+    if(d < bestDist - 1e-9){ bestDist = d; bestIdx = i; }   /* 동률이면 먼저 나온 왼쪽이 남는다 */
+  }
+  return bestIdx;
+}
+
 /* 여러 테이블 : 인원을 테이블에 나눈다.
    나누는 우선순위 — 위에서부터 차례로 만족시킨다
      ① 테이블 개수 = 올림(n ÷ 4)
@@ -3310,14 +3343,32 @@ function midTableIdx(t){ return (t === 2) ? 0 : Math.floor((t - 1) / 2); }
      ③ 상임이사님 테이블은 3인  — 위쪽에 혼자 앉으시도록 (참석하실 때만)
      ④ 남은 인원은 나머지 테이블에 고르게, 왼쪽부터 많게
      ⑤ 1인 테이블은 만들지 않는다(최소 2인). 생길 상황이면 총장님 테이블을 4→3 으로 줄여 푼다
+   🆕 예외 (2026-08-14 교수님 지시) — 상임이사님이 「불참」이고 테이블이 3개 이상일 때
+       가운데 테이블을 3인으로 만들어 총장님이 위쪽에 「혼자」 앉으시게 한다.
+       남은 인원은 나머지 테이블에 고르게, 왼쪽부터 많게.  → 10명 4·3·3 · 9명 3·3·3
+       ⚠️ 테이블이 2개면 「가운데」가 없으므로 이 예외를 쓰지 않는다.
+       ⚠️ 상임이사님이 「참석」하실 때의 나눔은 하나도 바꾸지 않는다.
    ⚠️ 아래 값들은 「박아 넣은 표」가 아니라 위 규칙의 계산 결과다 (검산용으로만 적어 둔다)
      상임이사 참석 : 11→4·3·4 · 10→3·3·4 · 9→2·3·4 · 8→4·4 · 7→3·4 · 6→2·4 · 5→2·3
-     상임이사 불참 :            10→3·4·3 · 9→3·4·2 · 8→4·4 · 7→4·3 · 6→4·2 · 5→3·2   */
+     상임이사 불참 :            10→4·3·3 · 9→3·3·3 · 8→4·4 · 7→4·3 · 6→4·2 · 5→3·2   */
 function tableSizes(n, viceOn){
   var t = Math.ceil(n / 4);
   if(t <= 1) return [n];
 
   var mid      = midTableIdx(t);
+
+  /* 🆕 상임이사 불참 + 테이블 3개 이상 → 가운데 3인(총장님 혼자 위쪽) */
+  if(!viceOn && t >= 3){
+    var solo = [], rest = [], j;
+    for(j=0;j<t;j++){ solo.push(0); if(j !== mid) rest.push(j); }
+    solo[mid] = 3;
+    var leftSolo = n - 3;
+    var baseSolo = Math.floor(leftSolo / rest.length), remSolo = leftSolo % rest.length;
+    for(j=0;j<rest.length;j++) solo[rest[j]] = baseSolo + (j < remSolo ? 1 : 0);
+    /* 1인 테이블이 생기는 날이면 이 예외를 접고 아래 기존 규칙으로 넘긴다 */
+    if(solo.every(function(v){ return v >= 2; })) return solo;
+  }
+
   var chiefIdx = viceOn ? mid + 1 : mid;   /* 총장님 테이블 */
   var viceIdx  = viceOn ? mid : -1;        /* 상임이사님 테이블 (불참이면 없음) */
 
@@ -3364,15 +3415,23 @@ function tableRows(size){
   return {top:top, bottom:size - top};
 }
 
-/* 한 테이블 : 위쪽 줄은 언제나 홀수 석 (한가운데 자리가 생기도록).
-   n ÷ 2 에 가장 가까운 홀수, 두 홀수가 같은 거리면 작은 쪽.
-     11→5/6 · 10→5/5 · 9→5/4 · 8→3/5 · 7→3/4 · 6→3/3 · 5→3/2 · 3→1/2 */
+/* 한 테이블 : 위·아래를 고르게 나눈다 (2026-08-14 교수님 지시로 규칙 변경).
+   ⚠️ 옛 규칙은 「위쪽은 언제나 홀수」였는데, 8명일 때 위3/아래5 로 한쪽이 몰려 이상했다.
+   새 규칙 — 위에서부터 차례로
+     ① 위·아래 인원 차이가 1 이하
+     ② 그런 나눔이 둘이면 위쪽이 홀수인 쪽 (한가운데 자리가 생기므로)
+     ③ 둘 다 홀수가 안 되면 위쪽이 적거나 같은 쪽
+   ⚠️ 아래 값은 「박아 넣은 표」가 아니라 위 규칙의 계산 결과다 (검산용으로만 적어 둔다)
+     11→5/6 · 10→5/5 · 9→5/4 · 8→4/4 · 7→3/4 · 6→3/3 · 5→3/2 · 4→2/2 · 3→1/2 */
 function oneRows(n){
-  var half = n / 2, best = 1, bd = Infinity;
-  for(var k=1;k<=n;k+=2){
-    var d = Math.abs(k - half);
-    if(d < bd - 1e-9){ bd = d; best = k; }   /* 동률이면 먼저 나온 작은 홀수가 남는다 */
+  var best = -1;
+  for(var k=0;k<=n;k++){
+    if(Math.abs(k - (n - k)) > 1) continue;      /* ① 차이 1 이하만 */
+    if(best < 0){ best = k; continue; }
+    if((k % 2 === 1) && (best % 2 === 0)) best = k;   /* ② 홀수 쪽을 고른다 */
+    /* ③ 둘 다 홀수가 아니면 먼저 나온(=적은) 쪽이 그대로 남는다 */
   }
+  if(best < 0) best = Math.floor(n / 2);
   return {top:best, bottom:n - best};
 }
 
@@ -3509,19 +3568,22 @@ function computePlan(kind, n, viceOn){
     var mid = midTableIdx(tables.length);
     var chiefTbl;
     if(viceOn){
-      viceSlot = tables[mid].top[0];      /* 상임이사님 = 가운데 테이블 위쪽 */
+      /* 🔑 고정석은 그 테이블 위쪽 자리들 중 「전체 배치의 한가운데에 더 가까운 쪽」 */
+      viceSlot = tables[mid].top[topIdxNearestOverallCenter(tables, mid)];
       chiefTbl = mid + 1;                 /* 총장님 = 바로 오른쪽 옆 테이블 위쪽 */
       preset.push(viceSlot);
     }else{
       chiefTbl = mid;                     /* 상임이사님이 안 오시면 총장님이 가운데 */
     }
     var ct = tables[chiefTbl];
-    chiefCands = [ct.top[0]];
-    preset.push(ct.top[0]);
+    var chiefSeat = ct.top[topIdxNearestOverallCenter(tables, chiefTbl)];
+    chiefCands = [chiefSeat];
+    preset.push(chiefSeat);
 
     /* 🔑 총장님 바로 옆자리를 맨 마지막에. 총장님이 위쪽에 혼자인 테이블(3인·2인)이면
        옆자리가 없으므로 마주보는 아래쪽 마지막 자리를 끝으로 삼는다. */
-    if(ct.top.length > 1)          last = [ct.top[1]];
+    var chiefSide = without(ct.top, [chiefSeat]);
+    if(chiefSide.length)           last = [chiefSide[0]];
     else if(ct.bottom.length)      last = [ct.bottom[ct.bottom.length - 1]];
 
     /* 공개 순서 : 왼쪽 테이블부터 차례로, 총장님 테이블이 맨 마지막 */
@@ -3537,7 +3599,9 @@ function computePlan(kind, n, viceOn){
   }else{
     var rr = oneRows(n);
     var T = addTable('회 식 테 이 블', rr.top, rr.bottom);
-    var cIdx = Math.floor(T.top.length / 2);       /* 위쪽 줄 한가운데 */
+    /* 🔑 고정석 = 위쪽 줄의 한가운데. 위쪽이 짝수라 한가운데가 없으면
+       중앙에 가장 가까운 두 자리 중 왼쪽 (판정은 여러 테이블과 같은 함수 한 곳에서). */
+    var cIdx = topIdxNearestOverallCenter(tables, 0);
     var center = T.top[cIdx];
     var nb = [];                                   /* 한가운데 양옆 */
     if(cIdx - 1 >= 0)            nb.push(T.top[cIdx - 1]);
