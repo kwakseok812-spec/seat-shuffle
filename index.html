@@ -2921,7 +2921,14 @@ function boot(){
         나오면서 실제로는 실패한다(갤럭시 S25 실측). 그래서 인앱이면 무엇보다
         '바깥 브라우저로 나가기'를 1순위로 둔다.
      ========================================================================== */
-  function esc(){ return window.SeatEscape || null; }
+  /* 🔴 2026-08-14 이름 바꿈 : 예전 이름이 esc() 였다.
+        같은 스코프 위쪽 1830줄 근처에 글자 escape 도우미 function esc(s) 가 이미 있어서,
+        함수 선언 끌어올리기(hoisting) 때문에 "아래쪽인 이것"이 스코프 전체에서 이겼다.
+        그 결과 esc(nameOf(i)) 같은 호출이 전부 window.SeatEscape 객체를 받아
+        화면에 [object Object] 로 찍혔다 (당첨자 카드·안 된 분 목록·진행 문구).
+        캔버스(PNG·원판)는 esc 를 안 거쳐서 멀쩡했던 탓에 발견이 늦었다.
+        ⚠️ 부품 안에서 새 이름을 만들 땐 반드시 ld- 를 붙인다 (MERGE_NOTES 6-4). */
+  function ldEscape(){ return window.SeatEscape || null; }
 
   /* 그림 파일을 공유창으로 보낼 수 있는 환경인가 (창구가 없을 때 쓰는 자체 판정) */
   function canShareFilesLocal(){
@@ -2937,7 +2944,7 @@ function boot(){
 
   /* 쓰는 브라우저에 따라 단추 순서와 안내를 통째로 바꾼다 (자리배치 layoutImageButtons 와 같은 규칙) */
   function layoutImgButtons(){
-    var E = esc();
+    var E = ldEscape();
     var shareOk = E ? E.shareOk() : canShareFilesLocal();
     var copyOk  = E ? E.copyOk()  : canCopyImageLocal();
     var canLeave = !!(E && E.canLeave());
@@ -3037,7 +3044,7 @@ function boot(){
      카카오톡 인앱에서는 복사도 공유도 실패하므로, 실패했을 때
      '이미지 복사를 써 보세요'(그것도 실패한다) 대신 반드시 '나가는 길'을 안내한다. */
   function deadEndHelp(why){
-    var E = esc();
+    var E = ldEscape();
     if(E && E.inApp && E.canLeave()){
       toast(why + '\n아래 ‘' + E.label() + '’ 를 눌러 주세요.', 5200);
       var b = $('imgChrome');
@@ -3083,7 +3090,7 @@ function boot(){
   var imgChromeBtn = $('imgChrome');
   if(imgChromeBtn){
     imgChromeBtn.onclick = function(){
-      var E = esc();
+      var E = ldEscape();
       if(E && E.leave) E.leave();
       else toast('이 브라우저에서는 바깥으로 넘길 수 없습니다.\n화면을 캡처해 주세요.', 4600);
     };
@@ -5536,7 +5543,10 @@ function rosterNames(){
   var out = [];
   for(var i=0;i<MEMBERS.length;i++){
     var m = MEMBERS[i];
-    if(present[m.id]) out.push(m.l1 + m.l2);
+    /* 🔴 이름을 만드는 곳은 여기 한 군데뿐이다. 화면에 이름이 나오는 모든 자리
+          (참가자 목록·연출 문구·당첨자 카드·안 된 분 목록·결과 PNG)가 이 값을 쓴다.
+          두 줄 표기(l1/l2)는 한 줄로 합칠 때 사이를 띄운다 : 교무입학 + 처장 -> 교무입학 처장 */
+    if(present[m.id]) out.push((m.l1 + ' ' + m.l2).replace(/\s+/g, ' ').trim());
   }
   return out;
 }
