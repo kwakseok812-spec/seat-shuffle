@@ -52,6 +52,8 @@
   --shadow:0 2px 6px rgba(0,0,0,.12);
   --chief-front:linear-gradient(180deg,#fff3cf,#f3d78a);
   --chief-front-ink:#4a3607;
+
+  /* 상임이사(두 번째 등급) : 은색 */
 }
 
 /* ---------- 색상 팔레트 : 어두운 화면 ---------- */
@@ -83,6 +85,7 @@
     --shadow:0 2px 8px rgba(0,0,0,.45);
     --chief-front:linear-gradient(180deg,#6c5215,#3f2f08);
     --chief-front-ink:#ffe9ab;
+
   }
 }
 
@@ -115,6 +118,7 @@
   --shadow:0 2px 8px rgba(0,0,0,.45);
   --chief-front:linear-gradient(180deg,#6c5215,#3f2f08);
   --chief-front-ink:#ffe9ab;
+
 }
 :root[data-theme="light"]{
   --bg:#f2efe8;
@@ -143,6 +147,8 @@
   --shadow:0 2px 6px rgba(0,0,0,.12);
   --chief-front:linear-gradient(180deg,#fff3cf,#f3d78a);
   --chief-front-ink:#4a3607;
+
+  /* 상임이사(두 번째 등급) : 은색 */
 }
 
 *{box-sizing:border-box}
@@ -169,7 +175,13 @@ body{
   font-size:clamp(16px,4.4vw,22px);
   letter-spacing:-.02em;
 }
-.hd p{margin:3px 0 0;font-size:clamp(11px,2.9vw,13px);color:var(--muted)}
+/* 부제 : 고른 배치에 따라 문구가 바뀐다. 좁은 화면에서 두 줄로 넘어가도
+   낱말 가운데가 잘리지 않도록 keep-all 로 끊는다. */
+.hd p{
+  margin:3px auto 0;max-width:34em;padding:0 4px;
+  font-size:clamp(11px,2.9vw,13px);color:var(--muted);
+  line-height:1.5;word-break:keep-all;overflow-wrap:break-word;
+}
 
 /* ---------- 공통 패널 ---------- */
 .panel{
@@ -235,38 +247,45 @@ body{
    → 앞으로 .sub 같은 '짧고 흔한' 이름을 버튼에 다시 쓰지 말 것. */
 
 /* ==========================================================================
-   테이블 무대 — 화면 크기와 상관없이 언제나 같은 배치
-     · 가로로 긴 직사각 테이블 하나
-     · 위쪽 가로줄에 5석 / 아래쪽 가로줄에 5석
-     · 테이블 좌·우 옆면에는 자리를 두지 않는다
-     · 위쪽 5석 중 가운데(3번째)가 총장 고정석
-   폰 세로화면에서도 방향을 바꾸지 않고, 카드와 글자만 작게 줄여서 담는다.
+   테이블 무대 — 참석 인원에 맞춰 자리 수가 그때그때 정해진다
+     · 한 테이블 : 긴 테이블 하나. 위쪽 줄은 언제나 홀수 석(한가운데가 생기도록),
+                   나머지는 아래쪽 줄. 좌·우 옆면에는 자리를 두지 않는다.
+     · 여러 테이블 : 4인 기준으로 나눈 테이블을 왼쪽부터 가로로 나란히.
+                   테이블마다 위·아래 두 줄만 쓴다.
+   ⚠️ 공석은 없다 — 참석하시는 분 수만큼만 자리를 만든다.
+   ⚠️ 화면 크기에 따라 배치 모양을 바꾸지 않는다 (교수님 반려 사항).
+      칸 폭과 글자 크기만 줄여서 담는다.
    ========================================================================== */
+.stagewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
 .stage{
   position:relative;
-  display:grid;
-  gap:clamp(3px,1.1vw,6px);
-  grid-template-columns:repeat(5,1fr);
-  grid-template-rows:auto minmax(clamp(38px,9vw,54px),auto) auto;
-  padding:clamp(9px,2.4vw,12px) clamp(4px,1.6vw,10px);
+  --sgap:clamp(3px,1.1vw,6px);          /* 자리와 자리 사이 */
+  padding:clamp(11px,2.6vw,14px) clamp(4px,1.6vw,10px);
   background:var(--panel2);
   border:1px solid var(--line);
   border-radius:14px;
 }
-/* 위쪽 가로줄 5석 */
-.seat[data-slot="0"]{grid-area:1/1/2/2}
-.seat[data-slot="1"]{grid-area:1/2/2/3}
-.seat[data-slot="2"]{grid-area:1/3/2/4}   /* 가운데 = 총장 고정석 */
-.seat[data-slot="3"]{grid-area:1/4/2/5}
-.seat[data-slot="4"]{grid-area:1/5/2/6}
-/* 가로로 긴 테이블 상판 : 다섯 칸을 통으로 가로지른다 */
-.tabletop        {grid-area:2/1/3/6}
-/* 아래쪽 가로줄 5석 */
-.seat[data-slot="5"]{grid-area:3/1/4/2}
-.seat[data-slot="6"]{grid-area:3/2/4/3}
-.seat[data-slot="7"]{grid-area:3/3/4/4}
-.seat[data-slot="8"]{grid-area:3/4/4/5}
-.seat[data-slot="9"]{grid-area:3/5/4/6}
+.stage.lay-one{display:block}
+.stage.lay-multi{
+  display:grid;
+  gap:clamp(8px,2.2vw,20px);            /* 테이블과 테이블 사이는 넉넉히 */
+  /* grid-template-columns 는 테이블 칸수에 맞춰 JS 가 넣는다 */
+}
+
+/* 테이블 하나 = 위쪽 줄 / 테이블 상판 / 아래쪽 줄 */
+.tblbox{display:flex;flex-direction:column;gap:var(--sgap)}
+/* 자리는 모두 같은 폭. 줄에 자리가 적으면 그 줄이 한가운데로 모인다.
+   --cols 는 그 테이블의 칸수(위·아래 중 많은 쪽)로 JS 가 넣는다. */
+.seatrow{display:flex;justify-content:center;gap:var(--sgap)}
+.seatrow .seat{
+  flex:0 0 auto;
+  width:calc((100% - (var(--cols) - 1) * var(--sgap)) / var(--cols));
+}
+.seatrow:empty{display:none}
+.scrollhint{
+  text-align:center;margin-top:5px;
+  font-size:clamp(10px,2.6vw,11.5px);color:var(--muted);font-weight:700;
+}
 
 /* ---------- 테이블 상판 ---------- */
 .tabletop{
@@ -366,14 +385,9 @@ body{
   background:linear-gradient(180deg,var(--sub-bg),var(--sub-bg2));
   color:var(--sub-ink);
 }
-.seat.tier-vacant .front{
-  background:transparent;
-  color:var(--muted);
-  border:1.5px dashed var(--line2);
-  box-shadow:none;
-  opacity:.55;
-}
-/* 총장석 : 금색 테두리 + 은은한 발광 */
+/* 고정석(상임이사님·총장님) : 금색 테두리 + 은은한 발광
+   ⚠️ 두 분을 서로 다른 색으로 구분하지 않는다 (교수님 지시 : 따로 표기하지 말 것).
+      누가 윗분인지는 '자리 위치'로만 나타낸다. */
 .seat.tier-chief .front{
   background:linear-gradient(180deg,#f6e2a6,#e8c667);
   color:#3a2a05;
@@ -403,9 +417,13 @@ body{
   word-break:keep-all;          /* 낱말(의미) 단위로 끊는다 */
   overflow-wrap:anywhere;       /* 그래도 넘치면 그때 접는다 */
 }
-.face .l1{font-size:clamp(9.5px,2.95vw,15px);font-weight:800;letter-spacing:-.04em}
-.face .l2{font-size:clamp(9px,2.6vw,13px);font-weight:600;opacity:.92;letter-spacing:-.03em}
-.face.one .l1{font-size:clamp(13px,4vw,19px);letter-spacing:-.02em}
+/* ⚠️ 글자 크기는 화면 폭(vw)이 아니라 '카드 한 칸의 실제 폭'에 맞춘다.
+   참석 인원에 따라 칸수가 5칸도 되고 2칸도 되므로, vw 로는 맞출 수가 없다.
+   JS(fitStageFont)가 무대 전체 font-size 를 재어 정하고, 아래는 그 배수만 쓴다. */
+.face .l1{font-size:1em;font-weight:800;letter-spacing:-.04em}
+.face .l2{font-size:.82em;font-weight:600;opacity:.92;letter-spacing:-.03em}
+.face.one .l1{font-size:1.3em;letter-spacing:-.02em}
+.face.one.onelong .l1{font-size:1.02em}   /* '상임이사'처럼 네 글자 이상일 때 */
 .face.one .l2{display:none}
 
 /* 슬롯 릴(촤르륵 돌아가는 부분) */
@@ -422,8 +440,8 @@ body{
   gap:1px;line-height:1.1;text-align:center;padding:0 1px;
   filter:blur(.35px);
 }
-.ritem .l1{font-size:clamp(9.5px,2.95vw,15px);font-weight:800;letter-spacing:-.04em}
-.ritem .l2{font-size:clamp(9px,2.6vw,13px);font-weight:600;opacity:.9;letter-spacing:-.03em}
+.ritem .l1{font-size:1em;font-weight:800;letter-spacing:-.04em}
+.ritem .l2{font-size:.82em;font-weight:600;opacity:.9;letter-spacing:-.03em}
 
 /* 확정 순간 : 살짝 튕기고 반짝 */
 .seat.pop .card{animation:pop .45s cubic-bezier(.2,.9,.25,1.3)}
@@ -440,17 +458,9 @@ body{
 .seat.pop .flash{animation:flash .5s ease-out}
 @keyframes flash{0%{opacity:.85}100%{opacity:0}}
 
-/* 상석 안내 꼬리표 */
-.headtag{
-  position:absolute;top:-8px;left:50%;transform:translateX(-50%);
-  background:var(--gold);color:#241a00;
-  font-size:9px;font-weight:800;letter-spacing:.08em;
-  white-space:nowrap;                      /* 좁은 화면에서 두 줄로 접히지 않게 */
-  padding:1px 6px;border-radius:99px;
-  box-shadow:0 1px 3px rgba(0,0,0,.3);
-  z-index:3;
-}
-
+/* ⚠️ '상석' · '상임이사' 글자 꼬리표는 전부 없앴다 (교수님 지시).
+      “상임이사, 상석 표기를 따로 하지 마” — 서열은 자리 위치로만 나타낸다.
+      되살릴 일이 생기면 이 자리에 다시 넣을 것. */
 /* ---------- 결과 아래 날짜 ---------- */
 .meta{
   text-align:center;margin-top:8px;
@@ -632,20 +642,110 @@ body{
 }
 
 /* ---------- 명단 / 설정 ---------- */
-.roster{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 8px}
+.roster{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 @media (min-width:620px){ .roster{grid-template-columns:repeat(3,1fr)} }
 .rt{
-  display:flex;align-items:center;gap:6px;
-  font-size:clamp(11.5px,3vw,13px);
-  padding:4px 2px;border-radius:7px;cursor:pointer;
+  display:flex;align-items:center;gap:7px;
+  font-size:clamp(12px,3.2vw,14px);font-weight:700;
+  padding:9px 8px;border-radius:10px;cursor:pointer;
+  border:1.5px solid var(--line);background:var(--panel2);
   user-select:none;
+  transition:opacity .15s, border-color .15s;
 }
-.rt input{width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto}
-.rt.fixed{opacity:.9;cursor:default}
+.rt input{width:20px;height:20px;accent-color:var(--accent);flex:0 0 auto}
+.rt.fixed{cursor:default;border-color:var(--gold)}
+.rt.away{opacity:.45}
 .rt .dot{width:8px;height:8px;border-radius:99px;flex:0 0 auto}
 .dot.dot-head{background:var(--head-bg)}
 .dot.dot-sub{background:var(--line2)}
-.dot.dot-chief{background:var(--gold)}
+.dot.dot-chief{background:var(--gold)}   /* 상임이사님·총장님 둘 다 금색 */
+
+/* ==========================================================================
+   3단계 화면 : ① 명단 → ② 테이블 배치 → ③ 자리 뽑기
+   ⚠️ 새 이름은 모두 길고 뚜렷하게 지었다.
+      예전에 버튼용 '.sub' 가 명단의 점(.dot.sub)까지 잘못 건드린 사고가 있었다.
+   ========================================================================== */
+.stepbar{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px}
+.stepchip{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  border:1.5px solid var(--line2);background:var(--panel);
+  border-radius:10px;padding:8px 3px;
+  font-size:clamp(11px,2.9vw,13px);font-weight:800;color:var(--muted);
+}
+.stepchip b{font-size:1.2em;line-height:1}
+.stepchip.nowstep{
+  border-color:var(--accent);color:var(--accent);
+  background:linear-gradient(180deg,rgba(29,79,121,.13),rgba(29,79,121,.03));
+  box-shadow:0 0 0 2px rgba(29,79,121,.14);
+}
+.stepchip.donestep{color:var(--ink)}
+
+.screen{display:none}
+.screen.nowscreen{display:block}
+
+/* ---------- 이전 / 다음 단추 ---------- */
+.navrow{display:flex;gap:8px;margin:10px 0 4px}
+.navbtn{
+  appearance:none;border:0;border-radius:12px;cursor:pointer;
+  font-family:inherit;font-weight:800;
+  font-size:clamp(14px,3.9vw,17px);
+  padding:15px 8px;
+  transition:transform .1s, filter .15s;
+}
+.navbtn:active{transform:translateY(2px)}
+.navbtn.fwdbtn{
+  flex:2;color:#fff;
+  background:linear-gradient(180deg,#2a6ea3,#1d4f79);
+  box-shadow:0 3px 0 rgba(0,0,0,.18);
+}
+.navbtn.fwdbtn:active{box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.navbtn.bwdbtn{
+  flex:1;border:1.5px solid var(--line2);
+  background:var(--btn);color:var(--btn-ink);
+}
+.navbtn[disabled]{filter:grayscale(.6) opacity(.55);cursor:default}
+
+/* ---------- 참석 인원 큰 표시 ---------- */
+.cntbox{
+  display:flex;align-items:baseline;justify-content:center;gap:6px;
+  margin:2px 0 9px;padding:10px 6px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:11px;
+}
+.cntnum{font-size:clamp(28px,8vw,36px);font-weight:800;color:var(--accent);line-height:1}
+.cnttxt{font-size:clamp(12px,3.2vw,14px);font-weight:800;color:var(--muted)}
+
+/* ---------- 테이블 배치 고르기 ---------- */
+.laylist{display:grid;grid-template-columns:1fr;gap:9px}
+.laybtn{
+  appearance:none;text-align:left;display:block;width:100%;
+  border:2px solid var(--line2);background:var(--btn);color:var(--btn-ink);
+  border-radius:12px;padding:11px 12px;cursor:pointer;font-family:inherit;
+  transition:border-color .15s, background .15s;
+}
+.laybtn:active{transform:scale(.995)}
+.laybtn[aria-pressed="true"]{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,rgba(29,79,121,.10),rgba(29,79,121,.03));
+  box-shadow:0 0 0 2px rgba(29,79,121,.16);
+}
+.laytitle{display:block;font-size:clamp(14px,3.9vw,17px);font-weight:800;letter-spacing:-.02em}
+.laybtn[aria-pressed="true"] .laytitle{color:var(--accent)}
+.laydesc{
+  display:block;margin-top:3px;line-height:1.5;
+  font-size:clamp(11px,2.9vw,12.5px);color:var(--muted);font-weight:600;
+}
+.layfig{display:block;width:100%;max-width:340px;height:auto;margin:8px auto 0}
+.ff-tbl{fill:var(--table)}
+.ff-seat{fill:var(--sub-bg2);stroke:var(--line2);stroke-width:.7}
+.ff-fixed{fill:var(--gold)}          /* 고정석(상임이사님·총장님) — 둘 다 같은 금색 */
+.ff-maybe{fill:var(--gold);opacity:.42}  /* '이 둘 중 한 곳'(총장님 양옆 추첨) */
+/* 인원이 적어 고를 수 없는 배치 */
+.laybtn[disabled]{
+  opacity:.5;cursor:default;
+  border-style:dashed;
+  background:var(--panel2);
+}
+.laybtn[disabled] .laytitle{color:var(--muted)}
 /* ---------- 인앱 브라우저 안내 띠 (평소에는 숨어 있다) ---------- */
 .warnbar{
   display:none;
@@ -787,12 +887,412 @@ body{
 .foot{text-align:center;font-size:10.5px;color:var(--muted);margin-top:12px;line-height:1.6}
 </style>
 
+<!-- ① 스타일 -->
+<style>
+/* ==========================================================================
+   당첨자 뽑기 — 끼워 넣는 부품(모듈)본
+   · 이름은 전부 ld- / --ld- 로 시작한다 (자리배치 앱과 부딪히지 않게)
+   · 색 변수는 :root 가 아니라 #ld-root 에만 걸린다 (바깥 색을 건드리지 않음)
+   ========================================================================== */
+
+/* ---------- 색상 : 밝은 화면 (기본) ---------- */
+.ld-root{
+  --ld-bg:#f2efe8;
+  --ld-panel:#fffdf7;
+  --ld-panel2:#f7f3ea;
+  --ld-ink:#241f18;
+  --ld-muted:#6d6357;
+  --ld-line:#dcd3c2;
+  --ld-line2:#c8bda7;
+
+  --ld-accent:#1d4f79;
+  --ld-accent2:#2a6595;
+  --ld-accent-ink:#ffffff;
+
+  --ld-gold:#c08a12;
+  --ld-gold2:#f0cd6d;
+  --ld-gold-bg:linear-gradient(180deg,#fff3cf,#f3d78a);
+  --ld-gold-ink:#4a3607;
+
+  --ld-lose-bg:#efeae0;
+  --ld-lose-ink:#8a8073;
+
+  --ld-btn:#ffffff;
+  --ld-btn-ink:#241f18;
+  --ld-shadow:0 2px 6px rgba(0,0,0,.12);
+}
+
+/* ---------- 색상 : 어두운 화면 ---------- */
+/* 1) 기기 설정이 어두움일 때 (단, host 가 light 로 못박으면 제외) */
+@media (prefers-color-scheme: dark){
+  .ld-root:not([data-ld-theme="light"]){
+    --ld-bg:#14171c;
+    --ld-panel:#1c2129;
+    --ld-panel2:#232a33;
+    --ld-ink:#eef2f7;
+    --ld-muted:#a6b0bd;
+    --ld-line:#333c48;
+    --ld-line2:#48535f;
+
+    --ld-accent:#2f74ad;
+    --ld-accent2:#3f88c4;
+    --ld-accent-ink:#ffffff;
+
+    --ld-gold:#e0b23f;
+    --ld-gold2:#7a5d15;
+    --ld-gold-bg:linear-gradient(180deg,#6c5215,#3f2f08);
+    --ld-gold-ink:#ffe9ab;
+
+    --ld-lose-bg:#272e37;
+    --ld-lose-ink:#98a2ae;
+
+    --ld-btn:#28303a;
+    --ld-btn-ink:#eef2f7;
+    --ld-shadow:0 2px 8px rgba(0,0,0,.45);
+  }
+}
+/* 2) host 가 어두움으로 못박았을 때 : LuckyDraw.setTheme('dark') */
+.ld-root[data-ld-theme="dark"]{
+  --ld-bg:#14171c;
+  --ld-panel:#1c2129;
+  --ld-panel2:#232a33;
+  --ld-ink:#eef2f7;
+  --ld-muted:#a6b0bd;
+  --ld-line:#333c48;
+  --ld-line2:#48535f;
+
+  --ld-accent:#2f74ad;
+  --ld-accent2:#3f88c4;
+  --ld-accent-ink:#ffffff;
+
+  --ld-gold:#e0b23f;
+  --ld-gold2:#7a5d15;
+  --ld-gold-bg:linear-gradient(180deg,#6c5215,#3f2f08);
+  --ld-gold-ink:#ffe9ab;
+
+  --ld-lose-bg:#272e37;
+  --ld-lose-ink:#98a2ae;
+
+  --ld-btn:#28303a;
+  --ld-btn-ink:#eef2f7;
+  --ld-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+
+.ld-root, .ld-root *{box-sizing:border-box}
+.ld-root{
+  max-width:100%;
+  overflow-x:hidden;
+  background:var(--ld-bg);
+  color:var(--ld-ink);
+  font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",
+              "Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding:10px 10px 26px;
+}
+@media (max-width:430px){ .ld-root{padding:8px 6px 22px} }
+/* 숨기기 : LuckyDraw.hide() 가 이 클래스를 붙인다 */
+.ld-root.ld-off{display:none !important}
+.ld-wrap{max-width:760px;margin:0 auto}
+
+/* ---------- 머리말 ---------- */
+.ld-hd{text-align:center;margin:2px 0 10px}
+.ld-hd h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px}
+.ld-hd p{margin:5px 0 0;font-size:12px;color:var(--ld-muted)}
+@media (max-width:430px){ .ld-hd h1{font-size:17px} }
+
+/* ---------- 단계 표시 ---------- */
+.ld-steps{display:flex;gap:5px;justify-content:center;margin:10px 0 12px;flex-wrap:wrap}
+.ld-stepchip{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 11px;border-radius:999px;
+  background:var(--ld-panel2);border:1px solid var(--ld-line);
+  font-size:11.5px;font-weight:700;color:var(--ld-muted);
+}
+.ld-stepchip b{font-size:12.5px}
+.ld-stepchip.ld-on{background:var(--ld-accent);border-color:var(--ld-accent);color:var(--ld-accent-ink)}
+
+/* ---------- 판 ---------- */
+.ld-panel{
+  background:var(--ld-panel);border:1px solid var(--ld-line);border-radius:14px;
+  padding:14px;margin-bottom:12px;box-shadow:var(--ld-shadow);
+}
+.ld-panel h2{
+  margin:0 0 10px;font-size:14px;font-weight:800;
+  padding-bottom:8px;border-bottom:1px dashed var(--ld-line);
+}
+.ld-screen{display:none}
+.ld-screen.ld-on{display:block}
+
+/* ---------- 숫자 조절기 ---------- */
+.ld-numrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px}
+.ld-numlabel{font-size:13px;font-weight:700;min-width:74px}
+.ld-stepper{display:flex;align-items:center;gap:6px}
+.ld-stepbtn{
+  width:44px;height:44px;border-radius:11px;border:1px solid var(--ld-line2);
+  background:var(--ld-btn);color:var(--ld-btn-ink);font-size:22px;font-weight:800;
+  cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.ld-stepbtn:active{transform:scale(.94)}
+.ld-stepbtn:disabled{opacity:.35;cursor:default}
+.ld-numin{
+  width:74px;height:44px;text-align:center;font-size:19px;font-weight:800;
+  border:1px solid var(--ld-line2);border-radius:11px;
+  background:var(--ld-panel2);color:var(--ld-ink);
+}
+.ld-unit{font-size:13px;font-weight:700;color:var(--ld-muted)}
+.ld-hint{font-size:11.5px;color:var(--ld-muted);margin:6px 0 0;line-height:1.6}
+
+/* ---------- 이름 입력칸 ---------- */
+.ld-names{
+  display:grid;gap:7px;margin-top:10px;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+}
+@media (max-width:430px){ .ld-names{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))} }
+.ld-nameitem{display:flex;align-items:center;gap:6px}
+.ld-nameno{
+  flex:0 0 26px;height:26px;border-radius:50%;
+  background:var(--ld-panel2);border:1px solid var(--ld-line);
+  font-size:11px;font-weight:800;color:var(--ld-muted);
+  display:flex;align-items:center;justify-content:center;
+}
+.ld-namein{
+  flex:1 1 auto;min-width:0;height:40px;padding:0 9px;
+  border:1px solid var(--ld-line2);border-radius:9px;
+  background:var(--ld-panel2);color:var(--ld-ink);font-size:14px;font-weight:600;
+}
+.ld-namein::placeholder{color:var(--ld-muted);font-weight:500}
+
+/* ---------- 한꺼번에 붙여넣기 ---------- */
+details.ld-paste{margin-top:12px;border-top:1px dashed var(--ld-line);padding-top:10px}
+details.ld-paste summary{
+  cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ld-accent);
+  list-style:none;padding:4px 0;
+}
+details.ld-paste summary::-webkit-details-marker{display:none}
+.ld-pastebox{
+  width:100%;min-height:92px;margin-top:8px;padding:9px;
+  border:1px solid var(--ld-line2);border-radius:10px;
+  background:var(--ld-panel2);color:var(--ld-ink);font-size:13px;line-height:1.7;
+  font-family:inherit;resize:vertical;
+}
+
+/* ---------- 버튼 ---------- */
+.ld-navrow{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:4px}
+.ld-btn{
+  flex:1 1 auto;min-height:50px;padding:12px 16px;border-radius:12px;
+  border:1px solid var(--ld-line2);background:var(--ld-btn);color:var(--ld-btn-ink);
+  font-size:14.5px;font-weight:800;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.ld-btn:active{transform:translateY(1px)}
+.ld-btn.ld-primary{background:var(--ld-accent);border-color:var(--ld-accent);color:var(--ld-accent-ink)}
+.ld-btn.ld-gold{background:var(--ld-gold-bg);border-color:var(--ld-gold);color:var(--ld-gold-ink)}
+.ld-btn.ld-small{min-height:42px;font-size:13px;padding:9px 12px;flex:0 0 auto}
+.ld-btn:disabled{opacity:.45;cursor:default}
+
+/* ---------- 방식 고르기 카드 ---------- */
+.ld-modes{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+@media (max-width:430px){ .ld-modes{grid-template-columns:1fr} }
+.ld-modecard{
+  display:flex;align-items:center;gap:11px;text-align:left;
+  padding:15px 13px;border-radius:14px;
+  border:2px solid var(--ld-line);background:var(--ld-panel2);color:var(--ld-ink);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.ld-modecard:active{transform:scale(.985)}
+.ld-modecard.ld-on{border-color:var(--ld-accent);background:var(--ld-panel);box-shadow:0 0 0 3px rgba(45,120,180,.16)}
+.ld-modeic{font-size:30px;line-height:1;flex:0 0 auto}
+.ld-modetx b{display:block;font-size:15px;font-weight:800;margin-bottom:3px}
+.ld-modetx span{display:block;font-size:11.5px;color:var(--ld-muted);line-height:1.5}
+
+/* ---------- 옵션 토글 ---------- */
+.ld-optrow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}
+.ld-opttitle{font-size:12.5px;font-weight:700;color:var(--ld-muted);margin-right:2px}
+.ld-opt{
+  padding:9px 14px;border-radius:999px;border:1px solid var(--ld-line2);
+  background:var(--ld-btn);color:var(--ld-btn-ink);font-size:12.5px;font-weight:700;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.ld-opt.ld-on{background:var(--ld-accent);border-color:var(--ld-accent);color:var(--ld-accent-ink)}
+
+/* ---------- 진행 안내 ---------- */
+.ld-status{
+  text-align:center;font-size:13px;color:var(--ld-ink);font-weight:700;
+  min-height:20px;margin:8px 0 2px;
+}
+.ld-status .ld-sub{display:block;font-size:11.5px;color:var(--ld-muted);font-weight:600;margin-top:3px}
+
+/* ---------- 무대(연출 자리) ---------- */
+.ld-stage{margin-top:6px}
+.ld-scrollhint{text-align:center;font-size:11px;color:var(--ld-muted);margin-top:5px}
+.ld-hwrap{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.ld-hwrap canvas{display:block;margin:0 auto;border:1px solid var(--ld-line);border-radius:12px}
+
+/* ---------- 룰렛 ---------- */
+.ld-wheelbox{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:16px}
+.ld-wheelbox canvas{display:block;width:100%;height:auto;border-radius:50%;
+  box-shadow:0 4px 18px rgba(0,0,0,.22)}
+.ld-pointer{
+  position:absolute;left:50%;top:0;transform:translateX(-50%);
+  width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;
+  border-top:26px solid var(--ld-gold);z-index:3;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));
+}
+.ld-wheelhub{
+  position:absolute;left:50%;top:calc(50% + 8px);transform:translate(-50%,-50%);
+  width:52px;height:52px;border-radius:50%;background:var(--ld-panel);
+  border:3px solid var(--ld-gold);z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:var(--ld-ink);
+}
+
+/* ---------- 카드 ---------- */
+.ld-cardgrid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+@media (max-width:430px){ .ld-cardgrid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px} }
+.ld-cardslot{perspective:700px;aspect-ratio:3/4;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ld-cardslot.ld-dead{cursor:default}
+.ld-cardin{
+  position:relative;width:100%;height:100%;
+  transition:transform .55s cubic-bezier(.3,.9,.4,1.1);
+  transform-style:preserve-3d;
+}
+.ld-cardslot.ld-flip .ld-cardin{transform:rotateY(180deg)}
+.ld-cface{
+  position:absolute;inset:0;border-radius:10px;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-weight:800;overflow:hidden;padding:4px;text-align:center;
+}
+.ld-cback{
+  background-color:#24425c;color:#cfe2f2;font-size:22px;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.10) 0 6px,transparent 6px 12px);
+  border:1.5px solid rgba(255,255,255,.28);
+}
+.ld-cfront{transform:rotateY(180deg);border:2px solid var(--ld-line2);background:var(--ld-lose-bg);color:var(--ld-lose-ink)}
+.ld-cfront.ld-win{background:var(--ld-gold-bg);border-color:var(--ld-gold);color:var(--ld-gold-ink)}
+.ld-cfront .ld-cn{font-size:12px;line-height:1.2;margin-bottom:3px;word-break:keep-all}
+.ld-cfront .ld-cr{font-size:14px;font-weight:900}
+.ld-cardslot.ld-pickme .ld-cardin{animation:ld-bob 1s ease-in-out infinite}
+@keyframes ld-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* ---------- 달리기 ---------- */
+.ld-track{background:var(--ld-panel2);border:1px solid var(--ld-line);border-radius:12px;padding:8px 8px 8px;
+  max-height:64vh;overflow-y:auto}
+.ld-lane{
+  position:relative;display:flex;align-items:center;gap:6px;
+  height:30px;border-bottom:1px dashed var(--ld-line);
+}
+.ld-lane:last-child{border-bottom:0}
+.ld-lname{
+  flex:0 0 84px;font-size:11.5px;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:430px){ .ld-lname{flex:0 0 62px;font-size:10.5px} }
+.ld-rt{position:relative;flex:1 1 auto;height:100%;min-width:0}
+.ld-rt::after{
+  content:"";position:absolute;right:0;top:2px;bottom:2px;width:8px;border-radius:2px;
+  background:repeating-linear-gradient(0deg,#333 0 5px,#fff 5px 10px);opacity:.75;
+}
+.ld-runner{position:absolute;top:50%;left:0;transform:translate(0,-50%);font-size:17px;will-change:transform}
+.ld-rank{
+  flex:0 0 42px;text-align:center;font-size:11px;font-weight:800;
+  color:var(--ld-muted);opacity:0;transition:opacity .2s;
+}
+.ld-rank.ld-on{opacity:1}
+.ld-rank.ld-win{color:var(--ld-gold)}
+
+/* ---------- 결과 ---------- */
+.ld-wingrid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));margin-top:4px}
+.ld-winchip{
+  background:var(--ld-gold-bg);border:2px solid var(--ld-gold);color:var(--ld-gold-ink);
+  border-radius:12px;padding:13px 8px;text-align:center;
+  font-size:17px;font-weight:900;word-break:keep-all;
+  animation:ld-pop .45s cubic-bezier(.2,1.4,.4,1) both;
+}
+.ld-winchip .ld-no{display:block;font-size:10.5px;font-weight:700;opacity:.75;margin-bottom:3px}
+@keyframes ld-pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.ld-losewrap{margin-top:12px;padding-top:10px;border-top:1px dashed var(--ld-line)}
+.ld-losewrap b{font-size:12px;color:var(--ld-muted)}
+.ld-losegrid{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.ld-losechip{
+  background:var(--ld-lose-bg);color:var(--ld-lose-ink);border-radius:999px;
+  padding:5px 10px;font-size:11.5px;font-weight:700;
+}
+.ld-bigresult{text-align:center;font-size:15px;font-weight:800;margin:2px 0 10px}
+
+/* ---------- 그림 보여주는 창 ---------- */
+.ld-imgview{
+  display:none;position:fixed;inset:0;z-index:90;
+  background:rgba(0,0,0,.72);overflow-y:auto;padding:16px 10px;
+}
+.ld-imgview.ld-on{display:block}
+.ld-imgbox{
+  max-width:620px;margin:0 auto;background:var(--ld-panel);
+  border-radius:14px;padding:12px;box-shadow:0 10px 40px rgba(0,0,0,.5);
+}
+.ld-imgbox img{display:block;width:100%;height:auto;border-radius:9px;border:1px solid var(--ld-line)}
+.ld-imgbtn{
+  width:100%;margin-top:8px;min-height:48px;border-radius:11px;
+  border:1px solid var(--ld-line2);background:var(--ld-btn);color:var(--ld-btn-ink);
+  font-size:14px;font-weight:800;cursor:pointer;
+}
+.ld-imgbtn.ld-primary{background:var(--ld-accent);border-color:var(--ld-accent);color:var(--ld-accent-ink)}
+.ld-imgtip{font-size:11.5px;color:var(--ld-muted);margin-top:9px;line-height:1.7;text-align:center}
+
+/* ---------- 짧은 안내 쪽지 ---------- */
+.ld-toast{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);
+  background:rgba(20,24,30,.94);color:#fff;padding:11px 16px;border-radius:11px;
+  font-size:13px;font-weight:700;line-height:1.55;white-space:pre-line;text-align:center;
+  max-width:88%;z-index:95;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+}
+.ld-toast.ld-on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- 꼬리말 ---------- */
+.ld-fairbar{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--ld-panel2);border:1px solid var(--ld-line);border-radius:999px;
+  padding:8px 12px;font-size:11.5px;font-weight:700;color:var(--ld-muted);
+  margin:2px 0 12px;text-align:center;line-height:1.5;
+}
+.ld-foot{text-align:center;font-size:10.5px;color:var(--ld-muted);margin-top:12px;line-height:1.7}
+</style>
+
+<!-- ①-b 당첨자 뽑기 부품을 자리배치 화면에 자연스럽게 이어 붙이기 -->
+<style>
+/* 부품이 별도의 판처럼 보이지 않게 한다 (MERGE_NOTES 7-2)
+   ⚠ id 선택자라 .ld-root 규칙보다 세다 — 미디어쿼리 안에서도 이긴다 */
+#ld-root{background:transparent;padding:0}
+#ld-root .ld-wrap{max-width:100%}
+/* host 에 이미 있는 것과 겹치는 부품 장식은 감춘다
+   (부품 머리말·단계표시줄·꼬리말 — 지우지 않고 숨기기만 한다.
+    부품 스크립트가 #ld-steps 를 읽기 때문에 요소 자체는 남아 있어야 한다) */
+#ld-root .ld-hd,
+#ld-root #ld-steps,
+#ld-root .ld-foot{display:none}
+
+/* ② 화면의 묶음 제목 (자리 배치 / 당첨자 뽑기) */
+.laygroup{
+  font-size:clamp(11px,2.9vw,12.5px);font-weight:800;color:var(--muted);
+  letter-spacing:.02em;margin:7px 0 -2px;
+}
+.laygroup:first-child{margin-top:0}
+
+/* 당첨자 뽑기 화면의 안내줄 (지금 누가 뽑히는지) */
+.drawwho{
+  margin-top:7px;line-height:1.6;
+  font-size:clamp(11px,2.9vw,12.5px);color:var(--muted);font-weight:600;
+}
+.drawwho b{color:var(--ink)}
+</style>
+
 
 <div class="wrap">
 
   <div class="hd">
     <h1>동양미래대학교 처장단 회식 자리 뽑기</h1>
-    <p>총장님 자리는 상석에 고정, 나머지 아홉 분은 무작위로 정해집니다</p>
+    <p id="subTitle">총장님은 반드시 참석하십니다 · 오늘 오시는 분만 체크해 주세요</p>
   </div>
 
   <!-- 인앱(카카오톡 등) 브라우저에서만 보이는 안내 띠 -->
@@ -812,39 +1312,262 @@ body{
     <span class="sndstate" id="sndState">켜짐</span>
   </button>
 
-  <!-- 연출 선택 -->
-  <div class="panel">
-    <h2>연출 고르기</h2>
-    <div class="modes" id="modes"></div>
+  <!-- 지금 몇 번째 단계인지 -->
+  <div class="stepbar" id="stepBar">
+    <div class="stepchip" data-step="1"><b>①</b><span>명단</span></div>
+    <div class="stepchip" data-step="2"><b>②</b><span>고르기</span></div>
+    <div class="stepchip" data-step="3"><b>③</b><span id="step3Label">자리 뽑기</span></div>
   </div>
 
-  <!-- 실행 -->
-  <div class="panel">
-    <div class="actions">
-      <button class="go" id="goBtn">자리 뽑기</button>
+  <!-- ================= ① 명단 확인 ================= -->
+  <section class="screen" id="scr1">
+    <div class="panel">
+      <h2>① 오늘 오시는 분에 체크해 주세요 (체크한 인원수만큼만 자리를 만듭니다)</h2>
+      <div class="cntbox">
+        <span class="cnttxt">참석</span>
+        <span class="cntnum" id="cntNum">11</span>
+        <span class="cnttxt">명 &nbsp;/&nbsp; 모두 11명</span>
+      </div>
+      <div class="roster" id="roster"></div>
     </div>
-    <div class="status" id="status">연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</div>
+    <div class="navrow">
+      <button class="navbtn fwdbtn" id="go2" type="button">다음 : 테이블 고르기 ▶</button>
+    </div>
+  </section>
+
+  <!-- ================= ② 테이블 배치 고르기 ================= -->
+  <section class="screen" id="scr2">
+    <div class="panel">
+      <h2>② 무엇을 할지 골라 주세요</h2>
+      <div class="laylist" id="layList"></div>
+    </div>
+    <div class="navrow">
+      <button class="navbtn bwdbtn" id="back1" type="button">◀ 이전</button>
+      <button class="navbtn fwdbtn" id="go3" type="button">다음 : 자리 뽑기 ▶</button>
+    </div>
+  </section>
+
+  <!-- ================= ③ 연출 고르고 자리 뽑기 ================= -->
+  <section class="screen" id="scr3">
+    <div class="panel">
+      <h2>③ 연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</h2>
+      <div class="modes" id="modes"></div>
+      <div class="actions">
+        <button class="go" id="goBtn" type="button">자리 뽑기</button>
+      </div>
+      <div class="status" id="status">연출을 고르고 &lsquo;자리 뽑기&rsquo;를 눌러 주세요</div>
+    </div>
+
+    <!-- 테이블 -->
+    <div class="stagewrap" id="stageWrap">
+      <div class="stage lay-a" id="stage"></div>
+    </div>
+    <div class="scrollhint" id="scrollHint" style="display:none">← 좌우로 밀어서 보실 수 있습니다 →</div>
+    <div class="meta" id="meta"></div>
+
+    <!-- 결과 공유 : 자리가 정해진 뒤에만 눌러진다 -->
+    <div class="share-wrap">
+      <button class="share" id="shareBtn" disabled>
+        <span class="ic">📷</span><span>배치도 이미지 공유</span>
+      </button>
+      <div class="share-hint" id="shareHint">자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다</div>
+    </div>
+
+    <div class="navrow">
+      <button class="navbtn bwdbtn" id="back2" type="button">◀ 이전 (테이블 다시 고르기)</button>
+    </div>
+  </section>
+
+  <!-- ================= ③-b 당첨자 뽑기 ================= -->
+  <!-- ⚠ 자리배치와 따로 도는 길이다. 둘은 서로 아무것도 바꾸지 않는다. -->
+  <section class="screen" id="scr3d">
+    <div class="panel">
+      <h2>③ 오늘 오신 분 중에서 당첨자를 뽑습니다</h2>
+
+      <button class="sndrow" id="vipBtn" type="button" aria-pressed="true">
+        <span class="sndico">👑</span>
+        <span class="sndtxt">총장님·상임이사님도 함께 뽑기</span>
+        <span class="switch"><span class="knob"></span></span>
+        <span class="sndstate" id="vipState">포함</span>
+      </button>
+
+      <div class="drawwho" id="drawWho"></div>
+
+      <div class="navrow">
+        <button class="navbtn bwdbtn" id="freeBtn" type="button">✏️ 다른 이름으로 뽑기</button>
+      </div>
+    </div>
+
+<!-- ② 마크업 : 최상위는 #ld-root 하나뿐이다 -->
+<div id="ld-root" class="ld-root">
+  <div class="ld-wrap">
+
+    <div class="ld-hd">
+      <h1>🎯 당첨자 뽑기</h1>
+      <p>사다리 · 룰렛 · 카드 · 달리기 &mdash; 원하는 방식으로 뽑아 보세요</p>
+    </div>
+
+    <div class="ld-steps" id="ld-steps">
+      <div class="ld-stepchip" data-step="1"><b>①</b><span>참가자</span></div>
+      <div class="ld-stepchip" data-step="2"><b>②</b><span>방식</span></div>
+      <div class="ld-stepchip" data-step="3"><b>③</b><span>뽑기</span></div>
+      <div class="ld-stepchip" data-step="4"><b>④</b><span>결과</span></div>
+    </div>
+
+    <!-- ================= ① 참가자 설정 ================= -->
+    <section class="ld-screen ld-on" id="ld-scr1">
+      <div class="ld-panel">
+        <h2>참가 인원과 뽑을 인원을 정해 주세요</h2>
+
+        <div class="ld-numrow">
+          <span class="ld-numlabel">참가 인원</span>
+          <div class="ld-stepper">
+            <button class="ld-stepbtn" id="ld-cntMinus" type="button" aria-label="인원 줄이기">−</button>
+            <input class="ld-numin" id="ld-cntIn" type="number" inputmode="numeric" min="2" max="30" value="6">
+            <button class="ld-stepbtn" id="ld-cntPlus" type="button" aria-label="인원 늘리기">+</button>
+          </div>
+          <span class="ld-unit">명 (2~30명)</span>
+        </div>
+
+        <div class="ld-numrow">
+          <span class="ld-numlabel">뽑을 인원</span>
+          <div class="ld-stepper">
+            <button class="ld-stepbtn" id="ld-winMinus" type="button" aria-label="당첨자 줄이기">−</button>
+            <input class="ld-numin" id="ld-winIn" type="number" inputmode="numeric" min="1" max="29" value="1">
+            <button class="ld-stepbtn" id="ld-winPlus" type="button" aria-label="당첨자 늘리기">+</button>
+          </div>
+          <span class="ld-unit" id="ld-winUnit">명 당첨</span>
+        </div>
+        <p class="ld-hint" id="ld-cfgHint"></p>
+      </div>
+
+      <div class="ld-panel">
+        <h2>이름을 적어 주세요 <span style="font-weight:600;color:var(--ld-muted);font-size:11.5px">(비워 두면 1번·2번…으로 표시됩니다)</span></h2>
+        <div class="ld-names" id="ld-names"></div>
+
+        <details class="ld-paste" id="ld-pasteWrap">
+          <summary>📋 명단을 한 번에 붙여넣기 (누르면 열립니다)</summary>
+          <textarea class="ld-pastebox" id="ld-pasteBox" placeholder="한 줄에 한 명씩, 또는 쉼표로 구분해서 붙여넣으세요.&#10;예)&#10;홍길동&#10;김철수&#10;이영희"></textarea>
+          <div class="ld-navrow" style="margin-top:8px">
+            <button class="ld-btn ld-small ld-primary" id="ld-pasteApply" type="button">붙여넣은 명단 적용</button>
+            <button class="ld-btn ld-small" id="ld-namesClear" type="button">이름 전부 지우기</button>
+          </div>
+          <p class="ld-hint">명단을 적용하면 참가 인원도 명단 수에 맞춰집니다.</p>
+        </details>
+      </div>
+
+      <div class="ld-navrow">
+        <button class="ld-btn ld-primary" id="ld-go2" type="button">다음 : 뽑기 방식 고르기 ▶</button>
+      </div>
+    </section>
+
+    <!-- ================= ② 방식 고르기 ================= -->
+    <section class="ld-screen" id="ld-scr2">
+      <div class="ld-panel">
+        <h2>뽑는 방식을 골라 주세요</h2>
+        <div class="ld-modes" id="ld-modeList">
+          <button class="ld-modecard" data-mode="ladder" type="button">
+            <span class="ld-modeic">🧗</span>
+            <span class="ld-modetx"><b>사다리타기</b><span>선을 따라 내려가 당첨·꽝을 찾아갑니다</span></span>
+          </button>
+          <button class="ld-modecard" data-mode="wheel" type="button">
+            <span class="ld-modeic">🎡</span>
+            <span class="ld-modetx"><b>원판 돌리기</b><span>돌아가는 원판이 멈춘 자리가 당첨입니다</span></span>
+          </button>
+          <button class="ld-modecard" data-mode="card" type="button">
+            <span class="ld-modeic">🃏</span>
+            <span class="ld-modetx"><b>카드 뽑기</b><span>엎어 놓은 카드를 한 장씩 뒤집습니다</span></span>
+          </button>
+          <button class="ld-modecard" data-mode="race" type="button">
+            <span class="ld-modeic">🏁</span>
+            <span class="ld-modetx"><b>달리기 경주</b><span>먼저 결승선을 통과한 순서로 뽑습니다</span></span>
+          </button>
+        </div>
+        <p class="ld-hint" id="ld-modeSum"></p>
+      </div>
+
+      <div class="ld-fairbar">⚖️ 모든 방식의 당첨 확률은 동일합니다</div>
+
+      <div class="ld-navrow">
+        <button class="ld-btn" id="ld-back1" type="button">◀ 참가자 고치기</button>
+        <button class="ld-btn ld-primary" id="ld-go3" type="button" disabled>다음 : 뽑기 ▶</button>
+      </div>
+    </section>
+
+    <!-- ================= ③ 뽑기 진행 ================= -->
+    <section class="ld-screen" id="ld-scr3">
+      <div class="ld-panel">
+        <h2 id="ld-playTitle">뽑기</h2>
+
+        <div class="ld-optrow" id="ld-optRow"></div>
+
+        <div class="ld-navrow">
+          <button class="ld-btn ld-gold" id="ld-startBtn" type="button">뽑기 시작!</button>
+        </div>
+
+        <div class="ld-status" id="ld-status"></div>
+      </div>
+
+      <div class="ld-stage" id="ld-stage"></div>
+
+      <div class="ld-navrow" style="margin-top:12px">
+        <button class="ld-btn" id="ld-back2" type="button">◀ 방식 다시 고르기</button>
+        <button class="ld-btn ld-primary" id="ld-toResult" type="button" disabled>결과 보기 ▶</button>
+      </div>
+    </section>
+
+    <!-- ================= ④ 결과 ================= -->
+    <section class="ld-screen" id="ld-scr4">
+      <div class="ld-panel">
+        <h2>당첨자 발표 🎉</h2>
+        <div class="ld-bigresult" id="ld-resultHead"></div>
+        <div class="ld-wingrid" id="ld-winGrid"></div>
+        <div class="ld-losewrap" id="ld-loseWrap">
+          <b>아쉽게 안 된 분</b>
+          <div class="ld-losegrid" id="ld-loseGrid"></div>
+        </div>
+      </div>
+
+      <div class="ld-panel">
+        <h2>결과 남기기 · 다시 하기</h2>
+        <div class="ld-navrow">
+          <button class="ld-btn ld-gold" id="ld-imgBtn" type="button">🖼️ 결과를 그림으로 만들기</button>
+        </div>
+        <div class="ld-navrow" style="margin-top:8px">
+          <button class="ld-btn ld-primary" id="ld-againSame" type="button">🔁 같은 방식으로 다시 뽑기</button>
+          <button class="ld-btn" id="ld-againOther" type="button">🔀 명단 그대로 다른 방식으로</button>
+        </div>
+        <div class="ld-navrow" style="margin-top:8px">
+          <button class="ld-btn" id="ld-backCfg" type="button">✏️ 참가자·인원 고치기</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="ld-foot">
+      인터넷이 없어도 이 파일 하나로 동작합니다 · 명단은 이 기기에만 저장됩니다<br>
+      모든 방식의 당첨 확률은 동일합니다 (뽑기 결과는 무작위로 먼저 정해지고, 화면은 그 결과를 보여 줍니다)
+    </div>
   </div>
 
-  <!-- 테이블 -->
-  <div class="stage" id="stage">
-    <div class="tabletop"><span>회 식 테 이 블</span></div>
-  </div>
-  <div class="meta" id="meta"></div>
-
-  <!-- 결과 공유 : 자리가 정해진 뒤에만 눌러진다 -->
-  <div class="share-wrap">
-    <button class="share" id="shareBtn" disabled>
-      <span class="ic">📷</span><span>배치도 이미지 공유</span>
-    </button>
-    <div class="share-hint" id="shareHint">자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다</div>
+  <!-- 만들어진 결과 그림을 보여 주는 창 -->
+  <div class="ld-imgview" id="ld-imgView">
+    <div class="ld-imgbox">
+      <img id="ld-imgOut" alt="당첨자 결과">
+      <button class="ld-imgbtn ld-primary" id="ld-imgCopy" type="button">📋 이미지 복사</button>
+      <button class="ld-imgbtn" id="ld-imgShare" type="button">📤 공유하기</button>
+      <button class="ld-imgbtn" id="ld-imgOpen" type="button">🔗 이미지 새 창으로 열기</button>
+      <div class="ld-imgtip" id="ld-imgTip"></div>
+      <button class="ld-imgbtn" id="ld-imgClose" type="button">닫기</button>
+    </div>
   </div>
 
-  <!-- 참석자 -->
-  <div class="panel" style="margin-top:9px">
-    <h2>참석자 (체크를 풀면 그 자리는 공석으로 남습니다)</h2>
-    <div class="roster" id="roster"></div>
-  </div>
+  <div class="ld-toast" id="ld-toast"></div>
+</div>
+
+    <div class="navrow">
+      <button class="navbtn bwdbtn" id="back2d" type="button">◀ 이전 (다시 고르기)</button>
+    </div>
+  </section>
 
   <div class="foot">
     인터넷 없이도 이 파일 하나로 동작합니다 · 결과 화면을 그대로 사진 찍으면 기록이 됩니다
@@ -899,6 +1622,1400 @@ body{
 </div>
 
 
+<!-- ③ 스크립트 -->
+<script>
+/* ==========================================================================
+   당첨자 뽑기 — 부품(모듈)본
+   · 바깥(전역)에 내놓는 것은 window.LuckyDraw 하나뿐이다.
+   · 나머지 변수·함수는 전부 이 즉시실행함수 안에 갇혀 있다.
+   · "use strict" 도 함수 안에만 둔다 (host 스크립트에 번지지 않게).
+   ========================================================================== */
+(function(){
+"use strict";
+
+/* ---------- 바깥 창구 : window.LuckyDraw ---------- */
+var impl = null, queue = [];
+function call(name, args){
+  if(impl) return impl[name].apply(impl, args);
+  queue.push([name, args]);        /* 아직 준비 전이면 줄 세워 둔다 */
+  return undefined;
+}
+var API = window.LuckyDraw = { version:'1.0.0-module', ready:false, el:null };
+['setNames','getNames','setWinners','getWinners','show','hide','toggle','isVisible',
+ 'reset','stop','mount','onResult','setTheme','setAutoScroll','goScreen'].forEach(function(k){
+  API[k] = function(){ return call(k, Array.prototype.slice.call(arguments)); };
+});
+
+function boot(){
+  if(impl) return;
+  var root = document.getElementById('ld-root');
+  if(!root) return;               /* 이 부품의 마크업이 아직 없으면 아무것도 하지 않는다 */
+
+
+  /* ==========================================================================
+     0. 공통 도구
+     ========================================================================== */
+
+  /* 이 부품 안의 요소만 찾는다. 실제 id 는 전부 'ld-' 로 시작한다. */
+  var $ = function(id){ return document.getElementById('ld-' + id); };
+
+  /* 짧은 안내 쪽지 */
+  var toastEl = $('toast'), toastTimer = null;
+  function toast(msg, ms){
+    toastEl.textContent = msg;
+    toastEl.classList.add('ld-on');
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('ld-on'); }, ms || 3000);
+  }
+
+  /* 되도록 브라우저의 암호학용 난수를 쓴다 (없으면 Math.random) */
+  function rnd(){
+    try{
+      if(window.crypto && window.crypto.getRandomValues){
+        var a = new Uint32Array(1);
+        window.crypto.getRandomValues(a);
+        return a[0] / 4294967296;   /* 0 이상 1 미만 */
+      }
+    }catch(e){}
+    return Math.random();
+  }
+  function randInt(n){ var v = Math.floor(rnd()*n); return v >= n ? n-1 : v; }
+
+  /* 피셔–예이츠 섞기 : 모든 순서가 똑같은 확률로 나온다 */
+  function shuffle(arr){
+    for(var i = arr.length - 1; i > 0; i--){
+      var j = randInt(i + 1);
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+  function seq(n){ var a = []; for(var i=0;i<n;i++) a.push(i); return a; }
+  function clamp(v, lo, hi){ return v < lo ? lo : (v > hi ? hi : v); }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ==========================================================================
+     1. 상태
+     ========================================================================== */
+
+  var MODE_NAME = { ladder:'사다리타기', wheel:'원판 돌리기', card:'카드 뽑기', race:'달리기 경주' };
+  var MIN_N = 2, MAX_N = 30;
+
+  var S = {
+    count   : 6,        /* 참가 인원 */
+    winners : 1,        /* 뽑을 인원 */
+    names   : [],       /* 입력한 이름 (빈 문자열이면 'N번') */
+    mode    : null,     /* 고른 방식 */
+    opt     : {ladder:'one', card:'turn'},   /* 방식별 세부 선택 */
+    win     : [],       /* 이번 판의 당첨자 번호(0부터) */
+    order   : [],       /* 당첨자가 나온 순서 (룰렛·경주에서 쓴다) */
+    done    : false
+  };
+
+  function nameOf(i){
+    var v = (S.names[i] || '').trim();
+    return v ? v : (i + 1) + '번';
+  }
+  function isWin(i){ return S.win.indexOf(i) >= 0; }
+
+  /* ---------- 이 기기에 저장 / 불러오기 ---------- */
+  var LS_KEY = 'luckyDraw.v1';
+  function saveCfg(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        count:S.count, winners:S.winners, names:S.names, mode:S.mode, opt:S.opt
+      }));
+    }catch(e){}
+  }
+  function loadCfg(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(!raw) return;
+      var d = JSON.parse(raw);
+      if(!d) return;
+      if(typeof d.count === 'number')   S.count   = clamp(d.count, MIN_N, MAX_N);
+      if(typeof d.winners === 'number') S.winners = clamp(d.winners, 1, S.count - 1);
+      if(Object.prototype.toString.call(d.names) === '[object Array]'){
+        S.names = d.names.map(function(x){ return typeof x === 'string' ? x.slice(0,14) : ''; });
+      }
+      if(d.mode && MODE_NAME[d.mode]) S.mode = d.mode;
+      if(d.opt){
+        if(d.opt.ladder === 'one' || d.opt.ladder === 'all') S.opt.ladder = d.opt.ladder;
+        if(d.opt.card === 'turn' || d.opt.card === 'auto')   S.opt.card   = d.opt.card;
+      }
+    }catch(e){}
+  }
+
+  /* ---------- 이번 판의 당첨자를 먼저 정한다 (여기가 유일한 추첨) ---------- */
+  function decide(){
+    var order = shuffle(seq(S.count));       /* 완전 무작위 순서 */
+    S.order = order.slice();
+    S.win   = order.slice(0, S.winners).sort(function(a,b){ return a-b; });
+    S.done  = false;
+    return S.win;
+  }
+
+  /* ==========================================================================
+     2. 화면 넘기기
+     ========================================================================== */
+
+  var resultCbs = [];          /* 결과를 알려 줄 곳 (LuckyDraw.onResult) */
+  var autoScroll = true;       /* 화면 넘길 때 스스로 스크롤할지 */
+  var curScreen = 1;
+  function showScreen(n){
+    curScreen = n;
+    [1,2,3,4].forEach(function(k){
+      $('scr'+k).classList.toggle('ld-on', k === n);
+    });
+    var chips = $('steps').children;
+    for(var i=0;i<chips.length;i++){
+      chips[i].classList.toggle('ld-on', Number(chips[i].getAttribute('data-step')) === n);
+    }
+    scrollToTop();
+  }
+
+  /* ==========================================================================
+     3. ① 참가자 설정 화면
+     ========================================================================== */
+
+  function renderNames(){
+    var host = $('names'), html = '';
+    for(var i=0;i<S.count;i++){
+      html += '<div class="ld-nameitem">' +
+                '<span class="ld-nameno">' + (i+1) + '</span>' +
+                '<input class="ld-namein" type="text" maxlength="14" data-i="' + i + '" ' +
+                  'placeholder="' + (i+1) + '번" value="' + esc(S.names[i] || '') + '">' +
+              '</div>';
+    }
+    host.innerHTML = html;
+  }
+
+  function syncCfgUI(){
+    $('cntIn').value = S.count;
+    $('winIn').value = S.winners;
+    $('winIn').max   = Math.max(1, S.count - 1);
+    $('cntMinus').disabled = (S.count <= MIN_N);
+    $('cntPlus').disabled  = (S.count >= MAX_N);
+    $('winMinus').disabled = (S.winners <= 1);
+    $('winPlus').disabled  = (S.winners >= S.count - 1);
+    $('cfgHint').textContent =
+      S.count + '명 중 ' + S.winners + '명을 뽑습니다. (나머지 ' + (S.count - S.winners) + '명은 꽝)';
+    $('modeSum').textContent =
+      '지금 설정 : 참가 ' + S.count + '명 · 당첨 ' + S.winners + '명';
+  }
+
+  function setCount(v){
+    S.count = clamp(Math.round(v) || MIN_N, MIN_N, MAX_N);
+    if(S.winners > S.count - 1) S.winners = S.count - 1;
+    if(S.winners < 1) S.winners = 1;
+    S.names.length = S.count;                    /* 늘어난 칸은 undefined → 빈칸 */
+    for(var i=0;i<S.count;i++) if(!S.names[i]) S.names[i] = '';
+    renderNames(); syncCfgUI(); saveCfg();
+  }
+  function setWinners(v){
+    S.winners = clamp(Math.round(v) || 1, 1, Math.max(1, S.count - 1));
+    syncCfgUI(); saveCfg();
+  }
+
+  $('cntMinus').onclick = function(){ setCount(S.count - 1); };
+  $('cntPlus').onclick  = function(){ setCount(S.count + 1); };
+  $('winMinus').onclick = function(){ setWinners(S.winners - 1); };
+  $('winPlus').onclick  = function(){ setWinners(S.winners + 1); };
+
+  $('cntIn').addEventListener('change', function(){ setCount(Number(this.value)); });
+  $('cntIn').addEventListener('blur',   function(){ setCount(Number(this.value)); });
+  $('winIn').addEventListener('change', function(){ setWinners(Number(this.value)); });
+  $('winIn').addEventListener('blur',   function(){ setWinners(Number(this.value)); });
+
+  $('names').addEventListener('input', function(ev){
+    var el = ev.target;
+    if(!el || !el.classList.contains('ld-namein')) return;
+    S.names[Number(el.getAttribute('data-i'))] = el.value;
+    saveCfg();
+  });
+
+  $('pasteApply').onclick = function(){
+    var raw = $('pasteBox').value || '';
+    var list = raw.split(/[\n,\t;]+/).map(function(s){ return s.trim(); })
+                  .filter(function(s){ return s.length > 0; })
+                  .map(function(s){ return s.slice(0,14); });
+    if(list.length < MIN_N){ toast('이름을 ' + MIN_N + '명 이상 붙여넣어 주세요.'); return; }
+    var cut = false;
+    if(list.length > MAX_N){ list = list.slice(0, MAX_N); cut = true; }
+    S.names = list.slice();
+    setCount(list.length);
+    $('pasteWrap').open = false;
+    toast(cut ? ('앞의 ' + MAX_N + '명만 넣었습니다.') : (list.length + '명 명단을 넣었습니다.'));
+  };
+
+  $('namesClear').onclick = function(){
+    for(var i=0;i<S.count;i++) S.names[i] = '';
+    renderNames(); saveCfg();
+    toast('이름을 모두 지웠습니다.');
+  };
+
+  $('go2').onclick = function(){
+    setCount(Number($('cntIn').value));         /* 직접 입력한 값 반영 */
+    setWinners(Number($('winIn').value));
+    syncModeUI();
+    showScreen(2);
+  };
+
+  /* ==========================================================================
+     4. ② 방식 고르기 화면
+     ========================================================================== */
+
+  function syncModeUI(){
+    var cards = $('modeList').children;
+    for(var i=0;i<cards.length;i++){
+      cards[i].classList.toggle('ld-on', cards[i].getAttribute('data-mode') === S.mode);
+    }
+    $('go3').disabled = !S.mode;
+    syncCfgUI();
+  }
+
+  $('modeList').addEventListener('click', function(ev){
+    var el = ev.target;
+    while(el && el !== this && !el.getAttribute('data-mode')) el = el.parentNode;
+    if(!el || el === this) return;
+    S.mode = el.getAttribute('data-mode');
+    syncModeUI(); saveCfg();
+  });
+
+  $('back1').onclick = function(){ showScreen(1); };
+  $('go3').onclick   = function(){ if(S.mode) enterPlay(); };
+  $('back2').onclick = function(){ stopAll(); showScreen(2); };
+
+  /* ==========================================================================
+     5. ③ 뽑기 진행 — 공통 틀
+     ========================================================================== */
+
+  var rafId = null;          /* 지금 도는 애니메이션 */
+  var timers = [];           /* 예약해 둔 타이머들 */
+  function later(fn, ms){ var t = setTimeout(fn, ms); timers.push(t); return t; }
+  function stopAll(){
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    timers.forEach(function(t){ clearTimeout(t); });
+    timers = [];
+  }
+
+  function setStatus(main, sub){
+    $('status').innerHTML = esc(main) + (sub ? '<span class="ld-sub">' + esc(sub) + '</span>' : '');
+  }
+
+  function enterPlay(){
+    stopAll();
+    $('playTitle').textContent = MODE_NAME[S.mode];
+    $('toResult').disabled = true;
+    $('startBtn').disabled = false;
+    $('startBtn').textContent = '뽑기 시작!';
+    renderOptions();
+    showScreen(3);          /* 화면을 먼저 띄워야 가로 폭을 잴 수 있다 */
+    buildStage();
+    setStatus('준비되었습니다', '‘뽑기 시작!’을 눌러 주세요');
+  }
+
+  /* 방식별 세부 선택 단추 */
+  function renderOptions(){
+    var host = $('optRow'), html = '';
+    if(S.mode === 'ladder'){
+      html = '<span class="ld-opttitle">진행 방식</span>' +
+        '<button class="ld-opt' + (S.opt.ladder==='one'?' ld-on':'') + '" data-k="ladder" data-v="one" type="button">한 명씩 차례로</button>' +
+        '<button class="ld-opt' + (S.opt.ladder==='all'?' ld-on':'') + '" data-k="ladder" data-v="all" type="button">전원 동시에</button>';
+    } else if(S.mode === 'card'){
+      html = '<span class="ld-opttitle">진행 방식</span>' +
+        '<button class="ld-opt' + (S.opt.card==='turn'?' ld-on':'') + '" data-k="card" data-v="turn" type="button">돌아가며 직접 뽑기</button>' +
+        '<button class="ld-opt' + (S.opt.card==='auto'?' ld-on':'') + '" data-k="card" data-v="auto" type="button">한꺼번에 열기</button>';
+    } else if(S.mode === 'wheel'){
+      html = '<span class="ld-opttitle">' + (S.winners > 1
+        ? '뽑힌 분을 빼고 ' + S.winners + '번 돌립니다'
+        : '원판이 멈춘 자리가 당첨입니다') + '</span>';
+    } else {
+      html = '<span class="ld-opttitle">' + (S.winners > 1
+        ? '결승선을 먼저 통과한 ' + S.winners + '명이 당첨입니다'
+        : '1등이 당첨입니다') + '</span>';
+    }
+    host.innerHTML = html;
+  }
+  $('optRow').addEventListener('click', function(ev){
+    var el = ev.target;
+    if(!el.classList || !el.classList.contains('ld-opt')) return;
+    S.opt[el.getAttribute('data-k')] = el.getAttribute('data-v');
+    saveCfg();
+    renderOptions();
+    buildStage();                       /* 방식이 바뀌면 무대도 다시 */
+    setStatus('준비되었습니다', '‘뽑기 시작!’을 눌러 주세요');
+    $('startBtn').disabled = false;
+    $('toResult').disabled = true;
+  });
+
+  function buildStage(){
+    var st = $('stage');
+    st.innerHTML = '';
+    if(S.mode === 'ladder') ladderBuild(st);
+    else if(S.mode === 'wheel') wheelBuild(st);
+    else if(S.mode === 'card')  cardBuild(st);
+    else if(S.mode === 'race')  raceBuild(st);
+  }
+
+  $('startBtn').onclick = function(){
+    stopAll();
+    decide();                            /* ★ 당첨자는 여기서 한 번에 정해진다 */
+    $('startBtn').disabled = true;
+    $('toResult').disabled = true;
+    if(S.mode === 'ladder') ladderStart();
+    else if(S.mode === 'wheel') wheelStart();
+    else if(S.mode === 'card')  cardStart();
+    else if(S.mode === 'race')  raceStart();
+  };
+
+  function fireResult(){
+    if(!resultCbs.length) return;
+    var payload = {
+      mode      : S.mode,
+      modeName  : MODE_NAME[S.mode],
+      count     : S.count,
+      winners   : S.win.map(function(i){ return {index:i, no:i+1, name:nameOf(i)}; }),
+      losers    : seq(S.count).filter(function(i){ return !isWin(i); })
+                              .map(function(i){ return {index:i, no:i+1, name:nameOf(i)}; })
+    };
+    for(var i=0;i<resultCbs.length;i++){
+      try{ resultCbs[i](payload); }catch(e){}
+    }
+  }
+
+  function finishPlay(){
+    S.done = true;
+    fireResult();
+    $('toResult').disabled = false;
+    $('startBtn').disabled = false;
+    $('startBtn').textContent = '🔁 한 번 더 뽑기';
+    setStatus('뽑기가 끝났습니다!', '‘결과 보기’를 눌러 주세요');
+    later(function(){ renderResult(); showScreen(4); }, 1400);
+  }
+
+  /* ==========================================================================
+     6. 🧗 사다리타기
+     --------------------------------------------------------------------------
+     가로선은 진짜 무작위로 만들고, 그 사다리가 만들어 낸 '도착 칸'을 계산한 뒤
+     아래쪽 당첨/꽝 딱지를 거기에 맞춰 붙인다.
+     → 사다리 자체는 조작하지 않으면서도 미리 정해 둔 당첨자와 정확히 일치한다.
+     ========================================================================== */
+
+  var LAD = null;   /* {rows, rungs, geom, canvas, ctx, paths, endOf, botWin} */
+  var LAD_COLORS = ['#e0453d','#1f7ae0','#12a05c','#e08a12','#8b46d6','#0f9ba8',
+                    '#d63384','#5b7c1f','#b5561a','#3f5bd6'];
+
+  function ladderGeom(n, hostW){
+    var padX = 26;
+    var avail = Math.max(260, hostW - 6);
+    var gap = clamp((avail - padX*2) / Math.max(1, n-1), 40, 140);
+    var W = Math.round(padX*2 + gap*(n-1));
+    var topH = 44, botH = 54, H = 420;
+    return { n:n, padX:padX, gap:gap, W:W, H:H, topH:topH, botH:botH,
+             yTop:topH, yBot:H - botH,
+             x:function(i){ return padX + i*gap; } };
+  }
+
+  function ladderMake(n){
+    var rows = clamp(n + 4, 9, 16);
+    var rungs = [];
+    for(var r=0;r<rows;r++){
+      var row = [];
+      for(var c=0;c<n-1;c++) row.push(false);
+      for(var c2=0;c2<n-1;c2++){
+        if(c2 > 0 && row[c2-1]) continue;        /* 가로선끼리 붙지 않게 */
+        if(rnd() < 0.46) row[c2] = true;
+      }
+      rungs.push(row);
+    }
+    return { rows:rows, rungs:rungs };
+  }
+
+  /* 한 사람이 내려가는 길 (화면 좌표 점들) + 도착 칸 */
+  function ladderTrace(L, g, start){
+    var pos = start, pts = [{x:g.x(pos), y:g.yTop}];
+    var span = (g.yBot - g.yTop) / (L.rows + 1);
+    for(var r=0;r<L.rows;r++){
+      var y = g.yTop + (r+1)*span;
+      var np = pos;
+      if(pos < g.n-1 && L.rungs[r][pos]) np = pos + 1;
+      else if(pos > 0 && L.rungs[r][pos-1]) np = pos - 1;
+      if(np !== pos){
+        pts.push({x:g.x(pos), y:y});
+        pts.push({x:g.x(np),  y:y});
+        pos = np;
+      }
+    }
+    pts.push({x:g.x(pos), y:g.yBot});
+    return { pts:pts, end:pos };
+  }
+
+  function ladderBuild(host){
+    var wrap = document.createElement('div');
+    wrap.className = 'ld-hwrap';
+    var cv = document.createElement('canvas');
+    wrap.appendChild(cv);
+    host.appendChild(wrap);
+
+    var hint = document.createElement('div');
+    hint.className = 'ld-scrollhint';
+    hint.id = 'ld-ladHint';
+    hint.style.display = 'none';
+    hint.textContent = '← 좌우로 밀어서 보실 수 있습니다 →';
+    host.appendChild(hint);
+
+    var n = S.count;
+    var g = ladderGeom(n, wrap.clientWidth || 700);
+    var L = ladderMake(n);
+
+    var dpr = Math.min(3, window.devicePixelRatio || 1) * 1.4;
+    cv.width  = Math.round(g.W * dpr);
+    cv.height = Math.round(g.H * dpr);
+    cv.style.width  = g.W + 'px';
+    cv.style.height = g.H + 'px';
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    /* 각자의 길과 도착 칸 미리 계산 */
+    var paths = [], endOf = [];
+    for(var i=0;i<n;i++){
+      var t = ladderTrace(L, g, i);
+      paths.push(t.pts); endOf.push(t.end);
+    }
+    LAD = { L:L, g:g, cv:cv, ctx:ctx, paths:paths, endOf:endOf, botWin:null, revealed:[] };
+
+    if(g.W > (wrap.clientWidth || 700) + 4) hint.style.display = 'block';
+    ladderDraw(0, -1);
+  }
+
+  /* 아래 딱지 정하기 : 도착 칸 기준으로 당첨/꽝을 배치 */
+  function ladderLabels(){
+    var n = S.count, bot = [];
+    for(var k=0;k<n;k++) bot.push(false);
+    for(var i=0;i<n;i++) bot[LAD.endOf[i]] = isWin(i);
+    LAD.botWin = bot;
+  }
+
+  var CV_FONT = '"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif';
+  function fitFont(ctx, text, maxW, size, weight){
+    ctx.font = weight + ' ' + size + 'px ' + CV_FONT;
+    while(size > 7.5 && ctx.measureText(text).width > maxW){
+      size -= 0.5;
+      ctx.font = weight + ' ' + size + 'px ' + CV_FONT;
+    }
+    return size;
+  }
+  function roundRect(ctx,x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+  /* 화면 테마와 상관없이 사다리는 늘 밝은 바탕으로 그린다 */
+  var LC = { bg:'#ffffff', line:'#c9c0b0', ink:'#241f18', chip:'#eef1f5', chipLine:'#c4ccd6',
+             win:'#f3d78a', winLine:'#c08a12', winInk:'#4a3607',
+             lose:'#eceae4', loseLine:'#c8bda7', loseInk:'#8a8073' };
+
+  function ladderDraw(progressList, focusIdx){
+    var g = LAD.g, ctx = LAD.ctx, L = LAD.L, n = S.count;
+    ctx.clearRect(0,0,g.W,g.H);
+    ctx.fillStyle = LC.bg; ctx.fillRect(0,0,g.W,g.H);
+
+    /* 세로줄 */
+    ctx.lineWidth = 2.4; ctx.strokeStyle = LC.line; ctx.lineCap = 'round';
+    for(var i=0;i<n;i++){
+      ctx.beginPath(); ctx.moveTo(g.x(i), g.yTop); ctx.lineTo(g.x(i), g.yBot); ctx.stroke();
+    }
+    /* 가로줄 */
+    var span = (g.yBot - g.yTop) / (L.rows + 1);
+    for(var r=0;r<L.rows;r++){
+      var y = g.yTop + (r+1)*span;
+      for(var c=0;c<n-1;c++){
+        if(!L.rungs[r][c]) continue;
+        ctx.beginPath(); ctx.moveTo(g.x(c), y); ctx.lineTo(g.x(c+1), y); ctx.stroke();
+      }
+    }
+
+    /* 지나온 길 */
+    if(progressList){
+      for(var k=0;k<n;k++){
+        var d = progressList[k];
+        if(!d || d <= 0) continue;
+        drawTrace(ctx, LAD.paths[k], d, LAD_COLORS[k % LAD_COLORS.length], k === focusIdx);
+      }
+    }
+
+    /* 위쪽 이름표 */
+    var chipW = Math.min(g.gap - 6, 74), chipH = 26;
+    for(var t=0;t<n;t++){
+      var cx = g.x(t);
+      roundRect(ctx, cx - chipW/2, g.yTop - chipH - 6, chipW, chipH, 8);
+      var mine = LAD_COLORS[t % LAD_COLORS.length];
+      ctx.fillStyle = (progressList && progressList[t] > 0) ? mine : LC.chip;
+      ctx.fill();
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = (progressList && progressList[t] > 0) ? mine : LC.chipLine;
+      ctx.stroke();
+      ctx.fillStyle = (progressList && progressList[t] > 0) ? '#ffffff' : LC.ink;
+      var nm = nameOf(t);
+      fitFont(ctx, nm, chipW - 8, 12.5, '800');
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(nm, cx, g.yTop - chipH/2 - 6);
+    }
+
+    /* 아래쪽 당첨/꽝 딱지 */
+    if(LAD.botWin){
+      var bw = Math.min(g.gap - 6, 74), bh = 30;
+      for(var b=0;b<n;b++){
+        var bx = g.x(b);
+        var w = LAD.botWin[b];
+        roundRect(ctx, bx - bw/2, g.yBot + 8, bw, bh, 9);
+        ctx.fillStyle = w ? LC.win : LC.lose; ctx.fill();
+        ctx.lineWidth = w ? 2.2 : 1.4;
+        ctx.strokeStyle = w ? LC.winLine : LC.loseLine; ctx.stroke();
+        ctx.fillStyle = w ? LC.winInk : LC.loseInk;
+        var tx = w ? '당첨' : '꽝';
+        fitFont(ctx, tx, bw - 8, 14, '900');
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(tx, bx, g.yBot + 8 + bh/2);
+      }
+    }
+  }
+
+  /* 길이 d(픽셀)만큼 지나온 자취를 그린다 */
+  function drawTrace(ctx, pts, d, color, focus){
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = focus ? 5 : 3.6;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.globalAlpha = focus ? 1 : .85;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    var left = d, px = pts[0].x, py = pts[0].y;
+    for(var i=1;i<pts.length && left > 0;i++){
+      var dx = pts[i].x - pts[i-1].x, dy = pts[i].y - pts[i-1].y;
+      var seg = Math.sqrt(dx*dx + dy*dy);
+      if(seg <= left){ ctx.lineTo(pts[i].x, pts[i].y); px = pts[i].x; py = pts[i].y; left -= seg; }
+      else{
+        var f = left / seg;
+        px = pts[i-1].x + dx*f; py = pts[i-1].y + dy*f;
+        ctx.lineTo(px, py); left = 0;
+      }
+    }
+    ctx.stroke();
+    /* 머리 구슬 */
+    ctx.beginPath(); ctx.arc(px, py, focus ? 7 : 5.5, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+    ctx.restore();
+  }
+
+  function pathLen(pts){
+    var s = 0;
+    for(var i=1;i<pts.length;i++){
+      var dx = pts[i].x - pts[i-1].x, dy = pts[i].y - pts[i-1].y;
+      s += Math.sqrt(dx*dx + dy*dy);
+    }
+    return s;
+  }
+
+  function ladderStart(){
+    buildStage();                    /* 사다리를 새로 만든다 */
+    ladderLabels();
+    ladderDraw(null, -1);
+
+    var n = S.count;
+    var prog = []; for(var i=0;i<n;i++) prog.push(0);
+    var lens = LAD.paths.map(pathLen);
+    var SPEED = 0.62;                /* 픽셀/밀리초 */
+
+    if(S.opt.ladder === 'all'){
+      setStatus('전원이 함께 내려갑니다', '선을 따라가 보세요');
+      var t0 = null;
+      var step = function(ts){
+        if(t0 === null) t0 = ts;
+        var el = ts - t0, alive = false;
+        for(var k=0;k<n;k++){
+          prog[k] = Math.min(lens[k], el * SPEED);
+          if(prog[k] < lens[k]) alive = true;
+        }
+        ladderDraw(prog, -1);
+        if(alive) rafId = requestAnimationFrame(step);
+        else{ rafId = null; setStatus('모두 도착했습니다!', ''); later(finishPlay, 700); }
+      };
+      rafId = requestAnimationFrame(step);
+    } else {
+      /* 사람이 많으면 한 명씩 보기가 너무 길어지므로 속도를 올린다 */
+      var fast   = n > 15 ? 2.4 : (n > 8 ? 1.8 : 1.35);
+      var pauseW = n > 15 ? 560 : 900;      /* 당첨 뒤 잠깐 멈춤 */
+      var pauseL = n > 15 ? 200 : 420;      /* 꽝 뒤 잠깐 멈춤 */
+      var idx = 0;
+      var runOne = function(){
+        if(idx >= n){ setStatus('모두 도착했습니다!', ''); later(finishPlay, 500); return; }
+        setStatus(nameOf(idx) + ' 님이 내려갑니다', (idx+1) + ' / ' + n);
+        var t0b = null;
+        var stepOne = function(ts){
+          if(t0b === null) t0b = ts;
+          prog[idx] = Math.min(lens[idx], (ts - t0b) * (SPEED * fast));
+          ladderDraw(prog, idx);
+          if(prog[idx] < lens[idx]) rafId = requestAnimationFrame(stepOne);
+          else{
+            rafId = null;
+            var got = isWin(idx);
+            setStatus(nameOf(idx) + ' 님 → ' + (got ? '🎉 당첨!' : '꽝'), (idx+1) + ' / ' + n);
+            idx++;
+            later(runOne, got ? pauseW : pauseL);
+          }
+        };
+        rafId = requestAnimationFrame(stepOne);
+      };
+      runOne();
+    }
+  }
+
+  /* ==========================================================================
+     7. 🎡 원판 돌리기
+     --------------------------------------------------------------------------
+     미리 정해 둔 당첨자가 화살표 아래에 오도록 멈출 각도를 계산해서 돌린다.
+     ========================================================================== */
+
+  var WH = null;   /* {cv, ctx, size, rot, list, picked} */
+  var WH_COLORS = ['#e0453d','#1f7ae0','#12a05c','#e08a12','#8b46d6','#0f9ba8',
+                   '#d63384','#5b7c1f','#b5561a','#3f5bd6','#c2185b','#00838f'];
+
+  function wheelBuild(host){
+    var box = document.createElement('div');
+    box.className = 'ld-wheelbox';
+    box.innerHTML = '<div class="ld-pointer"></div><canvas id="ld-wheelCv"></canvas>' +
+                    '<div class="ld-wheelhub" id="ld-wheelHub">준비</div>';
+    host.appendChild(box);
+
+    var info = document.createElement('div');
+    info.className = 'ld-scrollhint';
+    info.id = 'ld-wheelInfo';
+    info.textContent = '화살표가 가리키는 사람이 당첨입니다';
+    host.appendChild(info);
+
+    var cv = $('wheelCv');
+    var size = 320;
+    var dpr = Math.min(3, window.devicePixelRatio || 1) * 1.4;
+    cv.width = cv.height = Math.round(size * dpr);
+    cv.style.height = 'auto';
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    WH = { cv:cv, ctx:ctx, size:size, rot:0, list:seq(S.count), picked:[] };
+    wheelDraw();
+  }
+
+  function wheelDraw(){
+    var ctx = WH.ctx, size = WH.size, R = size/2, list = WH.list;
+    ctx.clearRect(0,0,size,size);
+    ctx.save();
+    ctx.translate(R,R);
+    ctx.rotate(WH.rot * Math.PI/180);
+
+    var m = list.length;
+    if(m === 0){
+      ctx.restore();
+      return;
+    }
+    var a = 2*Math.PI/m;
+    for(var k=0;k<m;k++){
+      var s = -Math.PI/2 + k*a;
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.arc(0,0,R-3, s, s+a);
+      ctx.closePath();
+      ctx.fillStyle = WH_COLORS[list[k] % WH_COLORS.length];
+      ctx.fill();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.stroke();
+
+      /* 이름 : 부채꼴 한가운데를 향해 눕혀 쓴다 */
+      ctx.save();
+      ctx.rotate(s + a/2);
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      var maxW = R - 40;
+      var base = m > 20 ? 11 : (m > 12 ? 13 : 15);
+      fitFont(ctx, nameOf(list[k]), maxW, base, '800');
+      ctx.fillText(nameOf(list[k]), R - 16, 0);
+      ctx.restore();
+    }
+    ctx.restore();
+
+    /* 테두리 */
+    ctx.beginPath(); ctx.arc(R,R,R-2,0,Math.PI*2);
+    ctx.lineWidth = 4; ctx.strokeStyle = '#c08a12'; ctx.stroke();
+  }
+
+  function easeOutQuart(t){ return 1 - Math.pow(1-t, 4); }
+
+  function wheelStart(){
+    WH.list = seq(S.count);
+    WH.picked = [];
+    WH.rot = 0;
+    wheelDraw();
+    $('wheelHub').textContent = '준비';
+    /* 뽑을 순서 : 미리 정해 둔 당첨자를 무작위 순서로 */
+    var queue = shuffle(S.win.slice());
+    wheelSpinNext(queue, 0);
+  }
+
+  function wheelSpinNext(queue, doneCount){
+    if(queue.length === 0){
+      setStatus('원판 돌리기 끝!', S.winners + '명이 정해졌습니다');
+      $('wheelHub').textContent = '완료';
+      later(finishPlay, 500);
+      return;
+    }
+    var target = queue.shift();
+    var idxInList = WH.list.indexOf(target);
+    if(idxInList < 0){                       /* 있을 수 없는 일이지만 안전장치 */
+      wheelSpinNext(queue, doneCount);
+      return;
+    }
+    var m = WH.list.length;
+    var a = 360/m;
+    /* 부채꼴 한가운데가 화살표(12시)에 오게 하는 회전각 */
+    var wobble = (rnd() - 0.5) * a * 0.7;    /* 정확히 한가운데만 멈추면 어색하니 조금 흔든다 */
+    var want = -(idxInList + 0.5) * a + wobble;
+    var cur = WH.rot;
+    var delta = ((want - cur) % 360 + 360) % 360;
+    var turns = 4 + randInt(3);
+    var total = turns*360 + delta;
+    var dur = 3600 + randInt(900);
+
+    setStatus('원판이 돌아갑니다…', (doneCount+1) + ' / ' + S.winners + '번째');
+    $('wheelHub').textContent = '두근';
+
+    var t0 = null, from = cur;
+    var step = function(ts){
+      if(t0 === null) t0 = ts;
+      var p = clamp((ts - t0)/dur, 0, 1);
+      WH.rot = from + total*easeOutQuart(p);
+      wheelDraw();
+      if(p < 1) rafId = requestAnimationFrame(step);
+      else{
+        rafId = null;
+        WH.rot = ((from + total) % 360 + 360) % 360;
+        wheelDraw();
+        $('wheelHub').textContent = '당첨';
+        setStatus('🎉 ' + nameOf(target) + ' 님 당첨!', (doneCount+1) + ' / ' + S.winners + '명');
+        /* 뽑힌 사람은 빼고 다음 판 */
+        later(function(){
+          WH.list = WH.list.filter(function(v){ return v !== target; });
+          WH.rot = 0;
+          wheelDraw();
+          wheelSpinNext(queue, doneCount+1);
+        }, 1500);
+      }
+    };
+    rafId = requestAnimationFrame(step);
+  }
+
+  /* ==========================================================================
+     8. 🃏 카드 뽑기
+     ========================================================================== */
+
+  var CD = null;   /* {slots, turn, opened} */
+
+  function cardBuild(host){
+    var grid = document.createElement('div');
+    grid.className = 'ld-cardgrid';
+    grid.id = 'ld-cardGrid';
+    var html = '';
+    for(var i=0;i<S.count;i++){
+      html += '<div class="ld-cardslot ld-dead" data-c="' + i + '">' +
+                '<div class="ld-cardin">' +
+                  '<div class="ld-cface ld-cback">?</div>' +
+                  '<div class="ld-cface ld-cfront"><span class="ld-cn"></span><span class="ld-cr"></span></div>' +
+                '</div>' +
+              '</div>';
+    }
+    grid.innerHTML = html;
+    host.appendChild(grid);
+    CD = { turn:0, opened:0, live:false };
+  }
+
+  $('stage').addEventListener('click', function(ev){
+    if(S.mode !== 'card' || !CD || !CD.live) return;
+    var el = ev.target;
+    while(el && el !== this && !el.classList.contains('ld-cardslot')) el = el.parentNode;
+    if(!el || el === this) return;
+    if(el.classList.contains('ld-flip')) return;
+    cardOpen(el, CD.turn);
+  });
+
+  function cardOpen(el, who){
+    var got = isWin(who);
+    el.classList.remove('ld-pickme');
+    el.classList.add('ld-flip');
+    var front = el.querySelector('.ld-cfront');
+    front.classList.toggle('ld-win', got);
+    el.querySelector('.ld-cn').textContent = nameOf(who);
+    el.querySelector('.ld-cr').textContent = got ? '당첨 🎉' : '꽝';
+    CD.opened++;
+    CD.turn++;
+    if(CD.turn >= S.count){
+      CD.live = false;
+      var slots = $('cardGrid').children;
+      for(var i=0;i<slots.length;i++) slots[i].classList.add('ld-dead');
+      setStatus('모두 뒤집었습니다!', '');
+      later(finishPlay, 700);
+    } else {
+      setStatus(nameOf(who) + ' 님 → ' + (got ? '🎉 당첨!' : '꽝'),
+                '다음은 ' + nameOf(CD.turn) + ' 님 차례 — 카드를 눌러 주세요');
+      markPickable();
+    }
+  }
+
+  function markPickable(){
+    var slots = $('cardGrid').children;
+    for(var i=0;i<slots.length;i++){
+      var s = slots[i];
+      if(s.classList.contains('ld-flip')){ s.classList.add('ld-dead'); s.classList.remove('ld-pickme'); }
+      else { s.classList.remove('ld-dead'); s.classList.add('ld-pickme'); }
+    }
+  }
+
+  function cardStart(){
+    buildStage();
+    CD.turn = 0; CD.opened = 0;
+    if(S.opt.card === 'auto'){
+      CD.live = false;
+      setStatus('카드를 한꺼번에 엽니다…', '');
+      var slots = $('cardGrid').children;
+      for(var i=0;i<S.count;i++){
+        (function(k){
+          later(function(){
+            var el = slots[k];
+            var got = isWin(k);
+            el.classList.add('ld-flip');
+            el.querySelector('.ld-cfront').classList.toggle('ld-win', got);
+            el.querySelector('.ld-cn').textContent = nameOf(k);
+            el.querySelector('.ld-cr').textContent = got ? '당첨 🎉' : '꽝';
+            if(k === S.count-1){
+              setStatus('모두 열렸습니다!', '');
+              later(finishPlay, 700);
+            }
+          }, 130 * k + 250);
+        })(i);
+      }
+    } else {
+      CD.live = true;
+      markPickable();
+      setStatus(nameOf(0) + ' 님부터 시작합니다', '마음에 드는 카드를 눌러 주세요');
+    }
+  }
+
+  /* ==========================================================================
+     9. 🏁 달리기 경주
+     --------------------------------------------------------------------------
+     결승 순서는 미리 정해져 있고, 달리는 동안에는 속도가 흔들려 순위가 바뀐다.
+     (끝으로 갈수록 흔들림이 사라져 정해진 순서대로 골인한다)
+     ========================================================================== */
+
+  var RC = null;   /* {lanes, runners, ranks, tracks} */
+  var RUNNER_ICONS = ['🏃','🏃‍♀️','🐢','🐰','🐎','🚴','🦊','🐻','🐼','🐯'];
+
+  function raceBuild(host){
+    var track = document.createElement('div');
+    track.className = 'ld-track';
+    track.id = 'ld-raceTrack';
+    var html = '';
+    for(var i=0;i<S.count;i++){
+      html += '<div class="ld-lane">' +
+                '<span class="ld-lname">' + esc(nameOf(i)) + '</span>' +
+                '<span class="ld-rt"><span class="ld-runner" data-r="' + i + '">' +
+                  RUNNER_ICONS[i % RUNNER_ICONS.length] + '</span></span>' +
+                '<span class="ld-rank" data-k="' + i + '">—</span>' +
+              '</div>';
+    }
+    track.innerHTML = html;
+    host.appendChild(track);
+    RC = { track:track };
+  }
+
+  function raceStart(){
+    buildStage();
+    var n = S.count;
+    var track = $('raceTrack');
+    var lanes = track.getElementsByClassName('ld-lane');
+    var runners = [], rankEls = [], widths = [];
+    for(var i=0;i<n;i++){
+      runners.push(lanes[i].querySelector('.ld-runner'));
+      rankEls.push(lanes[i].querySelector('.ld-rank'));
+      widths.push(Math.max(60, lanes[i].querySelector('.ld-rt').clientWidth - 22));
+    }
+
+    /* 골인 순서 : 당첨자들이 앞순위 */
+    var winsOrder  = shuffle(S.win.slice());
+    var loseOrder  = shuffle(seq(n).filter(function(v){ return !isWin(v); }));
+    var finishOrder = winsOrder.concat(loseOrder);
+
+    var T = [], A = [], F = [], P = [];
+    var BASE = 3400, GAP = 230;
+    for(var k=0;k<n;k++){
+      var who = finishOrder[k];
+      T[who] = BASE + k*GAP + (rnd()-0.5)*90;   /* 흔들려도 순서가 안 바뀔 만큼만 */
+      A[who] = 0.07 + rnd()*0.08;               /* 흔들림 크기 */
+      F[who] = 0.0022 + rnd()*0.0030;           /* 흔들림 빠르기 */
+      P[who] = rnd()*Math.PI*2;
+    }
+
+    var arrived = [], arrivedFlag = [];
+    for(var z=0;z<n;z++) arrivedFlag.push(false);
+
+    setStatus('출발!', '결승선을 먼저 통과한 ' + S.winners + '명이 당첨입니다');
+
+    var t0 = null;
+    var step = function(ts){
+      if(t0 === null) t0 = ts;
+      var el = ts - t0, allDone = true;
+      var justIn = [];
+
+      for(var i2=0;i2<n;i2++){
+        var base = el / T[i2];
+        var p;
+        if(base >= 1){ p = 1; }
+        else{
+          var wob = Math.sin(el*F[i2] + P[i2]) * 0.6 + Math.sin(el*F[i2]*1.7 + P[i2]*1.3) * 0.4;
+          p = base + wob * A[i2] * (1 - base);      /* 끝에 가까울수록 흔들림이 사라진다 */
+          p = clamp(p, 0, 0.985);
+          allDone = false;
+        }
+        runners[i2].style.transform = 'translate(' + (p * widths[i2]).toFixed(1) + 'px,-50%)';
+        if(p >= 1 && !arrivedFlag[i2]){ arrivedFlag[i2] = true; justIn.push(i2); }
+      }
+
+      /* ⚠️ 화면이 느려 여러 명이 한 프레임에 골인할 수 있다.
+         그때 줄 순서대로 등수를 매기면 안 되므로 '정해진 도착 시각' 순으로 줄 세운다. */
+      justIn.sort(function(a,b){ return T[a] - T[b]; });
+      for(var j=0;j<justIn.length;j++){
+        var who2 = justIn[j];
+        arrived.push(who2);
+        var rank = arrived.length;
+        var w = isWin(who2);
+        rankEls[who2].textContent = w ? (rank + '등 🎉') : (rank + '등');
+        rankEls[who2].classList.add('ld-on');
+        if(w) rankEls[who2].classList.add('ld-win');
+        if(rank <= S.winners){
+          setStatus('🎉 ' + rank + '등 ' + nameOf(who2) + ' 님 당첨!', arrived.length + ' / ' + n + ' 명 골인');
+        }
+      }
+
+      if(!allDone) rafId = requestAnimationFrame(step);
+      else{
+        rafId = null;
+        setStatus('전원 골인!', '앞선 ' + S.winners + '명이 당첨입니다');
+        later(finishPlay, 700);
+      }
+    };
+    rafId = requestAnimationFrame(step);
+  }
+
+  /* ==========================================================================
+     10. ④ 결과 화면
+     ========================================================================== */
+
+  function renderResult(){
+    var head = S.count + '명 중 ' + S.winners + '명 · ' + MODE_NAME[S.mode];
+    $('resultHead').textContent = head;
+
+    var w = '';
+    S.win.forEach(function(i, k){
+      w += '<div class="ld-winchip" style="animation-delay:' + (k*0.08).toFixed(2) + 's">' +
+             '<span class="ld-no">' + (i+1) + '번</span>' + esc(nameOf(i)) +
+           '</div>';
+    });
+    $('winGrid').innerHTML = w;
+
+    var losers = seq(S.count).filter(function(i){ return !isWin(i); });
+    if(losers.length === 0){
+      $('loseWrap').style.display = 'none';
+    } else {
+      $('loseWrap').style.display = '';
+      $('loseGrid').innerHTML = losers.map(function(i){
+        return '<span class="ld-losechip">' + esc(nameOf(i)) + '</span>';
+      }).join('');
+    }
+  }
+
+  $('toResult').onclick  = function(){ renderResult(); showScreen(4); };
+  $('againSame').onclick = function(){ enterPlay(); };
+  $('againOther').onclick= function(){ showScreen(2); };
+  $('backCfg').onclick   = function(){ showScreen(1); };
+
+  /* ==========================================================================
+     11. 결과를 그림(PNG)으로
+     --------------------------------------------------------------------------
+     ⚠️ <a download> 은 쓰지 않는다. 폰에서는 조용히 실패하면서
+        "저장했습니다"라는 거짓 안내만 남기 때문이다.
+        대신 그림을 화면에 그대로 띄워 복사·공유하시게 한다.
+     ========================================================================== */
+
+  var IMG_C = { bg:'#ffffff', panel:'#f7f3ea', line:'#dcd3c2', ink:'#241f18', muted:'#6d6357',
+                gold:'#c08a12', goldA:'#fff3cf', goldB:'#f3d78a', goldInk:'#4a3607',
+                lose:'#eceae4', loseInk:'#8a8073', head:'#1d4f79' };
+
+  function dateKo(){
+    var d = new Date();
+    var w = ['일','월','화','수','목','금','토'][d.getDay()];
+    return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + w + ')';
+  }
+
+  /* 이름들을 가로폭에 맞춰 여러 줄로 나눈다 (넘치면 '외 N명') */
+  function wrapNames(mg, names, maxW, maxLines){
+    var lines = [], cur = '', shown = 0;
+    for(var i=0;i<names.length;i++){
+      var t = cur ? cur + ' · ' + names[i] : names[i];
+      if(cur && mg.measureText(t).width > maxW){
+        lines.push(cur);
+        if(lines.length >= maxLines){ cur = ''; break; }   /* 더 못 담는다 */
+        cur = names[i]; shown = i + 1;
+      } else {
+        cur = t; shown = i + 1;
+      }
+    }
+    if(cur) lines.push(cur);
+    var rest = names.length - shown;
+    if(rest > 0 && lines.length) lines[lines.length-1] += ' 외 ' + rest + '명';
+    return lines;
+  }
+
+  function drawResultCanvas(){
+    var Sc = 2.5;                      /* 2.5배로 그려 폰에서도 또렷하게 */
+    var W = 620, pad = 22;
+    var cols = S.win.length <= 2 ? S.win.length : (S.win.length <= 6 ? 2 : 3);
+    if(cols < 1) cols = 1;
+    var gap = 10;
+    var cw = (W - pad*2 - gap*(cols-1)) / cols;
+    var chH = S.win.length <= 3 ? 76 : 62;
+    var rows = Math.ceil(S.win.length / cols);
+
+    var yTitle = pad + 26;
+    var yDate  = yTitle + 26;
+    var yInfo  = yDate + 26;
+    var yGrid  = yInfo + 22;
+    var gridH  = rows*chH + (rows-1)*gap;
+
+    /* 꽝 명단 : 폭에 맞춰 줄을 나눈다 (최대 4줄) */
+    var losers = seq(S.count).filter(function(i){ return !isWin(i); }).map(nameOf);
+    var mg = document.createElement('canvas').getContext('2d');
+    mg.font = '600 12px ' + CV_FONT;
+    var loseLines = losers.length ? wrapNames(mg, losers, W - pad*2, 4) : [];
+    var yLose = yGrid + gridH + (loseLines.length ? 30 : 8);
+    var H = yLose + (loseLines.length ? (22 + loseLines.length*17) : 0) + 34;
+
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(W*Sc); cv.height = Math.round(H*Sc);
+    var g = cv.getContext('2d');
+    g.scale(Sc,Sc);
+    g.fillStyle = IMG_C.bg; g.fillRect(0,0,W,H);
+
+    /* 제목 */
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = IMG_C.head;
+    g.font = '900 24px ' + CV_FONT;
+    g.fillText('🎯 당첨자 발표', W/2, yTitle);
+
+    g.fillStyle = IMG_C.muted;
+    g.font = '600 13px ' + CV_FONT;
+    g.fillText(dateKo(), W/2, yDate);
+    g.font = '700 13px ' + CV_FONT;
+    g.fillStyle = IMG_C.ink;
+    g.fillText(MODE_NAME[S.mode] + ' · 참가 ' + S.count + '명 중 ' + S.winners + '명 당첨', W/2, yInfo);
+
+    /* 당첨자 칸 */
+    for(var k=0;k<S.win.length;k++){
+      var r = Math.floor(k/cols), c = k % cols;
+      var x = pad + c*(cw+gap), y = yGrid + r*(chH+gap);
+      var grad = g.createLinearGradient(0,y,0,y+chH);
+      grad.addColorStop(0, IMG_C.goldA); grad.addColorStop(1, IMG_C.goldB);
+      roundRect(g, x, y, cw, chH, 12);
+      g.fillStyle = grad; g.fill();
+      g.lineWidth = 2.6; g.strokeStyle = IMG_C.gold; g.stroke();
+
+      g.fillStyle = IMG_C.goldInk;
+      g.font = '700 11px ' + CV_FONT;
+      g.fillText((S.win[k]+1) + '번', x + cw/2, y + 17);
+      var nm = nameOf(S.win[k]);
+      var fs = fitFont(g, nm, cw - 16, chH > 70 ? 26 : 21, '900');
+      g.font = '900 ' + fs + 'px ' + CV_FONT;
+      g.fillText(nm, x + cw/2, y + chH/2 + 9);
+    }
+
+    /* 꽝 명단 */
+    if(loseLines.length){
+      g.strokeStyle = IMG_C.line; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(pad, yLose - 14); g.lineTo(W-pad, yLose - 14); g.stroke();
+      g.fillStyle = IMG_C.muted;
+      g.font = '700 11.5px ' + CV_FONT;
+      g.fillText('아쉽게 안 된 분', W/2, yLose + 2);
+      g.fillStyle = IMG_C.loseInk;
+      g.font = '600 12px ' + CV_FONT;
+      for(var q=0;q<loseLines.length;q++){
+        g.fillText(loseLines[q], W/2, yLose + 22 + q*17);
+      }
+    }
+
+    /* 꼬리말 */
+    g.fillStyle = IMG_C.muted;
+    g.font = '600 10.5px ' + CV_FONT;
+    g.fillText('모든 방식의 당첨 확률은 동일합니다', W/2, H - 16);
+
+    return cv;
+  }
+
+  var shownBlob = null, shownUrl = null, shownDataUrl = null;
+
+  /* data: 그림 → Blob. 복사·공유·새 창에 쓸 알맹이를 기다리지 않고 바로 만든다. */
+  function dataUrlToBlob(u){
+    try{
+      var bin = atob(u.split(',')[1]);
+      var arr = new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], {type:'image/png'});
+    }catch(e){ return null; }
+  }
+
+  $('imgBtn').onclick = function(){
+    if(!S.win.length){ toast('먼저 뽑기를 해 주세요.'); return; }
+    var cv;
+    try{ cv = drawResultCanvas(); }
+    catch(e){ toast('그림을 만들지 못했습니다.\n화면을 사진 찍어 주세요.', 4000); return; }
+
+    var put = function(url){
+      $('imgOut').src = url;
+      $('imgView').classList.add('ld-on');
+      $('imgTip').textContent = navigator.share
+        ? '그림을 꾹 누르면 ‘이미지 저장’이 되는 기기도 있습니다'
+        : 'PC에서는 그림에 오른쪽 클릭 → ‘이미지를 다른 이름으로 저장’';
+    };
+
+    /* 지난번 새 창 주소를 먼저 반납한다 (그림을 다시 만드는 중이므로) */
+    if(shownUrl){ try{ URL.revokeObjectURL(shownUrl); }catch(e){} shownUrl = null; }
+    shownBlob = null; shownDataUrl = null;
+
+    /* ⚠️ 화면에 띄우는 <img> 는 반드시 data: URI 다.
+       안드로이드에서 blob: 그림은 ‘꾹 눌러 이미지 저장’ 메뉴가 뜨지 않는다
+       (자리배치 쪽에서 이미 겪은 사고라 같은 방식으로 맞췄다).
+       blob: 은 ‘새 창으로 열기’에만 쓴다 — data: 는 최상위 창 이동이 막힌다. */
+    try{ shownDataUrl = cv.toDataURL('image/png'); }catch(e){ shownDataUrl = null; }
+    if(shownDataUrl) shownBlob = dataUrlToBlob(shownDataUrl);   /* 복사·공유용 (바로 채워 둔다) */
+
+    if(shownDataUrl){
+      put(shownDataUrl);
+    }else if(cv.toBlob){
+      /* data: 를 못 만든 아주 드문 경우 — blob: 으로라도 보여 드린다 */
+      cv.toBlob(function(b){
+        if(!b){ toast('그림을 만들지 못했습니다.\n화면을 사진 찍어 주세요.', 4000); return; }
+        shownBlob = b; shownUrl = URL.createObjectURL(b); put(shownUrl);
+      }, 'image/png');
+    }else{
+      toast('그림을 만들지 못했습니다.\n화면을 사진 찍어 주세요.', 4000);
+    }
+  };
+
+  $('imgClose').onclick = function(){ $('imgView').classList.remove('ld-on'); };
+
+  $('imgCopy').onclick = function(){
+    if(!shownBlob){ toast('이 브라우저에서는 복사가 되지 않습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200); return; }
+    if(!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem)){
+      toast('이 브라우저에는 복사 기능이 없습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200); return;
+    }
+    try{
+      navigator.clipboard.write([ new ClipboardItem({'image/png': shownBlob}) ]).then(function(){
+        toast('이미지를 복사했습니다.\n대화창을 꾹 눌러 ‘붙여넣기’ 하세요.', 4500);
+      }).catch(function(){
+        toast('복사가 막혔습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200);
+      });
+    }catch(e){
+      toast('복사가 막혔습니다.\n그림을 꾹 눌러 저장해 주세요.', 4200);
+    }
+  };
+
+  $('imgShare').onclick = function(){
+    if(!shownBlob){ toast('공유할 그림이 없습니다.'); return; }
+    try{
+      var f = new File([shownBlob], 'lucky-draw.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[f]}) && navigator.share){
+        navigator.share({files:[f], title:'당첨자 발표'}).catch(function(){});
+        return;
+      }
+    }catch(e){}
+    toast('이 브라우저는 공유창을 열 수 없습니다.\n‘이미지 복사’를 써 보세요.', 4200);
+  };
+
+  $('imgOpen').onclick = function(){
+    if(!shownBlob){ toast('그림이 준비되지 않았습니다.'); return; }
+    var w = null;
+    try{
+      /* ⚠️ 새 창은 반드시 blob: 이어야 한다 (data: 는 최상위 창 이동이 막힌다).
+         누르는 그 순간에 새로 만들고, 지난 주소는 바로 그때 반납한다.
+         미리 만들어 두었다가 일찍 지우면 새 창 열기가 깨진다. */
+      if(shownUrl){ URL.revokeObjectURL(shownUrl); shownUrl = null; }
+      shownUrl = URL.createObjectURL(shownBlob);
+      w = window.open(shownUrl, '_blank');
+    }catch(e){}
+    if(!w) toast('새 창이 차단되었습니다.\n여기 있는 그림을 꾹 눌러 저장해 주세요.', 5200);
+    else   toast('새 창에서 그림을 꾹 눌러 ‘사진에 저장’을 선택하세요', 5200);
+  };
+
+  /* ==========================================================================
+     12. 시작 · 바깥과 이어 주는 창구
+     ========================================================================== */
+
+  /* 화면을 넘길 때 이 부품의 맨 위로만 올린다 */
+  function scrollToTop(){
+    if(!autoScroll) return;
+    try{ root.scrollIntoView({block:'start'}); }
+    catch(e){ try{ root.scrollIntoView(true); }catch(e2){} }
+  }
+
+  loadCfg();
+  setCount(S.count);
+  setWinners(S.winners);
+  renderNames();
+  syncCfgUI();
+  syncModeUI();
+  showScreen(1);
+
+  /* ---------- (가) 명단을 밖에서 넣기 ---------- */
+  /* list : 이름 배열.  opt.winners : 뽑을 인원(선택).  opt.mode : 방식(선택) */
+  function apiSetNames(list, opt){
+    opt = opt || {};
+    if(Object.prototype.toString.call(list) !== '[object Array]')
+      return {ok:false, reason:'배열이 아닙니다'};
+    var clean = [];
+    for(var i=0;i<list.length;i++){
+      var v = (list[i] === null || list[i] === undefined) ? '' : String(list[i]).trim();
+      if(v) clean.push(v.slice(0,14));
+    }
+    if(clean.length < MIN_N) return {ok:false, reason:'이름이 ' + MIN_N + '명보다 적습니다', count:clean.length};
+    var cut = false;
+    if(clean.length > MAX_N){ clean = clean.slice(0, MAX_N); cut = true; }
+    stopAll();
+    S.names = clean.slice();          /* 반드시 복사 — 바깥 배열과 같은 것을 쓰지 않는다 */
+    S.win = []; S.order = []; S.done = false;
+    setCount(clean.length);
+    if(typeof opt.winners === 'number') setWinners(opt.winners);
+    if(opt.mode && MODE_NAME[opt.mode]){ S.mode = opt.mode; }
+    renderNames(); syncCfgUI(); syncModeUI(); saveCfg();
+    /* opt.screen 을 주면 그 화면으로 바로 간다 (2 = 방식 고르기) */
+    showScreen((opt.screen >= 1 && opt.screen <= 4) ? opt.screen : 1);
+    return {ok:true, count:clean.length, winners:S.winners, cut:cut};
+  }
+
+  function apiGetNames(){
+    var out = [];
+    for(var i=0;i<S.count;i++) out.push(nameOf(i));
+    return out;                       /* 새 배열로 준다 */
+  }
+
+  function apiSetWinners(n){
+    setWinners(Number(n));
+    return {ok:true, winners:S.winners};
+  }
+
+  /* ---------- (나) 보이기 / 숨기기 ---------- */
+  function apiShow(){
+    root.classList.remove('ld-off');
+    scrollToTop();
+    return true;
+  }
+  function apiHide(){
+    stopAll();                        /* 숨길 때는 돌던 연출·타이머를 반드시 멈춘다 */
+    $('imgView').classList.remove('ld-on');
+    root.classList.add('ld-off');
+    return true;
+  }
+  function apiIsVisible(){ return !root.classList.contains('ld-off'); }
+  function apiToggle(){ return apiIsVisible() ? (apiHide(), false) : (apiShow(), true); }
+
+  /* 화면 ①로 되돌리기 (명단은 그대로 둔다) */
+  function apiReset(){
+    stopAll();
+    S.win = []; S.order = []; S.done = false;
+    $('imgView').classList.remove('ld-on');
+    $('toResult').disabled = true;
+    $('startBtn').disabled = false;
+    $('startBtn').textContent = '뽑기 시작!';
+    syncCfgUI(); syncModeUI();
+    showScreen(1);
+    return true;
+  }
+
+  /* 이 부품을 host 가 원하는 자리로 옮긴다 */
+  function apiMount(hostEl){
+    if(!hostEl || !hostEl.appendChild) return false;
+    hostEl.appendChild(root);
+    return true;
+  }
+
+  /* 결과를 밖으로 알려 준다 */
+  function apiOnResult(fn){ if(typeof fn === 'function') resultCbs.push(fn); return true; }
+
+  /* 색 테마 : 'light' | 'dark' | 'auto'(기기 설정 따름) */
+  function apiSetTheme(t){
+    if(t === 'light' || t === 'dark') root.setAttribute('data-ld-theme', t);
+    else root.removeAttribute('data-ld-theme');
+    return true;
+  }
+
+  /* 화면을 넘길 때 스스로 스크롤할지 */
+  function apiSetAutoScroll(v){ autoScroll = !!v; return autoScroll; }
+
+  impl = {
+    setNames      : apiSetNames,
+    getNames      : apiGetNames,
+    setWinners    : apiSetWinners,
+    getWinners    : function(){ return S.winners; },
+    show          : apiShow,
+    hide          : apiHide,
+    toggle        : apiToggle,
+    isVisible     : apiIsVisible,
+    reset         : apiReset,
+    stop          : function(){ stopAll(); return true; },
+    mount         : apiMount,
+    onResult      : apiOnResult,
+    setTheme      : apiSetTheme,
+    setAutoScroll : apiSetAutoScroll,
+    /* host 가 부품 안 화면을 골라 여는 길 (1참가자 2방식 3뽑기 4결과) */
+    goScreen      : function(n){ var k = Number(n); showScreen(k >= 1 && k <= 4 ? k : 1); return true; }
+  };
+
+  API.el    = root;
+  API.ready = true;
+  /* 확인용 : 추첨이 한쪽으로 치우치지 않는지 콘솔에서 돌려 볼 수 있게 열어 둔다.
+     (예전 window.LuckyDrawTest 를 여기로 옮겼다 — 전역은 LuckyDraw 하나뿐이다) */
+  API._test = {
+    decide: decide, shuffle: shuffle, seq: seq, rnd: rnd, state: S,
+    ladderMake: ladderMake, ladderGeom: ladderGeom, ladderTrace: ladderTrace
+  };
+
+  /* boot 전에 들어온 부름은 순서대로 처리한다 */
+  while(queue.length){
+    var q = queue.shift();
+    try{ impl[q[0]].apply(impl, q[1]); }catch(e){}
+  }
+
+}
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+})();
+</script>
+
 <script>
 (function(){
 "use strict";
@@ -907,57 +3024,244 @@ body{
    1. 기본 자료
    ========================================================================== */
 
-/* 구성원 10명 (지시받은 배열 순서 그대로) */
+/* 구성원 11명 — 서열 순서대로 적는다.
+   🔴 상임이사님이 총장님보다 윗분이다 (교수님 지시). 명단 표시도 이 순서를 따른다.
+      상임이사 → 총장 → 처장 → 부처장 → 실장
+   ⚠️ 두 분 다 tier:'chief' 로 같은 금색을 쓴다. 서로 다른 색이나 글자로 구분하지
+      않는다 — "상임이사, 상석 표기를 따로 하지 마" (교수님).
+      누가 윗분인지는 오직 '자리 위치'(가운데가 최상위)로만 나타낸다. */
 var MEMBERS = [
-  {id:0, l1:'총장',        l2:'',      tier:'chief'},
-  {id:1, l1:'교무입학',    l2:'처장',  tier:'head'},
-  {id:2, l1:'기획혁신',    l2:'처장',  tier:'head'},
-  {id:3, l1:'학생',        l2:'처장',  tier:'head'},
-  {id:4, l1:'사무',        l2:'처장',  tier:'head'},
-  {id:5, l1:'교무입학',    l2:'부처장',tier:'sub'},
-  {id:6, l1:'기획혁신',    l2:'부처장',tier:'sub'},
-  {id:7, l1:'학생',        l2:'부처장',tier:'sub'},
-  {id:8, l1:'종합정보',    l2:'실장',  tier:'sub'},
-  {id:9, l1:'디자인홍보',  l2:'실장',  tier:'sub'}
+  {id:0,  l1:'상임이사',   l2:'',       tier:'chief'},
+  {id:1,  l1:'총장',       l2:'',       tier:'chief'},
+  {id:2,  l1:'교무입학',   l2:'처장',   tier:'head'},
+  {id:3,  l1:'기획혁신',   l2:'처장',   tier:'head'},
+  {id:4,  l1:'학생',       l2:'처장',   tier:'head'},
+  {id:5,  l1:'사무',       l2:'처장',   tier:'head'},
+  {id:6,  l1:'교무입학',   l2:'부처장', tier:'sub'},
+  {id:7,  l1:'기획혁신',   l2:'부처장', tier:'sub'},
+  {id:8,  l1:'학생',       l2:'부처장', tier:'sub'},
+  {id:9,  l1:'종합정보',   l2:'실장',   tier:'sub'},
+  {id:10, l1:'디자인홍보', l2:'실장',   tier:'sub'}
 ];
+var VICE_ID  = 0;                 /* 상임이사 — 다른 분들과 똑같이 참석 체크 가능 */
+var CHIEF_ID = 1;                 /* 총장 — 언제나 참석 (체크 못 품) */
+var TOTAL    = MEMBERS.length;    /* 11 */
 
-var CHIEF_SLOT = 2;                       /* 총장 고정석 : 위쪽 5석 중 가운데 */
-var OTHER_SLOTS = [0,1,3,4,5,6,7,8,9];    /* 나머지 9석 */
+/* ==========================================================================
+   ⭐ 좌석 계산 — 이 앱의 심장. 자리는 오직 여기서만 정한다.
+      화면 · 연출 · 결과 그림(PNG) · ② 미리보기 그림이 모두 이 함수의 결과를 쓴다.
+      ⚠️ 네 곳이 따로 계산하면 반드시 어긋난다. 자리에 관한 숫자를 다른 데 적지 말 것.
 
-/* 확정 순서 : 바깥 자리부터, 총장 양옆(1번·3번 자리)이 마지막 */
-var STOP_ORDER = [0,4,5,9,6,8,7,1,3];
-var LAST_TWO   = [1,3];                   /* 총장 양옆 */
+   ⚠️ 공석은 없다 — 오늘 오시는 분 수(n)만큼만 자리를 만든다.
+   ⚠️ 여기서는 무작위를 하나도 쓰지 않는다 (같은 조건이면 언제나 같은 모양).
+      총장님이 한가운데 어느 쪽 옆에 앉으실지는 buildAssignment 가 뽑는다.
+   ========================================================================== */
 
-/* ---------- 공석이 생기는 자리 (완전히 고정 · 무작위 아님) ----------
-   마주보는 짝(열) : 0↔5 · 1↔6 · 2↔7(총장열) · 3↔8 · 4↔9
+/* 가운데 테이블이 몇 번째인가 — 테이블이 둘뿐이면 가운데가 없으므로 왼쪽을 가운데로 본다.
+   ⚠️ 인원 나눔(tableSizes)과 자리 배치(computePlan)가 서로 다른 테이블을 가리키면 안 되므로
+      이 셈은 오직 여기 한 곳에만 적는다. */
+function midTableIdx(t){ return (t === 2) ? 0 : Math.floor((t - 1) / 2); }
 
-   공석 순서 :  5 → 0 → 9 → 4 → 6 → 1 → 8 → 3
-                └아래 왼끝┘ └아래 오른끝┘ └ 안쪽으로 ┘
+/* 여러 테이블 : 인원을 테이블에 나눈다.
+   나누는 우선순위 — 위에서부터 차례로 만족시킨다
+     ① 테이블 개수 = 올림(n ÷ 4)
+     ② 총장님 테이블은 4인      — 총장님 위쪽에 「옆자리」 한 분이 꼭 생기도록 (이 앱의 피날레)
+     ③ 상임이사님 테이블은 3인  — 위쪽에 혼자 앉으시도록 (참석하실 때만)
+     ④ 남은 인원은 나머지 테이블에 고르게, 왼쪽부터 많게
+     ⑤ 1인 테이블은 만들지 않는다(최소 2인). 생길 상황이면 총장님 테이블을 4→3 으로 줄여 푼다
+   ⚠️ 아래 값들은 「박아 넣은 표」가 아니라 위 규칙의 계산 결과다 (검산용으로만 적어 둔다)
+     상임이사 참석 : 11→4·3·4 · 10→3·3·4 · 9→2·3·4 · 8→4·4 · 7→3·4 · 6→2·4 · 5→2·3
+     상임이사 불참 :            10→3·4·3 · 9→3·4·2 · 8→4·4 · 7→4·3 · 6→4·2 · 5→3·2   */
+function tableSizes(n, viceOn){
+  var t = Math.ceil(n / 4);
+  if(t <= 1) return [n];
 
-   두 명씩 빠질 때마다 마주보는 열이 통째로 사라지고,
-   왼쪽 끝 → 오른쪽 끝 → 안쪽 순으로 좁혀진다.
-   아래줄을 먼저 비우는 것은 총장님이 계신 윗줄을 최대한 온전히 두기 위함이다.
-   ⚠️ 총장석(2)과 그 정면(7)은 어떤 경우에도 공석이 되지 않는다.        */
-var VACANCY_ORDER = [5,0,9,4,6,1,8,3];
+  var mid      = midTableIdx(t);
+  var chiefIdx = viceOn ? mid + 1 : mid;   /* 총장님 테이블 */
+  var viceIdx  = viceOn ? mid : -1;        /* 상임이사님 테이블 (불참이면 없음) */
 
-/* n = 총장님을 뺀 참석 인원 수 → 비는 자리 목록 */
-function vacantSlots(n){
-  var k = Math.max(0, 9 - n);
-  return VACANCY_ORDER.slice(0, Math.min(k, VACANCY_ORDER.length));
+  /* 총장님 테이블을 chiefSize 로 두고 나머지를 규칙대로 채워 본다 */
+  function fill(chiefSize){
+    var out = [], others = [], i;
+    for(i=0;i<t;i++){ out.push(0); if(i !== chiefIdx && i !== viceIdx) others.push(i); }
+
+    out[chiefIdx] = chiefSize;
+    var left = n - chiefSize;
+
+    if(viceIdx >= 0){
+      /* 상임이사님 테이블은 3인이 원칙.
+         · 나머지 테이블이 아예 없으면(테이블 2개) 남은 인원을 그대로 다 받는다
+         · 나머지 테이블에 2인씩 남겨 줄 수 없으면 3인 원칙을 먼저 접는다 */
+      var v = (others.length === 0) ? left : Math.min(3, left - 2 * others.length);
+      if(v < 2) v = Math.min(3, left);
+      out[viceIdx] = v;
+      left -= v;
+    }
+
+    /* 남은 인원 → 나머지 테이블에 고르게, 왼쪽부터 많게 */
+    if(others.length){
+      var base = Math.floor(left / others.length), rem = left % others.length;
+      for(i=0;i<others.length;i++) out[others[i]] = base + (i < rem ? 1 : 0);
+    }
+    return out;
+  }
+
+  function smallest(a){
+    return a.reduce(function(m, v){ return v < m ? v : m; }, Infinity);
+  }
+
+  var four = fill(4);
+  if(smallest(four) >= 2) return four;   /* 1인 테이블이 없으면 그대로 간다 */
+  var three = fill(3);                   /* 생겼으면 총장님 테이블을 4→3 으로 줄여 푼다 */
+  return (smallest(three) >= smallest(four)) ? three : four;
 }
 
-/* n 명이 실제로 앉는 자리 목록 */
-function seatsForCount(n){
-  var v = vacantSlots(n);
-  var out = OTHER_SLOTS.filter(function(s){ return v.indexOf(s) < 0; });
-  return out.slice(0, n);          /* 총장님만 참석하는 경우까지 안전하게 */
+/* 테이블 하나의 위·아래 나눔 (좌·우 옆면에는 절대 자리를 두지 않는다)
+     4인 = 위 2 / 아래 2   ·   3인 = 위 1 / 아래 2   ·   2인 = 위 1 / 아래 1 */
+function tableRows(size){
+  var top = (size >= 4) ? 2 : 1;
+  return {top:top, bottom:size - top};
 }
 
-/* 지금 명단 기준 참석 인원 (총장님 제외) */
+/* 한 테이블 : 위쪽 줄은 언제나 홀수 석 (한가운데 자리가 생기도록).
+   n ÷ 2 에 가장 가까운 홀수, 두 홀수가 같은 거리면 작은 쪽.
+     11→5/6 · 10→5/5 · 9→5/4 · 8→3/5 · 7→3/4 · 6→3/3 · 5→3/2 · 3→1/2 */
+function oneRows(n){
+  var half = n / 2, best = 1, bd = Infinity;
+  for(var k=1;k<=n;k+=2){
+    var d = Math.abs(k - half);
+    if(d < bd - 1e-9){ bd = d; best = k; }   /* 동률이면 먼저 나온 작은 홀수가 남는다 */
+  }
+  return {top:best, bottom:n - best};
+}
+
+/* 여러 테이블 버전은 5명부터 (4명 이하는 한 테이블로만 앉으실 수 있다) */
+var MULTI_MIN = 5;
+function canMulti(n){ return n >= MULTI_MIN; }
+
+/* 바깥에서 안쪽으로 : [a,b,c,d,e] → [a,e,b,d,c] */
+function outwardIn(a){
+  var out = [], i = 0, j = a.length - 1;
+  while(i <= j){ out.push(a[i]); if(i !== j) out.push(a[j]); i++; j--; }
+  return out;
+}
+function without(arr, drop){
+  return arr.filter(function(s){ return drop.indexOf(s) < 0; });
+}
+
+/* ---------- 좌석 계획 만들기 ----------
+   kind   'one'(한 테이블) | 'multi'(여러 테이블)
+   n      오늘 참석 인원 (총장님 포함)
+   viceOn 상임이사님 참석 여부
+   돌려주는 것
+     tables[]     테이블마다 {name, top[], bottom[], cols}
+     seats        전체 자리 수 (= n)
+     viceSlot     상임이사님 자리 (불참이면 -1)
+     chiefCands[] 총장님이 앉을 수 있는 자리 (한 테이블+상임이사 참석이면 두 곳 → 추첨)
+     preset[]     연출 없이 처음부터 보여 주는 자리 (고정석)
+     order[]      확정(공개) 순서 — 맨 끝이 총장님 옆자리
+     last[]       맨 마지막에 함께 터뜨릴 자리
+     sizes[]      테이블별 인원 (④ 안내 문구·미리보기에 쓴다)               */
+function computePlan(kind, n, viceOn){
+  var tables = [], slot = 0, i;
+
+  function addTable(name, topN, botN){
+    var t = {name:name, top:[], bottom:[], cols:Math.max(topN, botN)};
+    for(var a=0;a<topN;a++) t.top.push(slot++);
+    for(var b=0;b<botN;b++) t.bottom.push(slot++);
+    tables.push(t);
+    return t;
+  }
+
+  var viceSlot = -1, chiefCands = [], preset = [], order = [], last = [];
+
+  if(kind === 'multi'){
+    var sizes = tableSizes(n, viceOn);
+    for(i=0;i<sizes.length;i++){
+      var r = tableRows(sizes[i]);
+      addTable('테 이 블 ' + (i+1), r.top, r.bottom);
+    }
+    /* 가운데 테이블 — 인원을 나눌 때 쓴 것과 똑같은 셈을 쓴다 */
+    var mid = midTableIdx(tables.length);
+    var chiefTbl;
+    if(viceOn){
+      viceSlot = tables[mid].top[0];      /* 상임이사님 = 가운데 테이블 위쪽 */
+      chiefTbl = mid + 1;                 /* 총장님 = 바로 오른쪽 옆 테이블 위쪽 */
+      preset.push(viceSlot);
+    }else{
+      chiefTbl = mid;                     /* 상임이사님이 안 오시면 총장님이 가운데 */
+    }
+    var ct = tables[chiefTbl];
+    chiefCands = [ct.top[0]];
+    preset.push(ct.top[0]);
+
+    /* 🔑 총장님 바로 옆자리를 맨 마지막에. 총장님이 위쪽에 혼자인 테이블(3인·2인)이면
+       옆자리가 없으므로 마주보는 아래쪽 마지막 자리를 끝으로 삼는다. */
+    if(ct.top.length > 1)          last = [ct.top[1]];
+    else if(ct.bottom.length)      last = [ct.bottom[ct.bottom.length - 1]];
+
+    /* 공개 순서 : 왼쪽 테이블부터 차례로, 총장님 테이블이 맨 마지막 */
+    var skip = preset.concat(last);
+    for(i=0;i<tables.length;i++){
+      if(i === chiefTbl) continue;
+      order = order.concat(without(tables[i].bottom, skip))
+                   .concat(without(tables[i].top,    skip));
+    }
+    order = order.concat(without(ct.bottom, skip))
+                 .concat(without(ct.top,    skip))
+                 .concat(last);
+  }else{
+    var rr = oneRows(n);
+    var T = addTable('회 식 테 이 블', rr.top, rr.bottom);
+    var cIdx = Math.floor(T.top.length / 2);       /* 위쪽 줄 한가운데 */
+    var center = T.top[cIdx];
+    var nb = [];                                   /* 한가운데 양옆 */
+    if(cIdx - 1 >= 0)            nb.push(T.top[cIdx - 1]);
+    if(cIdx + 1 < T.top.length)  nb.push(T.top[cIdx + 1]);
+
+    if(viceOn){
+      viceSlot = center;                           /* 상임이사님 = 위쪽 한가운데 */
+      preset.push(center);
+      /* 총장님은 그 양옆 두 자리 중 한 곳 — 어느 쪽인지는 뽑을 때 정한다.
+         (인원이 아주 적어 위쪽이 한 자리뿐이면 아래줄에서 뽑는다) */
+      chiefCands = nb.length ? nb.slice() : T.bottom.slice();
+      last = chiefCands.slice();                   /* 양옆 두 자리를 동시에 공개 */
+    }else{
+      chiefCands = [center];                       /* 상임이사님이 안 오시면 총장님이 한가운데 */
+      preset.push(center);
+      last = nb.length ? nb.slice()
+                       : (T.bottom.length ? [T.bottom[T.bottom.length - 1]] : []);
+    }
+    /* 바깥쪽부터 안쪽으로 → 한가운데 양옆이 맨 마지막 */
+    var used = preset.concat(last);
+    order = outwardIn(without(T.top, used))
+            .concat(outwardIn(without(T.bottom, used)))
+            .concat(last);
+  }
+
+  return {
+    kind:kind, n:n, viceOn:viceOn,
+    tables:tables, seats:slot,
+    viceSlot:viceSlot, chiefCands:chiefCands,
+    preset:preset, order:order, last:last,
+    sizes:tables.map(function(t){ return t.top.length + t.bottom.length; })
+  };
+}
+
+/* 지금 명단 기준 참석 인원 (총장님 포함) */
 function presentCount(){
   var n = 0;
-  for(var i=1;i<MEMBERS.length;i++){ if(present[MEMBERS[i].id]) n++; }
+  for(var i=0;i<MEMBERS.length;i++) if(present[MEMBERS[i].id]) n++;
   return n;
+}
+function viceComing(){ return !!present[VICE_ID]; }
+
+/* 지금 화면이 쓰고 있는 계획 — 무대·연출·그림이 모두 이 하나를 본다 */
+var plan = null;
+function makePlan(){
+  var n = presentCount();
+  var k = (kind === 'multi' && canMulti(n)) ? 'multi' : 'one';
+  return computePlan(k, n, viceComing());
 }
 
 var EFFECTS = [
@@ -971,6 +3275,14 @@ var EFFECTS = [
    2. 상태
    ========================================================================== */
 var mode = 'D';                 /* 기본 연출 = D 하이브리드 */
+var kind = 'one';               /* 기본 배치 = 한 테이블 */
+/* ②에서 고른 갈래 : 'seat' = 자리 배치 / 'draw' = 당첨자 뽑기.
+   ⚠ kind 와 섞지 않는다 — kind 는 오직 자리 배치 모양(one/multi)을 뜻한다. */
+var branch     = 'seat';
+var drawSource = 'roster';      /* 당첨자 뽑기 명단 : 'roster' 처장단 / 'free' 직접 입력 */
+var vipInDraw  = true;          /* 총장님·상임이사님을 뽑기에 포함할지 (기본 포함)*/
+var step = 1;                   /* 지금 화면 : ①명단 ②테이블 ③뽑기 */
+var chiefSlotNow = -1;          /* 이번 판에 총장님이 앉으신 자리 */
 var SND_KEY = 'seatShuffle.sound';
 var soundOn = true;             /* 효과음 기본 켜짐 */
 /* 지난번에 끄셨으면 그대로 기억한다 */
@@ -994,41 +3306,93 @@ var reelOf = {};    /* slot -> 릴 정보 */
 
 function twoLine(m){
   /* 릴 안에 흘러가는 두 줄 글씨를 만든다 (한 줄짜리는 크게) */
-  var l1 = m ? m.l1 : '공석';
+  var l1 = m ? m.l1 : '';
   var l2 = m ? m.l2 : '';
   return '<span class="l1">'+l1+'</span>' + (l2 ? '<span class="l2">'+l2+'</span>' : '');
 }
 
-function buildSeats(){
-  for(var s=0;s<10;s++){
-    var d = document.createElement('div');
-    d.className = 'seat';
-    d.setAttribute('data-slot', s);
-    d.innerHTML =
-      '<div class="chair">?</div>' +
-      (s===CHIEF_SLOT ? '<div class="headtag">상석</div>' : '') +
-      '<div class="flash"></div>' +
-      '<div class="card">' +
-        '<div class="flipper">' +
-          '<div class="front">' +
-            '<div class="reel"><div class="strip">' +
-              '<div class="ritem"></div><div class="ritem"></div>' +
-            '</div></div>' +
-            '<div class="face one"><span class="l1"></span><span class="l2"></span></div>' +
-          '</div>' +
-          '<div class="back"></div>' +
+/* 좌석 한 칸 만들기 (꼬리표는 없앴다 — 교수님 지시) */
+function makeSeat(slot, pos){
+  var d = document.createElement('div');
+  d.className = 'seat';
+  d.setAttribute('data-slot', slot);
+  if(pos) d.setAttribute('data-pos', pos);
+  d.innerHTML =
+    '<div class="chair">?</div>' +
+    '<div class="flash"></div>' +
+    '<div class="card">' +
+      '<div class="flipper">' +
+        '<div class="front">' +
+          '<div class="reel"><div class="strip">' +
+            '<div class="ritem"></div><div class="ritem"></div>' +
+          '</div></div>' +
+          '<div class="face one"><span class="l1"></span><span class="l2"></span></div>' +
         '</div>' +
-      '</div>';
-    stage.appendChild(d);
-    seatEl[s] = d;
-    reelOf[s] = {
-      strip: d.querySelector('.strip'),
-      items: d.querySelectorAll('.ritem'),
-      p: 0, period: 0.085, on:false
-    };
-  }
+        '<div class="back"></div>' +
+      '</div>' +
+    '</div>';
+  seatEl[slot] = d;
+  reelOf[slot] = {
+    strip: d.querySelector('.strip'),
+    items: d.querySelectorAll('.ritem'),
+    p: 0, period: 0.085, on:false
+  };
+  return d;
 }
-buildSeats();
+function makeTabletop(text){
+  var t = document.createElement('div');
+  t.className = 'tabletop';
+  t.innerHTML = '<span>' + text + '</span>';
+  return t;
+}
+
+/* 계획대로 무대를 새로 짓는다 (인원이나 배치가 바뀔 때마다 다시 부른다) */
+function buildStage(pl){
+  stage.innerHTML = '';
+  seatEl = {}; reelOf = {};
+  stage.className = 'stage lay-' + (pl.kind === 'multi' ? 'multi' : 'one');
+
+  /* 테이블 폭은 그 테이블의 칸수에 비례시킨다 → 자리 칸 폭이 어느 테이블이나 같아진다 */
+  stage.style.gridTemplateColumns = (pl.kind === 'multi')
+    ? pl.tables.map(function(t){ return t.cols + 'fr'; }).join(' ')
+    : '';
+
+  pl.tables.forEach(function(t){
+    var box = document.createElement('div');
+    box.className = 'tblbox';
+    box.style.setProperty('--cols', t.cols);
+
+    var top = document.createElement('div');
+    top.className = 'seatrow';
+    t.top.forEach(function(sl){ top.appendChild(makeSeat(sl, 'top')); });
+    box.appendChild(top);
+
+    box.appendChild(makeTabletop(t.name));
+
+    var bot = document.createElement('div');
+    bot.className = 'seatrow';
+    t.bottom.forEach(function(sl){ bot.appendChild(makeSeat(sl, 'bot')); });
+    box.appendChild(bot);
+
+    stage.appendChild(box);
+  });
+
+  fitStageFont();
+}
+
+/* ⚠️ 글자 크기는 '카드 한 칸의 실제 폭'을 재서 정한다.
+   참석 인원에 따라 한 줄에 2칸이 되기도 6칸이 되기도 하므로
+   CSS 의 vw 만으로는 맞출 수가 없다 (예전에 이름이 칸을 넘쳐 깨진 원인). */
+function fitStageFont(){
+  var one = stage.querySelector('.seat');
+  if(!one){ stage.style.fontSize = ''; return; }
+  var w = one.getBoundingClientRect().width;
+  if(!w){ stage.style.fontSize = ''; return; }
+  var fs = (w - 8) / 4.2;                    /* 네 글자쯤 들어가는 크기 */
+  if(fs < 8.5) fs = 8.5;
+  if(fs > 15)  fs = 15;
+  stage.style.fontSize = fs.toFixed(2) + 'px';
+}
 
 /* 연출 선택 버튼 */
 var modesBox = document.getElementById('modes');
@@ -1049,32 +3413,203 @@ EFFECTS.forEach(function(e){
   modesBox.appendChild(b);
 });
 
-/* 참석자 명단 */
+/* ---------- ① 참석자 명단 ---------- */
 var rosterBox = document.getElementById('roster');
+var cntNum    = document.getElementById('cntNum');
+
+function updateCount(){
+  cntNum.textContent = presentCount();             /* 총장님 포함 */
+}
+
 MEMBERS.forEach(function(m){
   var lab = document.createElement('label');
-  lab.className = 'rt' + (m.id===0 ? ' fixed':'');
-  var name = m.l1 + (m.l2 ? ' '+m.l2 : '');
+  lab.className = 'rt' + (m.id === CHIEF_ID ? ' fixed' : '');
+  var name = m.l1 + (m.l2 ? ' ' + m.l2 : '');
   lab.innerHTML =
-    '<input type="checkbox" checked '+(m.id===0?'disabled':'')+'>' +
-    '<span class="dot dot-'+m.tier+'"></span><span>'+name+'</span>';
+    '<input type="checkbox" checked ' + (m.id === CHIEF_ID ? 'disabled' : '') + '>' +
+    '<span class="dot dot-' + m.tier + '"></span><span>' + name + '</span>';
   var cb = lab.querySelector('input');
   cb.addEventListener('change', function(){
     if(running){ cb.checked = present[m.id]; return; }
     present[m.id] = cb.checked;
-    var n = presentCount() + 1;                    /* 총장님 포함 */
-    setStatus('참석 '+n+'명 · 공석 '+(10-n)+'석 — 다시 뽑아 주세요');
-    /* 명단이 바뀌면 지난 결과는 무효 — 공석만 배치도에 미리 보여 준다 */
-    lastAssign = null;
-    prepareToken++; sharedBlob = null;
-    shareBtn.disabled = true;
-    shareHint.textContent = '자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다';
-    goBtn.textContent = '자리 뽑기';
-    document.getElementById('meta').innerHTML = '';
-    paintVacancies();
+    if(cb.checked) lab.classList.remove('away'); else lab.classList.add('away');
+    updateCount();
+    paintLayoutChoices();        /* 인원이 바뀌면 테이블 나눔도 달라진다 */
+    paintSubTitle();             /* 상임이사님 참석 여부에 따라 문구가 달라진다 */
+    invalidateResult();          /* 명단이 바뀌면 지난 결과는 무효 */
   });
   rosterBox.appendChild(lab);
 });
+updateCount();
+
+/* ---------- ② 테이블 배치 고르기 ----------
+   ⚠️ 참석 인원에 따라 실제 나뉘는 모양이 매번 달라지므로,
+      설명도 미리보기 그림도 '오늘 인원'으로 그때그때 다시 만든다. */
+
+/* 계획 하나를 작은 그림(인라인 SVG)으로 그린다 — 외부 파일 없음.
+   무대와 똑같은 computePlan 결과를 쓰므로 그림과 실제가 어긋날 수 없다. */
+function planFigure(pl){
+  var VW = 120;                       /* 그림 가로 기준 */
+  var gapT = 5, gapS = 1.4, pad = 0.6;
+  var totalCols = 0, i;
+  for(i=0;i<pl.tables.length;i++) totalCols += pl.tables[i].cols;
+  var gapsT = gapT * (pl.tables.length - 1);
+  var gapsS = gapS * (totalCols - pl.tables.length);
+  var cw = (VW - pad*2 - gapsT - gapsS) / totalCols;
+  var ch = 10, th = 8, rowGap = 2.4;
+  var yTop = pad, yTbl = yTop + ch + rowGap, yBot = yTbl + th + rowGap;
+  var H = yBot + ch + pad;
+
+  /* 확정 고정석은 진한 금색, '둘 중 한 곳'(총장님 양옆 추첨)은 연한 금색으로 */
+  var mark = {};
+  if(pl.viceSlot >= 0) mark[pl.viceSlot] = 'ff-fixed';
+  var maybe = (pl.chiefCands.length > 1) ? 'ff-maybe' : 'ff-fixed';
+  for(i=0;i<pl.chiefCands.length;i++) mark[pl.chiefCands[i]] = maybe;
+
+  var out = '<svg class="layfig" viewBox="0 0 ' + VW + ' ' + H.toFixed(1) + '" aria-hidden="true">';
+  var x = pad;
+  pl.tables.forEach(function(t){
+    var tw = cw * t.cols + gapS * (t.cols - 1);
+
+    function row(slots, y){
+      var rw = cw * slots.length + gapS * (slots.length - 1);
+      var x0 = x + (tw - rw) / 2;         /* 자리가 적은 줄은 한가운데로 모은다 */
+      slots.forEach(function(sl, k){
+        var cls = mark[sl] || 'ff-seat';
+        out += '<rect class="' + cls + '" x="' + (x0 + k*(cw+gapS)).toFixed(2) +
+               '" y="' + y.toFixed(2) + '" width="' + cw.toFixed(2) +
+               '" height="' + ch + '" rx="2.4"/>';
+      });
+    }
+    row(t.top, yTop);
+    out += '<rect class="ff-tbl" x="' + x.toFixed(2) + '" y="' + yTbl.toFixed(2) +
+           '" width="' + tw.toFixed(2) + '" height="' + th + '" rx="2.4"/>';
+    row(t.bottom, yBot);
+    x += tw + gapT;
+  });
+  return out + '</svg>';
+}
+
+/* 그 배치가 오늘 어떻게 나뉘는지 한 줄로 */
+function planSummary(pl){
+  if(pl.kind === 'multi'){
+    return '오늘 ' + pl.n + '명 → <b>' + pl.sizes.join(' · ') + '</b> ' +
+           '테이블 ' + pl.tables.length + '개';
+  }
+  var t = pl.tables[0];
+  return '오늘 ' + pl.n + '명 → <b>위 ' + t.top.length + '석 / 아래 ' + t.bottom.length + '석</b>';
+}
+
+/* 그 배치에서 두 분이 어디 앉으시는지 */
+function planWho(pl){
+  if(pl.kind === 'multi'){
+    return pl.viceOn
+      ? '상임이사님은 가운데 테이블 위쪽, 총장님은 그 옆 테이블 위쪽'
+      : '총장님은 가운데 테이블 위쪽';
+  }
+  return pl.viceOn
+    ? '상임이사님은 위쪽 한가운데, 총장님은 그 바로 양옆 두 자리 중 한 곳(추첨)'
+    : '총장님은 위쪽 한가운데';
+}
+
+var layList = document.getElementById('layList');
+
+/* 오늘 인원에 맞춰 ② 화면을 통째로 다시 그린다 */
+function paintLayoutChoices(){
+  var n = presentCount(), viceOn = viceComing();
+  var multiOk = canMulti(n);
+  if(kind === 'multi' && !multiOk) kind = 'one';   /* 인원이 줄면 자동으로 한 테이블로 */
+
+  layList.innerHTML = '';
+
+  /* — 묶음 ① 자리 배치 — */
+  var g1 = document.createElement('div');
+  g1.className = 'laygroup';
+  g1.textContent = '자리 배치';
+  layList.appendChild(g1);
+
+  [['one','한 테이블'], ['multi','여러 테이블']].forEach(function(pair){
+    var k = pair[0], title = pair[1];
+    var usable = (k === 'one') || multiOk;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'laybtn';
+    b.setAttribute('data-lay', k);
+    b.setAttribute('aria-pressed', (branch === 'seat' && k === kind && usable) ? 'true' : 'false');
+    if(!usable) b.disabled = true;
+
+    var body;
+    if(usable){
+      var pl = computePlan(k, n, viceOn);
+      body = '<span class="laydesc">' + planSummary(pl) + '<br>' + planWho(pl) + '</span>' +
+             planFigure(pl);
+    }else{
+      body = '<span class="laydesc">인원이 적어 한 테이블로만 앉으실 수 있습니다 ' +
+             '(여러 테이블은 ' + MULTI_MIN + '명부터)</span>';
+    }
+    b.innerHTML = '<span class="laytitle">' + title + '</span>' + body;
+
+    b.addEventListener('click', function(){
+      if(running || b.disabled) return;
+      kind = k; branch = 'seat';
+      paintLaySel();
+      paintSubTitle();
+      paintGo3();
+      invalidateResult();
+    });
+    layList.appendChild(b);
+  });
+
+  /* — 묶음 ② 당첨자 뽑기 — */
+  var g2 = document.createElement('div');
+  g2.className = 'laygroup';
+  g2.textContent = '당첨자 뽑기';
+  layList.appendChild(g2);
+
+  var drawOk = (n >= 2);           /* 뽑기는 최소 2명부터 */
+  var db = document.createElement('button');
+  db.type = 'button';
+  db.className = 'laybtn';
+  db.setAttribute('data-lay', 'draw');
+  db.setAttribute('aria-pressed', branch === 'draw' && drawOk ? 'true' : 'false');
+  if(!drawOk) db.disabled = true;
+  db.innerHTML =
+    '<span class="laytitle">🎯 당첨자 뽑기</span>' +
+    (drawOk
+      ? '<span class="laydesc">자리는 그대로 두고, 오늘 오신 분 중에서 당첨자를 뽑습니다<br>' +
+        '사다리타기 · 원판 돌리기 · 카드 뽑기 · 달리기 — 네 가지 연출</span>'
+      : '<span class="laydesc">참석이 2명부터 뽑기를 하실 수 있습니다</span>');
+  db.addEventListener('click', function(){
+    if(running || db.disabled) return;
+    branch = 'draw';
+    paintLaySel();
+    paintSubTitle();
+    paintGo3();
+  });
+  layList.appendChild(db);
+
+  if(branch === 'draw' && !drawOk) branch = 'seat';
+  paintLaySel();
+  paintGo3();
+}
+
+/* ② 화면에서 지금 고른 칸에만 불이 들어오게 한다 */
+function selKey(){ return branch === 'draw' ? 'draw' : kind; }
+function paintLaySel(){
+  var sel = selKey();
+  Array.prototype.forEach.call(layList.children, function(c){
+    if(!c.getAttribute || !c.getAttribute('data-lay')) return;   /* 묶음 제목은 건너례다 */
+    c.setAttribute('aria-pressed', c.getAttribute('data-lay') === sel ? 'true' : 'false');
+  });
+}
+
+/* ②의 '다음' 단추 · 단계표시줄 ③ 글자를 갈래에 맞춰 바꾼다 */
+function paintGo3(){
+  var b  = document.getElementById('go3');
+  var lb = document.getElementById('step3Label');
+  if(b)  b.textContent  = (branch === 'draw') ? '다음 : 당첨자 뽑기 ▶' : '다음 : 자리 뽑기 ▶';
+  if(lb) lb.textContent = (branch === 'draw') ? '당첨자 뽑기' : '자리 뽑기';
+}
 
 /* ==========================================================================
    4. 소리 (Web Audio API 로 직접 생성 · 외부 파일 없음)
@@ -1162,60 +3697,78 @@ function shuffle(a){
   return a;
 }
 
-function buildAssignment(){
-  var others = MEMBERS.filter(function(m){ return m.id!==0 && present[m.id]; });
+/* 이번 판의 배정 : 계획(plan)에 사람을 앉힌다.
+   ⚠️ 무작위는 '누가 어느 자리에 앉느냐'에만 쓴다. 자리 모양은 computePlan 이 정한다. */
+function buildAssignment(pl){
   var asg = null, key = '', tries = 0;
 
+  /* 총장님 자리 — 한 테이블 + 상임이사님 참석이면 한가운데 양옆 중 추첨 */
+  var cands = pl.chiefCands;
+
   do{
-    /* ① 어느 자리가 비는지는 인원수로 정해진다 (총장님에서 먼 바깥부터 공석) */
-    var seats = seatsForCount(others.length);
-    /* ② 무작위는 '누가 어느 자리에 앉느냐'에만 적용한다 */
-    var pool = others.slice();
+    var chief = cands[Math.floor(Math.random() * cands.length)];
+    var pool = MEMBERS.filter(function(m){
+      return present[m.id] && m.id !== CHIEF_ID && !(pl.viceOn && m.id === VICE_ID);
+    });
     shuffle(pool);
 
     asg = {};
-    for(var i=0;i<OTHER_SLOTS.length;i++) asg[OTHER_SLOTS[i]] = null;   /* 기본은 공석 */
-    for(var j=0;j<seats.length;j++) asg[seats[j]] = pool[j];
+    if(pl.viceOn && pl.viceSlot >= 0) asg[pl.viceSlot] = MEMBERS[VICE_ID];
+    asg[chief] = MEMBERS[CHIEF_ID];
 
-    key = OTHER_SLOTS.map(function(s){ return asg[s] ? asg[s].id : 'x'; }).join('|');
+    var k = 0;
+    for(var sl=0; sl<pl.seats; sl++){
+      if(asg[sl]) continue;
+      asg[sl] = pool[k++];
+    }
+
+    chiefSlotNow = chief;
+    key = [];
+    for(sl=0; sl<pl.seats; sl++) key.push(asg[sl] ? asg[sl].id : 'x');
+    key = key.join('|');
     tries++;
-  } while(key === lastKey && tries < 40 && others.length > 1);
+  } while(key === lastKey && tries < 40 && pl.seats > 2);
   /* 직전과 완전히 같은 배치면 다시 뽑는다 */
 
   lastKey = key;
-  asg[CHIEF_SLOT] = MEMBERS[0];
   return asg;
 }
 
-/* 사람이 실제로 앉는 자리만, 확정 순서대로 (공석은 연출에서 제외한다) */
-function activeOrder(asg){
-  return STOP_ORDER.filter(function(s){ return !!asg[s]; });
-}
-
-/* 릴에 흘려보낼 이름 후보 — 실제 참석자만 (공석은 돌지 않는다) */
-function reelPool(){
-  var p = MEMBERS.filter(function(m){ return m.id!==0 && present[m.id]; });
-  if(!p.length) p = [MEMBERS[0]];
-  return p;
+/* 릴에 흘려보낼 이름 후보 — 연출로 공개되는 분들만
+   (처음부터 보여 드리는 고정석의 주인공은 릴에 넣지 않는다) */
+var reelNames = [];
+function refreshReelPool(pl, asg){
+  var skip = {};
+  pl.preset.forEach(function(sl){ if(asg[sl]) skip[asg[sl].id] = true; });
+  reelNames = MEMBERS.filter(function(m){ return present[m.id] && !skip[m.id]; });
+  if(!reelNames.length) reelNames = [MEMBERS[CHIEF_ID]];
 }
 
 /* ==========================================================================
    6. 좌석 조작
    ========================================================================== */
+var TIER_CLASSES = ['tier-head','tier-sub','tier-chief'];
+
+/* ⚠️ 자리 위 글자 꼬리표('상석'·'상임이사')는 전부 없앴다 (교수님 지시).
+      고정석이라는 것은 카드의 금색 테두리만으로 나타내고,
+      누가 윗분인지는 자리 위치(가운데)로만 나타낸다. */
 function setFace(slot, m){
-  var seat = seatEl[slot];
+  var seat = seatEl[slot]; if(!seat) return;
   var face = seat.querySelector('.face');
-  face.className = 'face' + ((!m || !m.l2) ? ' one' : '');
-  face.querySelector('.l1').textContent = m ? m.l1 : '공석';
+  var single = !m || !m.l2;
+  /* '상임이사'처럼 네 글자 이상인 한 줄 이름은 조금 작게 (칸을 넘지 않도록) */
+  var long = single && m && m.l1 && m.l1.length >= 4;
+  face.className = 'face' + (single ? ' one' : '') + (long ? ' onelong' : '');
+  face.querySelector('.l1').textContent = m ? m.l1 : '';
   face.querySelector('.l2').textContent = m ? m.l2 : '';
-  seat.classList.remove('tier-head','tier-sub','tier-chief','tier-vacant');
-  seat.classList.add(m ? ('tier-'+m.tier) : 'tier-vacant');
+  TIER_CLASSES.forEach(function(c){ seat.classList.remove(c); });
+  if(m) seat.classList.add('tier-' + m.tier);
 }
 
 function fillReelItem(el, m){ el.innerHTML = twoLine(m); }
 
 function startReel(slot){
-  var r = reelOf[slot], pool = reelPool();
+  var r = reelOf[slot], pool = reelNames;
   fillReelItem(r.items[0], pool[Math.floor(Math.random()*pool.length)]);
   fillReelItem(r.items[1], pool[Math.floor(Math.random()*pool.length)]);
   r.p = 0; r.on = true; r.pool = pool;
@@ -1241,36 +3794,28 @@ function pop(seat){
   seat.classList.add('pop');
 }
 
-function resetSeats(){
-  for(var s=0;s<10;s++){
-    var seat = seatEl[s];
-    reelOf[s].on = false;
-    reelOf[s].strip.style.transform = 'translateY(0%)';
-    seat.classList.remove('live','spinning','pop','facedown','tier-head','tier-sub','tier-chief','tier-vacant');
-    seat.querySelector('.card').style.transition = '';
-    seat.querySelector('.card').style.transform = '';
-  }
-  /* 총장석은 처음부터 상석에 놓여 있다 */
-  setFace(CHIEF_SLOT, MEMBERS[0]);
-  seatEl[CHIEF_SLOT].classList.add('live');
-  document.getElementById('meta').innerHTML = '';
+/* 자리 한 칸을 아무것도 정해지지 않은 상태로 되돌린다 */
+function clearSeat(s){
+  var seat = seatEl[s]; if(!seat) return;
+  reelOf[s].on = false;
+  reelOf[s].strip.style.transform = 'translateY(0%)';
+  seat.classList.remove('live','spinning','pop','facedown');
+  TIER_CLASSES.forEach(function(c){ seat.classList.remove(c); });
+  seat.querySelector('.card').style.transition = '';
+  seat.querySelector('.card').style.transform = '';
 }
 
-/* 참석자 체크를 바꾸면, 뽑기 전이라도 어느 자리가 빌지 배치도에 미리 보여 준다 */
-function paintVacancies(){
-  if(running) return;
-  var v = vacantSlots(presentCount());
-  OTHER_SLOTS.forEach(function(s){
-    var seat = seatEl[s];
-    seat.classList.remove('live','spinning','pop','facedown',
-                          'tier-head','tier-sub','tier-chief','tier-vacant');
-    seat.querySelector('.card').style.transition = '';
-    seat.querySelector('.card').style.transform = '';
-    if(v.indexOf(s) >= 0){                 /* 비는 자리 → 미리 '공석'으로 */
-      setFace(s, null);
-      seat.classList.add('live');
-    }
+/* 무대를 처음 상태로 : 고정석(상임이사님·총장님)만 미리 보여 드린다.
+   ⚠️ 공석은 없다 — 나머지 자리는 전부 '?' 로 두고 연출로 채운다. */
+function resetSeats(pl){
+  var i;
+  for(i=0;i<pl.seats;i++) clearSeat(i);
+  pl.preset.forEach(function(sl){
+    var who = (sl === pl.viceSlot) ? MEMBERS[VICE_ID] : MEMBERS[CHIEF_ID];
+    setFace(sl, who);
+    seatEl[sl].classList.add('live');
   });
+  document.getElementById('meta').innerHTML = '';
 }
 
 /* ==========================================================================
@@ -1288,7 +3833,8 @@ function loop(ts){
   lastT = ts;
   var alive = false;
 
-  for(var s=0;s<10;s++){
+  for(var s in reelOf){
+    if(!reelOf.hasOwnProperty(s)) continue;
     var r = reelOf[s];
     if(!r.on) continue;
     alive = true;
@@ -1318,7 +3864,7 @@ var balls = [];
 function spawnBalls(n){
   tubInner.innerHTML = '';
   balls = [];
-  if(!n && n !== 0) n = 9;
+  if(!n && n !== 0) n = 10;
   var W = tubInner.clientWidth || 300, H = tubInner.clientHeight || 106;
   for(var i=0;i<n;i++){
     var el = document.createElement('div');
@@ -1472,17 +4018,30 @@ function later(ms, fn){
 }
 function setStatus(t){ document.getElementById('status').textContent = t; }
 
-/* 연출에 쓸 자리 나누기 — 사람이 앉는 자리만, 총장 양옆은 맨 마지막 */
-function splitOrder(asg){
-  var order = activeOrder(asg);
-  var last  = order.filter(function(s){ return LAST_TWO.indexOf(s) >= 0; });
-  var outer = order.filter(function(s){ return LAST_TWO.indexOf(s) <  0; });
-  return { all: order, outer: outer, last: last };
+/* 연출에 쓸 자리 나누기 — 계획이 정해 둔 순서를 그대로 쓴다.
+     한 테이블  : 바깥부터 → 위쪽 한가운데 양옆 두 자리가 맨 마지막
+     여러 테이블: 왼쪽 테이블부터 → 총장님 테이블이 맨 마지막,
+                  그 안에서도 총장님 바로 옆자리가 제일 마지막 */
+function splitOrder(){
+  var all  = plan.order.slice();
+  var last = plan.last.slice();
+  var outer = all.slice(0, all.length - last.length);
+  return { all: all, outer: outer, last: last };
+}
+
+/* 상황에 맞는 진행 안내 문구 */
+function nearMsg(){
+  return (plan.kind === 'multi') ? '이제 총장님 바로 옆자리입니다'
+                                 : '이제 한가운데 양옆 두 자리입니다';
+}
+function lastMsg(){
+  return (plan.kind === 'multi') ? '총장님 바로 옆자리 한 자리가 남았습니다'
+                                 : '한가운데 양옆 두 자리가 남았습니다';
 }
 
 /* --- A. 로또볼 추첨기 : 약 13.6초 (참석 9명 기준) --- */
 function runLotto(asg, done){
-  var o = splitOrder(asg);
+  var o = splitOrder();
   if(!o.all.length){ later(400, done); return; }
 
   tub.classList.add('on');
@@ -1496,7 +4055,7 @@ function runLotto(asg, done){
     if(i === lastFrom && o.last.length){ t += 900; }   /* 총장 양옆 직전 뜸들이기 */
     (function(sl, idx){
       later(t, function(){
-        if(idx === lastFrom && o.last.length) setStatus('이제 총장님 양옆입니다');
+        if(idx === lastFrom && o.last.length) setStatus(nearMsg());
         releaseBall(sl, asg[sl]);
       });
     })(slot, i);
@@ -1513,7 +4072,7 @@ function runLotto(asg, done){
 
 /* --- B. 슬롯머신 : 약 9.0초 (참석 9명 기준) --- */
 function runSlot(asg, done){
-  var o = splitOrder(asg);
+  var o = splitOrder();
   if(!o.all.length){ later(400, done); return; }
 
   o.all.forEach(function(s){ startReel(s); });
@@ -1524,7 +4083,7 @@ function runSlot(asg, done){
   o.all.forEach(function(slot, i){
     (function(sl, idx){
       later(t, function(){
-        if(idx === lastFrom && o.last.length) setStatus('이제 총장님 양옆입니다');
+        if(idx === lastFrom && o.last.length) setStatus(nearMsg());
         stopReel(sl, asg[sl]);
       });
     })(slot, i);
@@ -1535,7 +4094,7 @@ function runSlot(asg, done){
 
 /* --- C. 카드 딜링 : 약 6.6초 (참석 9명 기준) --- */
 function runDeal(asg, done){
-  var o = splitOrder(asg);
+  var o = splitOrder();
   if(!o.all.length){ later(400, done); return; }
 
   deck.classList.add('on');
@@ -1554,7 +4113,7 @@ function runDeal(asg, done){
   });
   later(landed + 1700, function(){
     if(!o.last.length) return;
-    setStatus('총장님 양옆은…');
+    setStatus(nearMsg());
     o.last.forEach(function(s){ flipCard(s, asg[s]); });   /* 총장 양옆이 마지막 */
   });
   later(landed + 2400, done);
@@ -1562,7 +4121,7 @@ function runDeal(asg, done){
 
 /* --- D. 하이브리드 (기본) : 약 6.5초 (참석 9명 기준) --- */
 function runHybrid(asg, done){
-  var o = splitOrder(asg);
+  var o = splitOrder();
   if(!o.all.length){ later(400, done); return; }
 
   o.all.forEach(function(s){ startReel(s); });
@@ -1585,7 +4144,7 @@ function runHybrid(asg, done){
   if(o.outer.length) t -= (o.outer.length-1 < gaps.length ? gaps[o.outer.length-1] : 200);
 
   if(o.last.length){
-    later(t + 120, function(){ setStatus('총장님 양옆 두 자리가 남았습니다'); });
+    later(t + 120, function(){ setStatus(lastMsg()); });
     later(t + 1000, function(){
       o.last.forEach(function(s){ stopReel(s, asg[s]); });   /* 동시에 확정 */
     });
@@ -1611,6 +4170,7 @@ var CV_COLOR = {
   headA:'#2a6595', headB:'#1d4f79', headInk:'#ffffff',
   subA:'#dfeaf5',  subB:'#c9dcee',  subInk:'#12395a',
   chiefA:'#fff3cf',chiefB:'#f3d78a',chiefInk:'#4a3607', gold:'#c08a12',
+  viceA:'#f8fbfd', viceB:'#d4dee6', viceInk:'#1c2833', silver:'#8b97a3',
   vacantLine:'#c8bda7', vacantInk:'#9a9086',
   tableA:'#a97246', tableB:'#8a5c38'
 };
@@ -1637,23 +4197,22 @@ function cvFit(g, text, maxW, size, weight){
   return size;
 }
 
-function cvSeatCard(g, x, y, w, h, m, isChief){
+function cvSeatCard(g, x, y, w, h, m){
   var grad = g.createLinearGradient(0,y,0,y+h);
   var ink;
+  /* 고정석(상임이사님·총장님)은 둘 다 같은 금색 — 따로 구분하지 않는다 */
+  var isChief = !!(m && m.tier === 'chief');
 
-  if(isChief){                                   /* 총장석 : 금색 */
+  if(!m){                                        /* 있을 수 없는 경우 (안전망) */
+    cvRound(g,x,y,w,h,9);
+    g.fillStyle='#ffffff'; g.fill();
+    g.lineWidth=1.2; g.strokeStyle=CV_COLOR.vacantLine; g.stroke();
+    return;
+  } else if(isChief){                            /* 고정석 : 금색 */
     grad.addColorStop(0,CV_COLOR.chiefA); grad.addColorStop(1,CV_COLOR.chiefB);
     ink = CV_COLOR.chiefInk;
     cvRound(g,x,y,w,h,9); g.fillStyle=grad; g.fill();
     g.lineWidth=3; g.strokeStyle=CV_COLOR.gold; g.stroke();
-  } else if(!m){                                 /* 결석 : 공석 */
-    cvRound(g,x,y,w,h,9);
-    g.fillStyle='#ffffff'; g.fill();
-    g.lineWidth=1.6; g.strokeStyle=CV_COLOR.vacantLine;
-    if(g.setLineDash) g.setLineDash([5,4]);
-    g.stroke();
-    if(g.setLineDash) g.setLineDash([]);
-    ink = CV_COLOR.vacantInk;
   } else if(m.tier === 'head'){                  /* 처장 : 진한 색 */
     grad.addColorStop(0,CV_COLOR.headA); grad.addColorStop(1,CV_COLOR.headB);
     ink = CV_COLOR.headInk;
@@ -1670,9 +4229,9 @@ function cvSeatCard(g, x, y, w, h, m, isChief){
   g.textBaseline = 'middle';
   var cx = x + w/2, cy = y + h/2, pad = w - 12;
 
-  if(!m || !m.l2){                               /* 한 줄짜리 (총장·공석) */
-    var t = m ? m.l1 : '공석';
-    cvFit(g, t, pad, isChief ? 21 : 17, '800');
+  if(!m.l2){                                     /* 한 줄짜리 (상임이사·총장) */
+    var t = m.l1;
+    cvFit(g, t, pad, isChief ? 20 : 17, '800');
     g.fillText(t, cx, cy);
   } else {                                       /* 부서명 / 직위 두 줄 */
     cvFit(g, m.l1, pad, 16.5, '800');
@@ -1682,61 +4241,66 @@ function cvSeatCard(g, x, y, w, h, m, isChief){
   }
 }
 
-/* 자리 배치도만 그린다 — 제목도 날짜도 없이 테이블과 좌석만, 여백은 최소로 */
-function drawSeatingCanvas(asg){
-  var S = 2.5;                       /* 2.5배로 그려서 폰에서도 또렷하게 (가로 1500px) */
-  var W = 600;
+/* 테이블 상판 하나 그리기 */
+function cvTable(g, x, y, w, h, label){
+  var tg = g.createLinearGradient(0,y,0,y+h);
+  tg.addColorStop(0,CV_COLOR.tableA); tg.addColorStop(1,CV_COLOR.tableB);
+  cvRound(g, x, y, w, h, 10);
+  g.fillStyle = tg; g.fill();
+  g.lineWidth = 2; g.strokeStyle = 'rgba(0,0,0,.20)'; g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.88)';
+  var size = cvFit(g, label, w-14, 14, '700');
+  g.font = '700 '+size+'px '+CV_FONT;
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(label, x + w/2, y + h/2);
+}
 
-  var pad = 12, gap = 9;
-  var x0 = pad, innerW = W - pad*2;
-  var cw = (innerW - gap*4)/5, ch = 76;
-  var tagH = 15;                     /* 총장석 위 '상석' 꼬리표가 차지하는 높이 */
-  var yTop    = pad + tagH + 3;      /* 위쪽 5석 */
-  var yTable  = yTop + ch + 10;      /* 가로 테이블 */
-  var tableH  = 70;
-  var yBottom = yTable + tableH + 10;/* 아래쪽 5석 */
-  var H = yBottom + ch + pad;
+/* 자리 배치도만 그린다 — 제목도 날짜도 없이 테이블과 좌석만, 여백은 최소로.
+   바탕은 화면 테마와 상관없이 언제나 흰색으로 고정한다.
+   ⚠️ 화면과 똑같은 계획(plan)을 그대로 그리므로 그림과 실제가 어긋날 수 없다.
+   ⚠️ 꼬리표 글자는 그리지 않는다 (교수님 지시로 없앴다). */
+function drawSeatingCanvas(asg){
+  var pl = plan;
+  var S = 2.5;                       /* 2.5배로 그려 폰에서도 또렷하게 */
+  var pad = 14, gapT = 26, gapS = 9;
+  var ch = 78, th = (pl.kind === 'multi') ? 62 : 70;
+
+  var totalCols = 0, i;
+  for(i=0;i<pl.tables.length;i++) totalCols += pl.tables[i].cols;
+
+  /* 칸이 많아도 카드가 너무 좁아지지 않게 가로 폭을 칸수에 맞춰 늘린다 */
+  var cw = 96;
+  var gapsT = gapT * (pl.tables.length - 1);
+  var gapsS = gapS * (totalCols - pl.tables.length);
+  var W = Math.round(pad*2 + cw*totalCols + gapsT + gapsS);
+
+  var yTop = pad, yTbl = yTop + ch + 12, yBot = yTbl + th + 12;
+  var H = yBot + ch + pad;
 
   var cv = document.createElement('canvas');
   cv.width  = Math.round(W*S);
   cv.height = Math.round(H*S);
   var g = cv.getContext('2d');
   g.scale(S,S);
-
-  /* 바탕은 화면 테마와 상관없이 언제나 흰색 */
   g.fillStyle = CV_COLOR.bg;
   g.fillRect(0,0,W,H);
 
-  /* 위쪽 가로줄 5석 (가운데가 총장) */
-  var i;
-  for(i=0;i<5;i++){
-    cvSeatCard(g, x0 + i*(cw+gap), yTop, cw, ch, asg[i], i===CHIEF_SLOT);
-  }
+  var x = pad;
+  pl.tables.forEach(function(t){
+    var tw = cw*t.cols + gapS*(t.cols - 1);
 
-  /* 총장석 위 '상석' 꼬리표 */
-  var chiefCx = x0 + CHIEF_SLOT*(cw+gap) + cw/2;
-  cvRound(g, chiefCx-18, yTop-16, 36, tagH, 7.5);
-  g.fillStyle = CV_COLOR.gold; g.fill();
-  g.fillStyle = '#241a00';
-  g.font = '800 10px '+CV_FONT;
-  g.textAlign='center'; g.textBaseline='middle';
-  g.fillText('상석', chiefCx, yTop-8.2);
-
-  /* 가로로 긴 테이블 */
-  var tg = g.createLinearGradient(0,yTable,0,yTable+tableH);
-  tg.addColorStop(0,CV_COLOR.tableA); tg.addColorStop(1,CV_COLOR.tableB);
-  cvRound(g, x0, yTable, innerW, tableH, 10);
-  g.fillStyle = tg; g.fill();
-  g.lineWidth = 2; g.strokeStyle = 'rgba(0,0,0,.20)'; g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.88)';
-  g.font = '700 14px '+CV_FONT;
-  g.textAlign='center'; g.textBaseline='middle';
-  g.fillText('회 식 테 이 블', W/2, yTable + tableH/2);
-
-  /* 아래쪽 가로줄 5석 */
-  for(i=0;i<5;i++){
-    cvSeatCard(g, x0 + i*(cw+gap), yBottom, cw, ch, asg[i+5], false);
-  }
+    function row(slots, y){
+      var rw = cw*slots.length + gapS*(slots.length - 1);
+      var x0 = x + (tw - rw)/2;              /* 자리가 적은 줄은 한가운데로 모은다 */
+      slots.forEach(function(sl, k){
+        cvSeatCard(g, x0 + k*(cw+gapS), y, cw, ch, asg[sl]);
+      });
+    }
+    row(t.top, yTop);
+    cvTable(g, x, yTbl, tw, th, t.name);
+    row(t.bottom, yBot);
+    x += tw + gapT;
+  });
 
   return cv;
 }
@@ -2509,6 +5073,9 @@ function setBusy(b){
   running = b;
   goBtn.disabled = b;
   Array.prototype.forEach.call(modesBox.children, function(c){ c.disabled = b; });
+  /* 돌아가는 도중에는 '이전'도 잠근다 (화면이 중간에 바뀌면 연출이 깨진다) */
+  var back2 = document.getElementById('back2');
+  if(back2) back2.disabled = b;
 }
 
 function showMeta(){
@@ -2524,14 +5091,11 @@ function start(){
   tub.classList.remove('on'); tubInner.innerHTML='';
   deck.classList.remove('on');
 
-  var asg = buildAssignment();
-  resetSeats();
-  /* 비는 자리는 처음부터 '공석'으로 놓아 둔다 (돌아가는 연출에 넣지 않는다) */
-  OTHER_SLOTS.forEach(function(s){
-    if(!asg[s]){ setFace(s, null); seatEl[s].classList.add('live'); }
-  });
+  var asg = buildAssignment(plan);
+  refreshReelPool(plan, asg);
+  resetSeats(plan);
   /* 릴 회전 속도 초기화 */
-  for(var s=0;s<10;s++) reelOf[s].period = 0.085;
+  for(var s in reelOf){ if(reelOf.hasOwnProperty(s)) reelOf[s].period = 0.085; }
   /* 새로 뽑는 동안에는 공유 버튼을 잠근다 */
   lastAssign = null;
   prepareToken++; sharedBlob = null;
@@ -2561,9 +5125,217 @@ function start(){
 
 goBtn.addEventListener('click', start);
 
-/* 첫 화면 : 총장석을 상석에 놓고, 명단대로 공석을 미리 표시한다 */
-resetSeats();
-paintVacancies();
+/* ==========================================================================
+   13. 세 단계 화면 넘기기
+       ① 명단 확인 → ② 테이블 배치 고르기 → ③ 연출 고르고 자리 뽑기
+   ========================================================================== */
+var stageWrap  = document.getElementById('stageWrap');
+var scrollHint = document.getElementById('scrollHint');
+var subTitle   = document.getElementById('subTitle');
+var stepChips  = document.getElementById('stepBar').children;
+var screens    = {1:document.getElementById('scr1'),
+                  2:document.getElementById('scr2'),
+                  3:document.getElementById('scr3')};
+var scr3d      = document.getElementById('scr3d');   /* ③의 다른 얼굴 : 당첨자 뽑기 */
+
+/* 명단이나 배치가 바뀌면 지난 결과는 무효로 돌린다 */
+function invalidateResult(){
+  lastAssign = null;
+  prepareToken++; sharedBlob = null; sharedDataUrl = null;
+  shareBtn.disabled = true;
+  shareHint.textContent = '자리를 뽑으면 배치도를 이미지로 보낼 수 있습니다';
+  goBtn.textContent = '자리 뽑기';
+  document.getElementById('meta').innerHTML = '';
+}
+
+/* 맨 위 안내 문구 — 고른 배치와 상임이사님 참석 여부에 따라 사실이 달라지므로
+   문구도 함께 바꾼다. ⚠️ 꼬리표를 없앴으므로 '상석' 이라는 말은 쓰지 않는다.
+   아직 배치를 고르지 않은 ① 명단 단계에서는 중립적인 문구를 쓴다. */
+function paintSubTitle(){
+  if(!subTitle) return;
+  var t, viceOn = viceComing();
+  var multi = (kind === 'multi' && canMulti(presentCount()));
+  if(step >= 2 && branch === 'draw'){
+    subTitle.textContent = (step === 2)
+      ? '책임자 명단은 그대로 · 무엇을 하실지 골라 주세요'
+      : '체크하신 분들 중에서 당첨자를 뽑습니다 · 자리 배치와는 상관없습니다';
+    return;
+  }
+  if(step <= 1){
+    t = '총장님은 반드시 참석하십니다 · 오늘 오시는 분만 체크해 주세요';
+  }else if(multi){
+    t = viceOn
+      ? '상임이사님은 가운데 테이블 위쪽, 총장님은 그 옆 테이블 위쪽 — 나머지는 모두 무작위입니다'
+      : '총장님은 가운데 테이블 위쪽 — 나머지 분들은 모두 무작위로 정해집니다';
+  }else{
+    t = viceOn
+      ? '상임이사님은 위쪽 한가운데, 총장님은 그 바로 양옆 두 자리 중 한 곳 — 나머지는 모두 무작위입니다'
+      : '총장님은 위쪽 한가운데 — 나머지 분들은 모두 무작위로 정해집니다';
+  }
+  subTitle.textContent = t;
+}
+
+/* B안이 화면보다 넓어 좌우로 밀어야 하는지 알려 준다 */
+function updateScrollHint(){
+  /* 배치와 상관없이 '실제로 넘칠 때만' 안내한다 (넘치지 않으면 안내가 사라진다) */
+  var need = stageWrap.scrollWidth > stageWrap.clientWidth + 2;
+  scrollHint.style.display = need ? '' : 'none';
+}
+
+
+/* ==========================================================================
+   13-b. 당첨자 뽑기 부품과 이어 주는 곳
+        ⚠ 부품과 주고받는 것은 window.LuckyDraw 하나뿐이다.
+        ⚠ 둘은 서로 독립이다 — 뽑기 결과가 자리 배치를 바꾸지 않는다.
+          (onResult 는 나중을 위해 부품에 준비만 되어 있고 지금은 쓰지 않는다.)
+   ========================================================================== */
+var vipBtn   = document.getElementById('vipBtn');
+var vipState = document.getElementById('vipState');
+var drawWho  = document.getElementById('drawWho');
+var freeBtn  = document.getElementById('freeBtn');
+
+/* ①에서 체크한 분들을 뽑기용 이름 배열로 만든다 (서열 순서 그대로) */
+function rosterNames(withVip){
+  var out = [];
+  for(var i=0;i<MEMBERS.length;i++){
+    var m = MEMBERS[i];
+    if(!present[m.id]) continue;
+    if(!withVip && (m.id === VICE_ID || m.id === CHIEF_ID)) continue;
+    out.push(m.l1 + m.l2);
+  }
+  return out;
+}
+
+/* 부품에 명단을 넘긴다. ⚠ 화면을 열기 전에 부른다 (MERGE_NOTES 7-6) */
+function pushRoster(){
+  var list = rosterNames(vipInDraw);
+  if(list.length < 2){ vipInDraw = true; list = rosterNames(true); }   /* 2명이 안 되면 되돌린다 */
+  return LuckyDraw.setNames(list, {screen:2});   /* screen:2 = 이름 입력칸을 건너뛰고 방식 고르기부터 */
+}
+
+function paintDrawPanel(){
+  var roster = (drawSource === 'roster');
+  vipBtn.style.display  = roster ? '' : 'none';
+  drawWho.style.display = roster ? '' : 'none';
+  freeBtn.textContent   = roster
+    ? '✏️ 다른 이름으로 뽑기 (학과 행사 등)'
+    : '👥 처장단 명단으로 돌아가기';
+  if(!roster) return;
+
+  var list   = rosterNames(vipInDraw);
+  var canOff = rosterNames(false).length >= 2;
+  vipBtn.setAttribute('aria-pressed', vipInDraw ? 'true' : 'false');
+  vipBtn.disabled = (vipInDraw && !canOff);
+  vipState.textContent = vipInDraw ? '포함' : '제외';
+  drawWho.innerHTML = '뽑기 참가 <b>' + list.length + '명</b> : ' + list.join(' · ') +
+    (vipBtn.disabled ? '<br>(두 분을 빼면 2명이 안 돼 지금은 끄실 수 없습니다)' : '');
+}
+
+vipBtn.addEventListener('click', function(){
+  if(drawSource !== 'roster' || vipBtn.disabled) return;
+  var next = !vipInDraw;
+  if(rosterNames(next).length < 2){ toast('두 분을 빼면 참가자가 2명이 되지 않습니다'); return; }
+  vipInDraw = next;
+  pushRoster();
+  paintDrawPanel();
+});
+
+/* 부품 안의 「참가자 고치기」로 들어가면 그때부터 직접 입력한 명단으로 본다
+   (안 그러면 다음에 들어올 때 처장단 명단이 그 위에 덮어써진다) */
+['ld-back1','ld-backCfg'].forEach(function(id){
+  var b = document.getElementById(id);
+  if(b) b.addEventListener('click', function(){
+    if(drawSource === 'roster'){ drawSource = 'free'; paintDrawPanel(); }
+  });
+});
+
+freeBtn.addEventListener('click', function(){
+  if(drawSource === 'roster'){
+    drawSource = 'free';
+    LuckyDraw.goScreen(1);        /* 자유 입력 화면(2~30명)으로 */
+  }else{
+    drawSource = 'roster';
+    pushRoster();
+  }
+  paintDrawPanel();
+});
+
+/* 밝기(테마)를 자리배치와 맞춴 준다.
+   자리배치는 :root[data-theme] 로 눈금하고, 없으면 기기 설정을 따른다. */
+function syncDrawTheme(){
+  var t = document.documentElement.getAttribute('data-theme');
+  LuckyDraw.setTheme((t === 'dark' || t === 'light') ? t : 'auto');
+}
+try{
+  if(window.MutationObserver){
+    new MutationObserver(syncDrawTheme).observe(document.documentElement,
+      {attributes:true, attributeFilter:['data-theme']});
+  }
+}catch(e){}
+
+/* ③ 당첨자 뽑기 화면으로 들어올 때 */
+function enterDraw(){
+  syncDrawTheme();
+  if(drawSource === 'roster') pushRoster();
+  paintDrawPanel();
+  LuckyDraw.show();
+}
+
+function goStep(n){
+  if(running) return;              /* 뽑는 도중에는 화면을 넘기지 않는다 */
+  step = n;
+
+  var drawNow = (n === 3 && branch === 'draw');
+  for(var i=1;i<=3;i++){
+    if(i === n && !(i === 3 && drawNow)) screens[i].classList.add('nowscreen');
+    else                                 screens[i].classList.remove('nowscreen');
+  }
+  if(drawNow) scr3d.classList.add('nowscreen');
+  else        scr3d.classList.remove('nowscreen');
+  Array.prototype.forEach.call(stepChips, function(c){
+    var k = parseInt(c.getAttribute('data-step'), 10);
+    c.classList.remove('nowstep','donestep');
+    if(k === n)      c.classList.add('nowstep');
+    else if(k < n)   c.classList.add('donestep');
+  });
+
+  if(n === 2){
+    paintLayoutChoices();          /* 오늘 인원에 맞춰 고를 것을 다시 그린다 */
+  }
+  /* 자리배치 화면으로 갈 때는 뽑기 부품을 반드시 멈춰 숨긴다
+     (안 그러면 두 연출이 동시에 돌아 폰이 느려진다 — MERGE_NOTES 3-다) */
+  if(!drawNow) LuckyDraw.hide();
+
+  if(drawNow){
+    enterDraw();
+  }else if(n === 3){
+    /* 인원이나 배치가 바뀌었을 수 있으므로 계획부터 새로 세우고 무대를 짓는다 */
+    plan = makePlan();
+    buildStage(plan);
+    resetSeats(plan);
+    invalidateResult();
+    setStatus('연출을 고르고 ‘자리 뽑기’를 눌러 주세요');
+    updateScrollHint();
+  }
+  paintSubTitle();
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
+document.getElementById('go2').addEventListener('click', function(){ goStep(2); });
+document.getElementById('go3').addEventListener('click', function(){ goStep(3); });
+document.getElementById('back1').addEventListener('click', function(){ goStep(1); });
+document.getElementById('back2').addEventListener('click', function(){ goStep(2); });
+document.getElementById('back2d').addEventListener('click', function(){ goStep(2); });
+window.addEventListener('resize', updateScrollHint);
+
+/* 첫 화면 : ① 명단부터 */
+plan = makePlan();
+buildStage(plan);
+resetSeats(plan);
+paintLayoutChoices();
+paintGo3();
+goStep(1);
+window.addEventListener('resize', fitStageFont);
 
 })();
 </script>
